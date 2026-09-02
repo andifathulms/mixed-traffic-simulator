@@ -200,3 +200,205 @@
   flex-direction: column;
   width: 100%;
 }
+
+/* §4.3 The instrument bay, on paper ground. */
+.bay {
+  display: grid;
+  grid-template-columns: minmax(320px, 26rem) 1fr;
+  gap: 1px;
+  background: var(--rule);
+  border-top: 1px solid #000;
+}
+
+.bay__fd {
+  background: var(--paper);
+}
+
+.bay__panel {
+  display: flex;
+  flex-direction: column;
+  background: var(--paper);
+  min-width: 0;
+}
+
+.bay__tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  background: var(--paper-edge);
+  border-bottom: 1px solid var(--rule);
+}
+
+.bay__tab {
+  background: none;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  padding: var(--s-1) var(--s-2);
+  color: var(--ink-mid);
+  font-size: var(--t-small-size);
+  cursor: pointer;
+  /* §6.3 Discrete control: a timed transition. */
+  transition: color var(--d-tab) var(--ease-standard),
+    border-color var(--d-tab) var(--ease-standard);
+}
+
+.bay__tab--active {
+  color: var(--ink);
+  border-bottom-color: var(--ink);
+}
+
+.bay__content {
+  flex: 1;
+  min-width: 0;
+  overflow: auto;
+}
+
+.params {
+  background: var(--paper);
+  border-top: 1px solid var(--rule);
+  padding: var(--s-2) var(--s-3);
+  color: var(--ink);
+}
+
+.params__title {
+  font-size: var(--t-h2-size);
+  margin-bottom: var(--s-2);
+}
+
+.params__section {
+  margin-bottom: var(--s-3);
+  max-width: 84rem;
+}
+
+.params__section h3 {
+  font-size: var(--t-body-size);
+  margin-bottom: var(--s-1);
+}
+
+.params__field {
+  display: block;
+  margin-bottom: var(--s-2);
+  max-width: 34rem;
+  font-size: var(--t-small-size);
+}
+
+.params__field input[type='range'] {
+  width: 100%;
+  max-width: 22rem;
+  display: block;
+  margin-top: 2px;
+}
+
+.params__field small {
+  display: block;
+  margin-top: 2px;
+  max-width: 60ch;
+  color: var(--ink-mid);
+  font-size: var(--t-micro-size);
+  line-height: 1.45;
+}
+
+.params__radios {
+  border: 0;
+  padding: 0;
+  margin: 0 0 var(--s-2);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  align-items: center;
+  font-size: var(--t-small-size);
+}
+
+.params__radios legend {
+  padding: 0;
+  color: var(--ink-mid);
+}
+
+.params__radios label {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.params__table {
+  border-collapse: collapse;
+  font-size: var(--t-data-size);
+}
+
+.params__table th,
+.params__table td {
+  border-bottom: 1px solid var(--rule);
+  padding: 2px 12px 2px 0;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.params__table thead th,
+.params__table tbody th {
+  color: var(--ink-mid);
+  font-weight: 400;
+  text-align: left;
+}
+
+.params__note {
+  margin: var(--s-1) 0 0;
+  max-width: 66ch;
+  color: var(--ink-mid);
+  font-size: var(--t-small-size);
+  line-height: 1.5;
+}
+
+.params__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-1);
+}
+
+.params__buttons button {
+  background: var(--paper-edge);
+  border: 1px solid var(--rule);
+  padding: 4px 12px;
+  cursor: pointer;
+}
+
+.params__buttons button:disabled {
+  color: var(--ink-faint);
+  cursor: default;
+}
+
+/* §6.3 Warnings appear in 200 ms and name what happened. */
+.warnings {
+  background: var(--paper);
+  border-top: 1px solid var(--warn);
+  padding: var(--s-1) var(--s-3);
+  animation: warn-in var(--d-warn) var(--ease-standard);
+}
+
+@keyframes warn-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.warnings ul {
+  margin: 0;
+  padding-left: var(--s-2);
+  color: var(--warn);
+  font-size: var(--t-small-size);
+  line-height: 1.5;
+}
+
+.warnings__count {
+  color: var(--ink-mid);
+}
+
+@media (max-width: 860px) {
+  .bay {
+    grid-template-columns: 1fr;
+  }
+
+  .params {
+    padding-left: var(--s-2);
+    padding-right: var(--s-2);
+  }
+}

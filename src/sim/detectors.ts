@@ -48,38 +48,45 @@ export function recordCrossings(world: World, dt: number): void {
   const log = activeLog;
   if (!log) return;
 
-  for (let d = 0; d < world.detectors.length; d++) {
-    const det = world.detectors[d];
+  const detectors = world.detectors;
+  if (detectors.length === 0) return;
 
-    for (const v of world.vehicles) {
-      if (v.v <= 0) continue;
+  // Vehicles outermost, detectors innermost. The other order walks the whole
+  // vehicle list once per detector, which is the difference between one pass
+  // and eight over several hundred vehicles, twenty times a second.
+  for (const v of world.vehicles) {
+    if (v.v <= 0) continue;
 
-      const travelled = v.v * dt;
-      // Where the vehicle's nose was at the start of the step.
-      const noseNow = v.x + v.length / 2;
-      const noseBefore = noseNow - travelled;
+    const travelled = v.v * dt;
+    const noseNow = v.x + v.length / 2;
+    const noseBefore = noseNow - travelled;
+
+    for (let d = 0; d < detectors.length; d++) {
+      const det = detectors[d];
 
       const toDetector = forwardDistance(noseBefore, det.position, world.geometry);
       if (toDetector < 0 || toDetector > travelled) continue;
 
-      // Skip a re-trigger by the same vehicle at the same detector on a ring
-      // within one step; the index guard covers the common case.
+      // Guard against a second trigger at the same detector on a ring within
+      // one step.
       if (v.lastDetectorIndex === d && travelled < 1) continue;
       v.lastDetectorIndex = d;
 
       const fraction = travelled > 0 ? toDetector / travelled : 0;
-      const crossingTime = world.t + fraction * dt;
 
       log.records.push({
         detectorId: det.id,
-        crossingTime,
+        // Interpolated within the step. At 0.05 s resolution, snapping to the
+        // step boundary would quantise headways into bands and the time
+        // headway method would measure the timestep instead of the traffic.
+        crossingTime: world.t + fraction * dt,
         vehicleClass: v.type,
-        // A loop measures a spot speed, not a true instantaneous one. It is the
-        // vehicle's speed as it passes, which is what a radar gun reads.
+        // A loop measures a spot speed, not a true instantaneous one. It is
+        // the speed as the vehicle passes, which is what a radar gun reads.
         spotSpeed: v.v,
         // Time the loop was covered: the vehicle's length plus the zone,
-        // divided by its speed. This is exactly what a real loop reports and
-        // it is the whole input to the occupancy-time method.
+        // divided by its speed. Exactly what a real loop reports, and the
+        // whole input to the occupancy-time method.
         occupancyTime: (v.length + det.zoneLength) / Math.max(0.1, v.v),
         lateralPosition: v.y,
       });

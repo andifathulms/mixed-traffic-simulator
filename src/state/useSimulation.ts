@@ -10,6 +10,7 @@ import {
   type DetectorLog,
 } from '../sim/detectors';
 import { WaveTracker } from '../sim/analysis';
+import { DischargeRecorder } from '../sim/discharge';
 
 /** Cap on steps per frame, so a backgrounded tab does not lock the thread. */
 const MAX_STEPS_PER_FRAME = 20;
@@ -18,6 +19,7 @@ export interface SimulationHandle {
   world: World;
   log: DetectorLog;
   tracker: WaveTracker;
+  discharge: DischargeRecorder;
   /** Sub-timestep interpolation factor for smooth drawing, 0..1. */
   alpha: number;
   /** Frames on which the step cap was hit and simulated time was dropped. */
@@ -71,6 +73,7 @@ export function useSimulation(options: UseSimulationOptions) {
       world,
       log: createDetectorLog(),
       tracker: new WaveTracker(),
+      discharge: new DischargeRecorder(),
       alpha: 0,
       droppedFrames: 0,
       generation: 0,
@@ -109,6 +112,7 @@ export function useSimulation(options: UseSimulationOptions) {
           while (accumulator >= DT && steps < MAX_STEPS_PER_FRAME) {
             step(handle.world, DT, paramsRef.current);
             handle.tracker.observe(handle.world);
+            handle.discharge.observe(handle.world, DT);
             accumulator -= DT;
             steps++;
           }
@@ -142,6 +146,7 @@ export function useSimulation(options: UseSimulationOptions) {
     try {
       step(handle.world, DT, paramsRef.current);
       handle.tracker.observe(handle.world);
+      handle.discharge.observe(handle.world, DT);
     } finally {
       attachDetectorLog(null);
     }

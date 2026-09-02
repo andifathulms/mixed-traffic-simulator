@@ -151,13 +151,29 @@ export const angkot: Scenario = {
  * The bench is a sweep rather than an animated scene (PRD §5.6), but it needs a
  * base scenario to sweep. It is the corridor at a fixed inflow.
  */
+const BENCH_LENGTH = 900;
+
 export const bench: Scenario = {
   ...corridor,
   id: 'bench',
   name: 'Equivalence bench',
   blurb:
-    'A sweep rather than a scene. The same corridor is run across motorcycle ' +
-    'fractions and every estimation method is applied to each run.',
+    'A sweep rather than a scene. The corridor is run across motorcycle shares ' +
+    'and every estimation method is applied to each run.',
+  geometry: { ...corridor.geometry, length: BENCH_LENGTH },
+  /*
+   * Eight counting stations rather than three.
+   *
+   * The regression method needs many aggregation intervals before its
+   * coefficients are identified, and a sweep point cannot simulate for hours.
+   * More counting stations give more independent observations per second of
+   * simulation, which is exactly what a field study does when it wants a
+   * result in one shift rather than one month. With three detectors on a short
+   * run the regression returned nothing at all at every swept point.
+   */
+  detectors: Array.from({ length: 8 }, (_, i) =>
+    createDetector(`B${i + 1}`, (BENCH_LENGTH * (i + 1)) / 9),
+  ),
   seed: seedFromString('bench'),
 };
 
