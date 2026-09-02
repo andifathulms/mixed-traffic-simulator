@@ -49,7 +49,7 @@ export class SpatialIndex {
 
   /** The cell `offset` cells from `from`, or -1 when it falls off an open road. */
   offsetCell(from: number, offset: number): number {
-    let i = from + offset;
+    const i = from + offset;
     if (this.geometry.ring) {
       // A ring shorter than the search range would wrap onto itself and return
       // the same cell twice, double-counting its vehicles.
