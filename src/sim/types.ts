@@ -46,6 +46,11 @@ export interface Vehicle {
   /** Which detectors this vehicle has already been recorded at. */
   lastDetectorIndex: number;
   /**
+   * True when the last clearance pass could find no legal lateral position.
+   * A driver with nowhere to go slows down; see the step function.
+   */
+  squeezed: boolean;
+  /**
    * Lateral acceleration held between decisions. See `lateralDecisionInterval`.
    */
   latAccelHeld: number;

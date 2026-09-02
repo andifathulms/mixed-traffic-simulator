@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { DT, type Params, type World } from '../sim/types';
 import { step } from '../sim/world';
+import { advance } from '../sim/loop';
 import { buildWorld } from '../scenarios/build';
 import type { Scenario } from '../scenarios/types';
 import {
@@ -10,9 +11,6 @@ import {
 } from '../sim/detectors';
 import { WaveTracker } from '../sim/analysis';
 import { DischargeRecorder } from '../sim/discharge';
-
-/** Cap on steps per frame, so a backgrounded tab does not lock the thread. */
-const MAX_STEPS_PER_FRAME = 20;
 
 export interface SimulationHandle {
   world: World;
@@ -105,29 +103,26 @@ export function useSimulation(options: UseSimulationOptions) {
       last = now;
 
       if (runningRef.current) {
-        accumulator += delta * speedRef.current;
-
-        let steps = 0;
         attachDetectorLog(handle.log);
+        let result;
         try {
-          while (accumulator >= DT && steps < MAX_STEPS_PER_FRAME) {
-            step(handle.world, DT, paramsRef.current);
-            handle.tracker.observe(handle.world);
-            handle.discharge.observe(handle.world, DT);
-            accumulator -= DT;
-            steps++;
-          }
+          result = advance(
+            handle.world,
+            paramsRef.current,
+            delta * speedRef.current,
+            accumulator,
+            (world) => {
+              handle.tracker.observe(world);
+              handle.discharge.observe(world, DT);
+            },
+          );
         } finally {
           attachDetectorLog(null);
         }
-
-        if (accumulator >= DT) {
-          // The cap was hit. Drop the excess rather than silently running slow,
-          // and record it so the interface can say the multiplier is not being
-          // met rather than quietly lying about the speed.
-          accumulator = 0;
-          handle.droppedFrames++;
-        }
+        accumulator = result.accumulator;
+        // Recorded so the interface can say the multiplier is not being met,
+        // rather than quietly lying about the speed.
+        if (result.capped) handle.droppedFrames++;
       }
 
       handle.alpha = accumulator / DT;

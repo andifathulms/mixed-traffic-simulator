@@ -1,6 +1,6 @@
 import type { Params, VehicleType, World } from './types';
 import { spawnVehicle } from './world';
-import { findLeader, SpatialIndex } from './neighbours';
+import { findLeader, findFollower, SpatialIndex } from './neighbours';
 import { leftEdgeAt, rightEdgeAt } from './geometry';
 
 /** Composition shares from the motorcycle fraction and the remainder splits. */
@@ -25,8 +25,6 @@ const entryIndex = new SpatialIndex();
 export function admitArrivals(world: World, dt: number, params: Params): void {
   const shares = composition(params);
   const perSecond = params.inflow / 3600;
-
-  entryIndex.rebuild(world.vehicles, world.geometry);
 
   for (const type of ['MC', 'LV', 'HV', 'PU'] as VehicleType[]) {
     const rate = perSecond * shares[type];
@@ -71,6 +69,13 @@ export function admitArrivals(world: World, dt: number, params: Params): void {
 
 /** Place a vehicle at the upstream boundary if there is room at some offset. */
 function tryAdmit(world: World, params: Params, type: VehicleType): boolean {
+  // Rebuilt per admission rather than once per step. Several vehicles can be
+  // admitted in a single step — one per type, and more when arrival credit has
+  // accumulated — and an index built before any of them were placed does not
+  // contain them, so the second vehicle of a step could be admitted straight
+  // on top of the first. Admissions are rare enough that rebuilding is cheap.
+  entryIndex.rebuild(world.vehicles, world.geometry);
+
   const cfg = params.types[type];
   const { geometry } = world;
   const x = cfg.length / 2;
@@ -98,7 +103,19 @@ function tryAdmit(world: World, params: Params, type: VehicleType): boolean {
   for (let i = 0; i < attempts; i++) {
     const y = left + spacing * i;
     probe.y = y;
-    const { gap } = findLeader(probe, entryIndex, geometry, params, y);
+
+    // Both directions, not just ahead.
+    //
+    // Vehicles enter at their own half-length, so a long vehicle's spawn point
+    // sits further down the road than a short one's. A bus admitted behind a
+    // car that entered moments earlier would find nothing ahead of it, be
+    // waved through, and materialise on top of the car — which is exactly what
+    // produced every deep overlap in the corridor, all of them within a
+    // quarter second of entry and none of them at the bottleneck they were
+    // blamed on.
+    const ahead = findLeader(probe, entryIndex, geometry, params, y);
+    const behind = findFollower(probe, entryIndex, geometry, params, y);
+    const gap = Math.min(ahead.gap, behind.gap);
     if (gap > bestGap) {
       bestGap = gap;
       bestY = y;
@@ -109,7 +126,14 @@ function tryAdmit(world: World, params: Params, type: VehicleType): boolean {
   // spawned already braking or already overlapping.
   if (bestGap < cfg.idm.s0 + 2) return false;
 
-  const entrySpeed = Math.min(cfg.idm.v0, Math.sqrt(2 * cfg.idm.a * Math.max(0, bestGap)));
+  // Entry speed is set by the room ahead, not by the tighter of the two gaps —
+  // a vehicle close behind does not require the newcomer to enter slowly.
+  probe.y = bestY;
+  const room = findLeader(probe, entryIndex, geometry, params, bestY).gap;
+  const entrySpeed = Math.min(
+    cfg.idm.v0,
+    Math.sqrt(2 * cfg.idm.a * Math.max(0, Number.isFinite(room) ? room : cfg.idm.v0 ** 2)),
+  );
   spawnVehicle(world, params, { type, x, y: bestY, v: entrySpeed });
   return true;
 }

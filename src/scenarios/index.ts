@@ -50,8 +50,8 @@ export const bottleneck: Scenario = {
   id: 'bottleneck',
   name: 'Bottleneck',
   blurb:
-    'The same corridor with the width halved over 150 m at the midpoint. Outflow ' +
-    'from the resulting queue is lower than the capacity that caused it.',
+    'The same corridor narrowed from 7 m to 4 m over 150 m at the midpoint. ' +
+    'Outflow from the resulting queue is lower than the capacity that caused it.',
   citation: null,
   geometry: {
     length: CORRIDOR_LENGTH,
@@ -59,7 +59,11 @@ export const bottleneck: Scenario = {
     ring: false,
     markings: false,
     laneCount: 2,
-    reductions: [{ at: CORRIDOR_LENGTH / 2, span: 150, severity: 3.5 }],
+    // Four metres through the throat. Two light vehicles fit abreast with
+    // little to spare and a heavy vehicle beside anything does not, so the
+    // merge is real rather than nominal. The severity is a live control, so
+    // the user can close it further and watch what that does.
+    reductions: [{ at: CORRIDOR_LENGTH / 2, span: 150, severity: 3 }],
     gradient: 0,
   },
   params: { inflow: 3000, mcFraction: 0.6, lateralRule: 'sublane' },

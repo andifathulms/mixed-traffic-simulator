@@ -51,18 +51,49 @@ describe('discharge at the stop line', () => {
     expect(saturationFlow(sat!.headway)).toBeGreaterThan(900);
   });
 
-  it('discharges later queue positions more evenly than the first few', () => {
-    // The first vehicles are still accelerating from rest, which is why the
-    // saturation measurement starts at position five.
+  it('discharges the front of the queue faster than the rest, not slower', () => {
+    // The textbook discharge curve starts with long headways, because the
+    // first vehicles are accelerating from rest, and shortens to a saturation
+    // level. This stream does the opposite.
+    //
+    // Motorcycles percolate to the stop line during red and leave abreast, so
+    // several cross within a fraction of a second of one another; the cars
+    // behind then follow in something closer to single file at ordinary
+    // headways. The curve therefore rises rather than falls.
+    //
+    // This is the discharge-side counterpart of the app's whole argument: a
+    // saturation headway, like an equivalence factor, is a summary borrowed
+    // from lane-based traffic, and the stream it is being applied to here does
+    // not have the shape the summary assumes.
     const early = without.recorder.records.filter((r) => r.queuePosition <= 3);
     const late = without.recorder.records.filter((r) => r.queuePosition >= 6);
     expect(early.length).toBeGreaterThan(3);
     expect(late.length).toBeGreaterThan(3);
-    const spread = (xs: typeof early) => {
-      const m = xs.reduce((s, r) => s + r.headway, 0) / xs.length;
-      return Math.sqrt(xs.reduce((s, r) => s + (r.headway - m) ** 2, 0) / xs.length);
-    };
-    expect(spread(late)).toBeLessThan(spread(early) * 1.6);
+
+    const mean = (xs: typeof early) => xs.reduce((s, r) => s + r.headway, 0) / xs.length;
+    expect(mean(early)).toBeLessThan(mean(late));
+
+    // And the front of the queue is where the motorcycles are.
+    const mcShare = early.filter((r) => r.type === 'MC').length / early.length;
+    expect(mcShare).toBeGreaterThan(0.5);
+  });
+
+  it('does not settle into an even headway the way lane-based traffic does', () => {
+    // A lane-based discharge curve tightens as well as flattens: once everyone
+    // is moving, headways cluster. Here they do not, because motorcycles leave
+    // the stop line abreast rather than in single file, so several vehicles
+    // cross within a fraction of a second of each other and then a gap opens.
+    //
+    // This is a property of the traffic rather than a defect in the model, and
+    // it is worth pinning down: it is the reason a saturation headway is a
+    // weaker summary of this stream than of a lane-based one, which is the
+    // same objection the app raises about equivalence factors.
+    const late = without.recorder.records.filter((r) => r.queuePosition >= 6);
+    const m = late.reduce((s, r) => s + r.headway, 0) / late.length;
+    const spread = Math.sqrt(
+      late.reduce((s, r) => s + (r.headway - m) ** 2, 0) / late.length,
+    );
+    expect(spread / m).toBeGreaterThan(0.3);
   });
 });
 
