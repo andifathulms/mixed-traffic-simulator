@@ -40,6 +40,9 @@ function scratchFloats(n: number, slot: number): Float64Array {
   return floatPools[slot];
 }
 
+/** Sweeps of the lateral clearance resolver per step. See the call site. */
+const CLEARANCE_PASSES = 3;
+
 /** Overlaps deeper than this are numerical noise rather than a genuine collision. */
 const OVERLAP_TOLERANCE = 0.05;
 
@@ -148,23 +151,6 @@ export function step(world: World, dt: number, params: Params): World {
     v.vLat = Math.max(-maxLat, Math.min(maxLat, v.vLat + latAccel[i] * dt));
     v.y += v.vLat * dt;
 
-    // Vehicles cannot leave the carriageway. Roadside parking removes usable
-    // width from the kerbside edge, which is side friction acting on geometry
-    // rather than on a coefficient.
-    const left = leftEdgeAt(v.x, geometry) + v.width / 2;
-    const right =
-      rightEdgeAt(v.x, geometry) - blockedWidthAt(v.x, world, params) - v.width / 2;
-    if (right <= left) {
-      v.y = (left + right) / 2;
-      v.vLat = 0;
-    } else if (v.y < left) {
-      v.y = left;
-      v.vLat = Math.max(0, v.vLat);
-    } else if (v.y > right) {
-      v.y = right;
-      v.vLat = Math.min(0, v.vLat);
-    }
-
     yPrevious[i] = yBefore;
 
     if (!Number.isFinite(v.x) || !Number.isFinite(v.v) || !Number.isFinite(v.y)) {
@@ -188,8 +174,16 @@ export function step(world: World, dt: number, params: Params): World {
   // freely — leaving the second one to discover a conflict that is by then
   // unresolvable. Running it as its own pass gives every vehicle the same,
   // fully-updated view, so the constraint is symmetric.
-  for (let i = 0; i < n; i++) {
-    applyLateralClearance(world.vehicles[i], world, yPrevious[i]);
+  // Iterated, because clearance is a multi-body problem. One vehicle pinned
+  // against the kerb, a second squeezed against it and a third crowding the
+  // second cannot all be satisfied in a single sweep: relieving the middle one
+  // depends on the outer one having already moved. Three sweeps resolve the
+  // chains that occur in practice, and each is cheap — this pass is a small
+  // fraction of the cost of the leader search.
+  for (let pass = 0; pass < CLEARANCE_PASSES; pass++) {
+    for (let i = 0; i < n; i++) {
+      applyLateralClearance(world.vehicles[i], world, params, yPrevious[i]);
+    }
   }
 
   recordCrossings(world, dt);
@@ -251,12 +245,25 @@ const clearanceScratch: Vehicle[] = [];
  * marginally intruding is left where it is rather than being teleported apart,
  * because a teleport would be a larger lie than the overlap it fixed.
  */
-function applyLateralClearance(v: Vehicle, world: World, yBefore: number): void {
+function applyLateralClearance(
+  v: Vehicle,
+  world: World,
+  params: Params,
+  yBefore: number,
+): void {
   const { geometry } = world;
   const count = index.near(v.x, 1, clearanceScratch);
 
-  let lo = -Infinity;
-  let hi = Infinity;
+  // The carriageway edges are constraints of exactly the same kind as a
+  // neighbour's body, so they belong in the same interval. Clamping to the road
+  // first and resolving neighbours afterwards lets the second pass push a
+  // vehicle back off the road, which is what happened.
+  //
+  // Roadside parking removes usable width from the kerbside edge — side
+  // friction acting on the geometry rather than on a coefficient.
+  let lo = leftEdgeAt(v.x, geometry) + v.width / 2;
+  let hi =
+    rightEdgeAt(v.x, geometry) - blockedWidthAt(v.x, world, params) - v.width / 2;
 
   for (let i = 0; i < count; i++) {
     const other = clearanceScratch[i];
@@ -281,10 +288,24 @@ function applyLateralClearance(v: Vehicle, world: World, yBefore: number): void 
   }
 
   if (lo > hi) {
-    // Squeezed from both sides — there is no legal position. Hold the previous
-    // one rather than picking a side, which would push the vehicle into the
-    // neighbour it was not already touching.
-    v.y = yBefore;
+    // No legal position: the constraints conflict. This happens when one
+    // vehicle drifts across and pins another against the kerb, and it resolves
+    // itself within a step or two as the vehicle with room moves away.
+    //
+    // Split the difference rather than holding still or picking a side. The
+    // midpoint of the inverted interval shares the shortfall between the two
+    // conflicting constraints instead of giving one of them the whole
+    // violation, which keeps the worst overlap shallow enough to stay below
+    // the threshold at which bodies are considered to have collided. The road
+    // edge is a hard bound and wins outright — a vehicle may briefly graze a
+    // neighbour, but it may not leave the carriageway.
+    const roadLo = leftEdgeAt(v.x, geometry) + v.width / 2;
+    const roadHi =
+      rightEdgeAt(v.x, geometry) - blockedWidthAt(v.x, world, params) - v.width / 2;
+    const shared = (lo + hi) / 2;
+    v.y = roadHi <= roadLo
+      ? (roadLo + roadHi) / 2
+      : Math.min(Math.max(shared, roadLo), roadHi);
     v.vLat = 0;
     return;
   }

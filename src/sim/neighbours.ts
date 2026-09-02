@@ -127,6 +127,22 @@ export function constraintWeight(fraction: number, params: Params): number {
   return Math.pow(Math.min(1, t), params.overlapExponent);
 }
 
+/**
+ * Gap, m, below which a partially overlapping body becomes a full constraint.
+ *
+ * The overlap weight models a driver's willingness to share lateral space with
+ * something further down the road. It does not model the ability to pass
+ * through matter. At a 26% overlap the raw weight is about 0.17, which inflates
+ * the effective gap sixfold — so a follower closing on a body it genuinely
+ * cannot pass believed it had room and did not brake until they had already
+ * interpenetrated.
+ *
+ * Blending the weight toward one as the gap closes keeps filtering intact at
+ * distance, where the choice to share space is real, and makes the obstacle
+ * solid at contact, where it is not.
+ */
+const CONTACT_GAP = 1.5;
+
 export interface LeaderQuery {
   leader: Vehicle | null;
   /** Bumper-to-bumper gap to that leader, m; Infinity when there is none. */
@@ -223,12 +239,17 @@ function directionalSearch(
   if (!best) return EMPTY;
 
   const gap = bestCentreGap - best.length / 2 - v.length / 2;
+
+  // Dividing by the weight makes a partially-overlapping obstacle read as
+  // further away, which is the graded constraint described above — but only
+  // while there is still room to pass. See CONTACT_GAP.
+  const proximity = gap < CONTACT_GAP ? 1 - Math.max(0, gap) / CONTACT_GAP : 0;
+  const solidity = bestWeight + (1 - bestWeight) * proximity;
+
   return {
     leader: best,
     gap,
-    // Dividing by the weight makes a partially-overlapping obstacle read as
-    // further away, which is the graded constraint described above.
-    effectiveGap: forward && bestWeight > 0 ? gap / bestWeight : gap,
+    effectiveGap: forward && solidity > 0 ? gap / solidity : gap,
     dv: forward ? v.v - best.v : best.v - v.v,
   };
 }
