@@ -27,6 +27,27 @@ export interface TimeSpaceProps {
  * stripe that is the same jam in the record. This alignment is the single most
  * important layout decision in the app and nothing may break it.
  */
+/**
+ * §6.7 Under reduced motion the record renders complete for the elapsed period
+ * rather than drawing progressively. The recorder still writes one row per
+ * interval, but it catches up in a single pass on each change rather than
+ * advancing a row at a time as the paper scrolls.
+ */
+function useReducedMotion(): boolean {
+  const [reduced, setReduced] = useState(
+    () =>
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+  );
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const on = () => setReduced(mq.matches);
+    mq.addEventListener?.('change', on);
+    return () => mq.removeEventListener?.('change', on);
+  }, []);
+  return reduced;
+}
+
 export function TimeSpace({
   worldRef,
   trackerRef,
@@ -38,6 +59,7 @@ export function TimeSpace({
   secondsPerRow = 0.5,
 }: TimeSpaceProps) {
   const { canvasRef, sizeRef } = useCanvas();
+  const reduced = useReducedMotion();
   const recorderRef = useRef<TimeSpaceRecorder | null>(null);
   const [wave, setWave] = useState<number | null>(null);
   const [span, setSpan] = useState<{ top: number; bottom: number }>({ top: 0, bottom: 0 });
@@ -73,7 +95,14 @@ export function TimeSpace({
         recorderRef.current = recorder;
       }
 
-      recorder.observe(world, viewFrom, viewTo, freeSpeed);
+      // With reduced motion the simulation only advances on an explicit step
+      // or play, so several intervals may have elapsed between frames. Catch
+      // the paper up in one pass rather than one row per animation frame,
+      // which would be the progressive drawing the setting asks us not to do.
+      let guard = 0;
+      while (recorder.observe(world, viewFrom, viewTo, freeSpeed) && reduced && guard++ < 64) {
+        // observe() advances one row per call while time remains.
+      }
 
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.imageSmoothingEnabled = false;
@@ -95,7 +124,7 @@ export function TimeSpace({
 
     raf = requestAnimationFrame(render);
     return () => cancelAnimationFrame(raf);
-  }, [canvasRef, sizeRef, worldRef, trackerRef, freeSpeed, viewFrom, viewTo, secondsPerRow]);
+  }, [canvasRef, sizeRef, worldRef, trackerRef, freeSpeed, viewFrom, viewTo, secondsPerRow, reduced]);
 
   return (
     <figure className="timespace" style={{ height }}>
