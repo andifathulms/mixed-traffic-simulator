@@ -2,6 +2,8 @@
   "compilerOptions": {
     "target": "ES2022",
     "lib": ["ES2023"],
+    "allowJs": true,
+    "types": ["node"],
     "module": "ESNext",
     "skipLibCheck": true,
     "moduleResolution": "bundler",
@@ -11,5 +13,5 @@
     "noEmit": true,
     "strict": true
   },
-  "include": ["vite.config.ts"]
+  "include": ["vite.config.ts", "vitest.config.ts", "eslint.config.js"]
 }
