@@ -120,6 +120,7 @@ export const DEFAULT_PARAMS: Params = {
   overlapExponent: 1,
   maxLateralSpeed: { MC: 1.0, LV: 0.3, HV: 0.2, PU: 0.3 },
   lateralCentring: 0.35,
+  lateralDecisionInterval: 0.2,
   socialStrength: 2.4,
   socialRange: 2.2,
   friction: {

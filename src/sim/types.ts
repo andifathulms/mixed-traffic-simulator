@@ -45,6 +45,10 @@ export interface Vehicle {
   distance: number;
   /** Which detectors this vehicle has already been recorded at. */
   lastDetectorIndex: number;
+  /**
+   * Lateral acceleration held between decisions. See `lateralDecisionInterval`.
+   */
+  latAccelHeld: number;
   /** Cached leader id for the inspector; not used by the physics. */
   leaderId: number | null;
   /** Cached IDM term decomposition for the inspector (DESIGN.md §5.8). */
@@ -173,6 +177,18 @@ export interface Params {
   maxLateralSpeed: Record<VehicleType, number>;
   /** Preference for holding the current lateral offset, suppressing chatter. */
   lateralCentring: number;
+  /**
+   * How often a driver re-evaluates where to sit laterally, s.
+   *
+   * Longitudinal control runs every timestep because braking is reactive.
+   * Choosing a lateral position is a deliberate act, and re-deciding it twenty
+   * times a second is neither realistic nor cheap — the gap-seeking rule scores
+   * a set of offsets on each decision, and at saturation that was around three
+   * quarters of the entire step cost. Decisions are staggered across vehicles
+   * so they do not all re-plan on the same timestep, which would show up as a
+   * visible pulse in the lateral distribution.
+   */
+  lateralDecisionInterval: number;
   /** Social force strength and range. */
   socialStrength: number;
   socialRange: number;

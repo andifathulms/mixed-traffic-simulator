@@ -79,6 +79,7 @@ export function step(world: World, dt: number, params: Params): World {
   advanceSignal(world, dt);
   applyFriction(world, dt, params);
 
+  const decisionPeriod = Math.max(1, Math.round(params.lateralDecisionInterval / dt));
   const n = world.vehicles.length;
   const accel = scratchFloats(n, 0);
   const latAccel = scratchFloats(n, 1);
@@ -112,7 +113,13 @@ export function step(world: World, dt: number, params: Params): World {
       );
     }
 
-    latAccel[i] = rule.lateralAcceleration(v, ctx);
+    // Lateral decisions are staggered by vehicle id so the population does not
+    // re-plan in lockstep, which would appear as a pulse in the lateral
+    // distribution every few frames.
+    if (decisionPeriod <= 1 || (world.step + v.id) % decisionPeriod === 0) {
+      v.latAccelHeld = rule.lateralAcceleration(v, ctx);
+    }
+    latAccel[i] = v.latAccelHeld;
 
     // Cached for the vehicle inspector (DESIGN.md §5.8). Not read by the physics.
     v.leaderId = leader ? leader.id : null;
@@ -368,6 +375,7 @@ export function spawnVehicle(world: World, params: Params, opts: SpawnOptions): 
     stoppedUntil: 0,
     distance: 0,
     lastDetectorIndex: -1,
+    latAccelHeld: 0,
     leaderId: null,
     freeTerm: 0,
     interactionTerm: 0,

@@ -1,14 +1,28 @@
 import type { Geometry, Params, Vehicle } from './types';
 import { forwardDistance } from './geometry';
 
-/** Interaction range, m. Cell size follows it (CLAUDE.md §3). */
-export const CELL_SIZE = 100;
+/**
+ * Cell size, m.
+ *
+ * Sized well below the interaction range rather than equal to it. A cell the
+ * size of the range means every query scans the range in *both* directions —
+ * five hundred metres of road to find a leader a car length ahead — and at the
+ * densities the bottleneck scenario reaches that dominated the entire frame.
+ */
+export const CELL_SIZE = 25;
+
+/** Interaction range, m. Beyond this a vehicle ahead does not constrain. */
+export const INTERACTION_RANGE = 125;
+
+const RANGE_CELLS = Math.ceil(INTERACTION_RANGE / CELL_SIZE);
 
 /**
  * Uniform grid indexed by longitudinal position.
  *
- * A naive O(n²) scan is fine at 400 vehicles but not at the densities the
- * bottleneck scenario reaches, where vehicles pile into a few hundred metres.
+ * Queries are directional and scan outward cell by cell, so they can stop as
+ * soon as the nearest candidate found is closer than anything the next cell
+ * could hold. In free flow that means one or two cells rather than the full
+ * range.
  */
 export class SpatialIndex {
   private cells: Vehicle[][] = [];
@@ -24,47 +38,50 @@ export class SpatialIndex {
     } else {
       for (const c of this.cells) c.length = 0;
     }
-    for (const v of vehicles) {
-      this.cells[this.cellOf(v.x)].push(v);
-    }
+    for (const v of vehicles) this.cells[this.cellOf(v.x)].push(v);
   }
 
-  private cellOf(x: number): number {
+  cellOf(x: number): number {
     const i = Math.floor(x / CELL_SIZE);
     if (this.geometry.ring) return ((i % this.cellCount) + this.cellCount) % this.cellCount;
     return Math.max(0, Math.min(this.cellCount - 1, i));
+  }
+
+  /** The cell `offset` cells from `from`, or -1 when it falls off an open road. */
+  offsetCell(from: number, offset: number): number {
+    let i = from + offset;
+    if (this.geometry.ring) {
+      // A ring shorter than the search range would wrap onto itself and return
+      // the same cell twice, double-counting its vehicles.
+      if (Math.abs(offset) >= this.cellCount) return -1;
+      return ((i % this.cellCount) + this.cellCount) % this.cellCount;
+    }
+    if (i < 0 || i >= this.cellCount) return -1;
+    return i;
+  }
+
+  cell(i: number): Vehicle[] {
+    return this.cells[i];
+  }
+
+  get count(): number {
+    return this.cellCount;
   }
 
   /**
    * Vehicles in the cell containing x and the `span` cells either side, written
    * into `out` and returned as a count.
    *
-   * This was a generator originally, which read better and cost about half the
-   * frame at 400 vehicles — it runs for every vehicle, for every lateral offset
-   * the sublane rule considers, every step. The caller supplies a reusable
-   * buffer so the hot path allocates nothing at all.
+   * Used where the query is genuinely symmetric — lateral clearance and the
+   * collision check. The caller supplies a reusable buffer so the hot path
+   * allocates nothing.
    */
   near(x: number, span: number, out: Vehicle[]): number {
     const centre = this.cellOf(x);
     let n = 0;
     for (let d = -span; d <= span; d++) {
-      let i = centre + d;
-      if (this.geometry.ring) {
-        i = ((i % this.cellCount) + this.cellCount) % this.cellCount;
-        // A ring shorter than the search span would otherwise visit a cell
-        // twice and double-count its vehicles.
-        if (span * 2 + 1 >= this.cellCount && d > -span) {
-          let seen = false;
-          for (let k = -span; k < d; k++) {
-            let j = centre + k;
-            j = ((j % this.cellCount) + this.cellCount) % this.cellCount;
-            if (j === i) { seen = true; break; }
-          }
-          if (seen) continue;
-        }
-      } else if (i < 0 || i >= this.cellCount) {
-        continue;
-      }
+      const i = this.offsetCell(centre, d);
+      if (i < 0) continue;
       const cell = this.cells[i];
       for (let k = 0; k < cell.length; k++) out[n++] = cell[k];
     }
@@ -86,8 +103,7 @@ export function overlapFraction(a: Vehicle, b: Vehicle): number {
 /**
  * The same test on raw values, so a caller probing a hypothetical offset does
  * not have to allocate a vehicle-shaped object. This runs for every vehicle
- * against every neighbour every step, and at 400 vehicles the allocation
- * dominated the frame.
+ * against every neighbour every step.
  */
 export function overlapAt(yA: number, wA: number, yB: number, wB: number): number {
   const overlap = Math.min(yA + wA / 2, yB + wB / 2) - Math.max(yA - wA / 2, yB - wB / 2);
@@ -111,16 +127,6 @@ export function constraintWeight(fraction: number, params: Params): number {
   return Math.pow(Math.min(1, t), params.overlapExponent);
 }
 
-/** Cells either side to search. The interaction range is about 120 m. */
-const SEARCH_SPAN = Math.max(1, Math.ceil(120 / CELL_SIZE));
-
-/**
- * Reusable buffers for neighbour queries. Separate buffers for the leader and
- * follower queries because the lane-change rule nests one inside the other.
- */
-const scratch: Vehicle[] = [];
-const followerScratch: Vehicle[] = [];
-
 export interface LeaderQuery {
   leader: Vehicle | null;
   /** Bumper-to-bumper gap to that leader, m; Infinity when there is none. */
@@ -130,6 +136,8 @@ export interface LeaderQuery {
   /** Approach rate, m/s. Positive means closing. */
   dv: number;
 }
+
+const EMPTY: LeaderQuery = { leader: null, gap: Infinity, effectiveGap: Infinity, dv: 0 };
 
 /**
  * The nearest constraining vehicle ahead of `v`.
@@ -145,42 +153,7 @@ export function findLeader(
   /** Optional lateral offset to evaluate instead of the vehicle's own, for gap scoring. */
   atY: number = v.y,
 ): LeaderQuery {
-  let best: Vehicle | null = null;
-  let bestGap = Infinity;
-  let bestWeight = 1;
-
-  const count = index.near(v.x, SEARCH_SPAN, scratch);
-
-  for (let i = 0; i < count; i++) {
-    const other = scratch[i];
-    if (other.id === v.id) continue;
-    const weight = constraintWeight(
-      overlapAt(atY, v.width, other.y, other.width),
-      params,
-    );
-    if (weight === 0) continue;
-
-    const centreGap = forwardDistance(v.x, other.x, geometry);
-    // On an open road a negative distance is behind; on a ring the wrap has
-    // already made every distance non-negative, so this only filters open roads.
-    if (centreGap <= 0) continue;
-    const gap = centreGap - other.length / 2 - v.length / 2;
-    if (gap < bestGap) {
-      bestGap = gap;
-      best = other;
-      bestWeight = weight;
-    }
-  }
-
-  if (!best) return { leader: null, gap: Infinity, effectiveGap: Infinity, dv: 0 };
-  return {
-    leader: best,
-    gap: bestGap,
-    // Dividing by the weight makes a partially-overlapping obstacle read as
-    // further away, which is the graded constraint described above.
-    effectiveGap: bestWeight > 0 ? bestGap / bestWeight : Infinity,
-    dv: v.v - best.v,
-  };
+  return directionalSearch(v, index, geometry, params, atY, true);
 }
 
 /** The nearest constraining vehicle behind `v`, at an optional probe offset. */
@@ -191,25 +164,71 @@ export function findFollower(
   params: Params,
   atY: number = v.y,
 ): LeaderQuery {
+  return directionalSearch(v, index, geometry, params, atY, false);
+}
+
+function directionalSearch(
+  v: Vehicle,
+  index: SpatialIndex,
+  geometry: Geometry,
+  params: Params,
+  atY: number,
+  forward: boolean,
+): LeaderQuery {
+  const startCell = index.cellOf(v.x);
   let best: Vehicle | null = null;
-  let bestGap = Infinity;
+  let bestCentreGap = Infinity;
+  let bestWeight = 1;
 
-  const count = index.near(v.x, SEARCH_SPAN, followerScratch);
+  for (let d = 0; d <= RANGE_CELLS; d++) {
+    const i = index.offsetCell(startCell, forward ? d : -d);
+    if (i < 0) break;
 
-  for (let i = 0; i < count; i++) {
-    const other = followerScratch[i];
-    if (other.id === v.id) continue;
-    if (constraintWeight(overlapAt(atY, v.width, other.y, other.width), params) === 0) continue;
+    const cell = index.cell(i);
+    for (let k = 0; k < cell.length; k++) {
+      const other = cell[k];
+      if (other.id === v.id) continue;
 
-    const centreGap = forwardDistance(other.x, v.x, geometry);
-    if (centreGap <= 0) continue;
-    const gap = centreGap - other.length / 2 - v.length / 2;
-    if (gap < bestGap) {
-      bestGap = gap;
-      best = other;
+      const weight = constraintWeight(
+        overlapAt(atY, v.width, other.y, other.width),
+        params,
+      );
+      if (weight === 0) continue;
+
+      const centreGap = forward
+        ? forwardDistance(v.x, other.x, geometry)
+        : forwardDistance(other.x, v.x, geometry);
+      // On an open road a non-positive distance is on the wrong side. On a
+      // ring the wrap has already made every distance non-negative.
+      if (centreGap <= 0 || centreGap > INTERACTION_RANGE) continue;
+
+      if (centreGap < bestCentreGap) {
+        bestCentreGap = centreGap;
+        best = other;
+        bestWeight = weight;
+      }
+    }
+
+    // Nothing in a farther cell can be closer than that cell's near edge, so
+    // once the best candidate is inside that bound the search is finished.
+    // In free flow this exits after one or two cells.
+    if (best) {
+      const nextCellNearEdge = forward
+        ? (startCell + d + 1) * CELL_SIZE - v.x
+        : v.x - (startCell - d) * CELL_SIZE;
+      if (bestCentreGap <= nextCellNearEdge) break;
     }
   }
 
-  if (!best) return { leader: null, gap: Infinity, effectiveGap: Infinity, dv: 0 };
-  return { leader: best, gap: bestGap, effectiveGap: bestGap, dv: best.v - v.v };
+  if (!best) return EMPTY;
+
+  const gap = bestCentreGap - best.length / 2 - v.length / 2;
+  return {
+    leader: best,
+    gap,
+    // Dividing by the weight makes a partially-overlapping obstacle read as
+    // further away, which is the graded constraint described above.
+    effectiveGap: forward && bestWeight > 0 ? gap / bestWeight : gap,
+    dv: forward ? v.v - best.v : best.v - v.v,
+  };
 }

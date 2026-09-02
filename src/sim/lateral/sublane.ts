@@ -3,8 +3,15 @@ import { findLeader } from '../neighbours';
 import { leftEdgeAt, rightEdgeAt } from '../geometry';
 import type { LateralContext, LateralRule, OffsetScore } from './rule';
 
-/** How many offsets to sample either side of the current position. */
-const SAMPLES = 5;
+/**
+ * How many offsets to sample either side of the current position.
+ *
+ * Three is enough to find the better side and commit to it; the decision
+ * repeats several times a second, so the search is incremental rather than
+ * exhaustive. Eleven samples cost three times as much and moved vehicles to
+ * indistinguishable places.
+ */
+const SAMPLES = 3;
 /** How far the vehicle looks laterally in one decision, m. */
 const REACH = 1.6;
 /** Gaps beyond this are all equally good; scoring saturates here. */
