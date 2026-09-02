@@ -1,0 +1,175 @@
+.bench {
+  margin: 0;
+  padding: var(--s-2);
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.bench__head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-1);
+  align-items: baseline;
+  margin-bottom: var(--s-1);
+}
+
+.bench__title {
+  font-size: var(--t-h2-size);
+  font-weight: 600;
+}
+
+.bench__sub {
+  color: var(--ink-mid);
+  font-size: var(--t-small-size);
+}
+
+.bench__controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  align-items: center;
+  margin-bottom: var(--s-1);
+}
+
+.bench__intervals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  align-items: center;
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+
+.bench__intervals legend {
+  float: left;
+  margin-right: var(--s-1);
+  padding: 0;
+  color: var(--ink-mid);
+  font-size: var(--t-small-size);
+}
+
+.bench__interval {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  font-size: var(--t-small-size);
+}
+
+.bench__run {
+  background: var(--paper-edge);
+  border: 1px solid var(--rule);
+  padding: 4px 12px;
+  cursor: pointer;
+}
+
+.bench__progress {
+  display: flex;
+  gap: var(--s-1);
+  align-items: center;
+}
+
+.bench__empty {
+  margin: var(--s-2) 0;
+  max-width: 66ch;
+  color: var(--ink-mid);
+  font-size: var(--t-small-size);
+  line-height: 1.55;
+}
+
+.bench__axis {
+  stroke: var(--ink-faint);
+  stroke-width: 1;
+}
+
+.bench__zero {
+  stroke: var(--ink-faint);
+  stroke-width: 1;
+  stroke-dasharray: 2 3;
+}
+
+.bench__mkji {
+  stroke: var(--method-mkji);
+  stroke-width: 1.5;
+  stroke-dasharray: 6 4;
+}
+
+.bench__mkji-label {
+  fill: var(--method-mkji);
+  font-family: var(--font-sans);
+  font-size: var(--t-small-size);
+}
+
+.bench__tick {
+  fill: var(--ink-mid);
+  font-family: var(--font-mono);
+  font-size: var(--t-micro-size);
+}
+
+.bench__axis-label {
+  fill: var(--ink-mid);
+  font-family: var(--font-sans);
+  font-size: var(--t-small-size);
+}
+
+.bench__series {
+  fill: none;
+  stroke-width: 1.5;
+  /* §6.3 The bench re-derives with the series interpolating. */
+  transition: d var(--d-bench) var(--ease-out);
+}
+
+.bench__series--truth {
+  stroke-width: 2.25;
+}
+
+.bench__warn-marker {
+  fill: none;
+  stroke: var(--warn);
+  stroke-width: 1.5;
+}
+
+.bench__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  margin: var(--s-2) 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--t-small-size);
+  color: var(--ink-mid);
+}
+
+.bench__legend li {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.bench__swatch {
+  width: 14px;
+  height: 3px;
+  display: inline-block;
+}
+
+.bench__swatch--mkji {
+  background: repeating-linear-gradient(
+    to right,
+    var(--method-mkji) 0 5px,
+    transparent 5px 8px
+  );
+}
+
+.bench__warning,
+.bench__warnings {
+  margin: var(--s-2) 0 0;
+  max-width: 70ch;
+  color: var(--warn);
+  font-size: var(--t-small-size);
+  line-height: 1.5;
+}
+
+.bench__warnings {
+  color: var(--ink-mid);
+  padding-left: var(--s-2);
+}
