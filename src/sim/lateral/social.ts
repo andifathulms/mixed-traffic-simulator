@@ -1,8 +1,10 @@
+import type { Vehicle } from '../types';
 import { leftEdgeAt, rightEdgeAt, forwardDistance } from '../geometry';
 import type { LateralRule } from './rule';
 
 /** Repulsion from a road edge, m — edges push harder and over a shorter range. */
 const EDGE_RANGE = 1.2;
+const socialScratch: Vehicle[] = [];
 const EDGE_STRENGTH = 6;
 
 /**
@@ -25,7 +27,9 @@ export const socialRule: LateralRule = {
     const { geometry, params } = ctx;
     let force = 0;
 
-    for (const other of ctx.index.near(v.x, 1)) {
+    const count = ctx.index.near(v.x, 1, socialScratch);
+    for (let i = 0; i < count; i++) {
+      const other = socialScratch[i];
       if (other.id === v.id) continue;
 
       // Longitudinal separation gates the interaction: a vehicle 80 m ahead

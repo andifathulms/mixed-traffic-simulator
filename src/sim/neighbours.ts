@@ -36,20 +36,39 @@ export class SpatialIndex {
   }
 
   /**
-   * Vehicles in the cell containing x and the `span` cells either side.
-   * Yields rather than allocating, because this runs for every vehicle every step.
+   * Vehicles in the cell containing x and the `span` cells either side, written
+   * into `out` and returned as a count.
+   *
+   * This was a generator originally, which read better and cost about half the
+   * frame at 400 vehicles — it runs for every vehicle, for every lateral offset
+   * the sublane rule considers, every step. The caller supplies a reusable
+   * buffer so the hot path allocates nothing at all.
    */
-  *near(x: number, span = 1): Generator<Vehicle> {
+  near(x: number, span: number, out: Vehicle[]): number {
     const centre = this.cellOf(x);
+    let n = 0;
     for (let d = -span; d <= span; d++) {
       let i = centre + d;
       if (this.geometry.ring) {
         i = ((i % this.cellCount) + this.cellCount) % this.cellCount;
+        // A ring shorter than the search span would otherwise visit a cell
+        // twice and double-count its vehicles.
+        if (span * 2 + 1 >= this.cellCount && d > -span) {
+          let seen = false;
+          for (let k = -span; k < d; k++) {
+            let j = centre + k;
+            j = ((j % this.cellCount) + this.cellCount) % this.cellCount;
+            if (j === i) { seen = true; break; }
+          }
+          if (seen) continue;
+        }
       } else if (i < 0 || i >= this.cellCount) {
         continue;
       }
-      for (const v of this.cells[i]) yield v;
+      const cell = this.cells[i];
+      for (let k = 0; k < cell.length; k++) out[n++] = cell[k];
     }
+    return n;
   }
 }
 
@@ -92,6 +111,16 @@ export function constraintWeight(fraction: number, params: Params): number {
   return Math.pow(Math.min(1, t), params.overlapExponent);
 }
 
+/** Cells either side to search. The interaction range is about 120 m. */
+const SEARCH_SPAN = Math.max(1, Math.ceil(120 / CELL_SIZE));
+
+/**
+ * Reusable buffers for neighbour queries. Separate buffers for the leader and
+ * follower queries because the lane-change rule nests one inside the other.
+ */
+const scratch: Vehicle[] = [];
+const followerScratch: Vehicle[] = [];
+
 export interface LeaderQuery {
   leader: Vehicle | null;
   /** Bumper-to-bumper gap to that leader, m; Infinity when there is none. */
@@ -120,9 +149,10 @@ export function findLeader(
   let bestGap = Infinity;
   let bestWeight = 1;
 
-  const searchSpan = Math.max(1, Math.ceil(120 / CELL_SIZE));
+  const count = index.near(v.x, SEARCH_SPAN, scratch);
 
-  for (const other of index.near(v.x, searchSpan)) {
+  for (let i = 0; i < count; i++) {
+    const other = scratch[i];
     if (other.id === v.id) continue;
     const weight = constraintWeight(
       overlapAt(atY, v.width, other.y, other.width),
@@ -164,9 +194,10 @@ export function findFollower(
   let best: Vehicle | null = null;
   let bestGap = Infinity;
 
-  const searchSpan = Math.max(1, Math.ceil(120 / CELL_SIZE));
+  const count = index.near(v.x, SEARCH_SPAN, followerScratch);
 
-  for (const other of index.near(v.x, searchSpan)) {
+  for (let i = 0; i < count; i++) {
+    const other = followerScratch[i];
     if (other.id === v.id) continue;
     if (constraintWeight(overlapAt(atY, v.width, other.y, other.width), params) === 0) continue;
 

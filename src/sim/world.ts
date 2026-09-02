@@ -26,6 +26,20 @@ import { admitArrivals } from './demand';
 /** Reused across steps so a 60 fps loop does not allocate a grid per frame. */
 const index = new SpatialIndex();
 
+/**
+ * Per-step working arrays, grown on demand and reused. Allocating three
+ * Float64Arrays per step is a garbage collection pause every few seconds at
+ * 20 steps per second, which shows up as a visible hitch in the road view.
+ */
+const floatPools: Float64Array[] = [];
+function scratchFloats(n: number, slot: number): Float64Array {
+  const existing = floatPools[slot];
+  if (!existing || existing.length < n) {
+    floatPools[slot] = new Float64Array(Math.max(n, 64));
+  }
+  return floatPools[slot];
+}
+
 /** Overlaps deeper than this are numerical noise rather than a genuine collision. */
 const OVERLAP_TOLERANCE = 0.05;
 
@@ -66,8 +80,9 @@ export function step(world: World, dt: number, params: Params): World {
   applyFriction(world, dt, params);
 
   const n = world.vehicles.length;
-  const accel = new Float64Array(n);
-  const latAccel = new Float64Array(n);
+  const accel = scratchFloats(n, 0);
+  const latAccel = scratchFloats(n, 1);
+  const yPrevious = scratchFloats(n, 2);
 
   // Pass 1 — decide, reading only current state.
   for (let i = 0; i < n; i++) {
@@ -121,6 +136,7 @@ export function step(world: World, dt: number, params: Params): World {
     v.x = wrapPosition(v.x + advance, geometry);
     v.distance += advance;
 
+    const yBefore = v.y;
     const maxLat = params.maxLateralSpeed[v.type];
     v.vLat = Math.max(-maxLat, Math.min(maxLat, v.vLat + latAccel[i] * dt));
     v.y += v.vLat * dt;
@@ -142,6 +158,8 @@ export function step(world: World, dt: number, params: Params): World {
       v.vLat = Math.min(0, v.vLat);
     }
 
+    yPrevious[i] = yBefore;
+
     if (!Number.isFinite(v.x) || !Number.isFinite(v.v) || !Number.isFinite(v.y)) {
       addWarning(
         world,
@@ -152,6 +170,19 @@ export function step(world: World, dt: number, params: Params): World {
       v.v = 0;
       v.vLat = 0;
     }
+  }
+
+  // Pass 3 — resolve lateral clearance.
+  //
+  // This cannot be folded into pass 2. Inside that loop some vehicles have
+  // advanced and some have not, so whether two bodies count as alongside
+  // depends on their array order: the vehicle processed first sees a stale
+  // position for the second, decides they are not yet abreast, and moves
+  // freely — leaving the second one to discover a conflict that is by then
+  // unresolvable. Running it as its own pass gives every vehicle the same,
+  // fully-updated view, so the constraint is symmetric.
+  for (let i = 0; i < n; i++) {
+    applyLateralClearance(world.vehicles[i], world, yPrevious[i]);
   }
 
   recordCrossings(world, dt);
@@ -189,16 +220,105 @@ function removeDeparted(world: World): void {
  * production it surfaces a numerical warning rather than rendering vehicles
  * inside each other.
  */
+const clearanceScratch: Vehicle[] = [];
+
+/**
+ * Stop a vehicle drifting sideways into a body that is alongside it.
+ *
+ * Constraints from every neighbour are combined into one allowed interval
+ * before anything moves. Resolving them one at a time does not work: pushing
+ * clear of the vehicle on the left shoves this one into the vehicle on the
+ * right, and which overlap survives then depends on array order.
+ *
+ * The lateral rules score offsets by the gap *ahead*, so on their own they will
+ * happily walk a vehicle into one sitting beside it. Below the overlap
+ * threshold the two do not constrain each other longitudinally either — which
+ * is deliberate, and is exactly what lets a motorcycle filter — so nothing else
+ * in the model prevents the intrusion.
+ *
+ * This is a physical constraint rather than a behavioural one: bodies do not
+ * interpenetrate, whichever lateral rule is selected. It therefore lives here
+ * and applies to all three, rather than being reimplemented in each.
+ *
+ * It only ever prevents clearance from getting worse. A vehicle already
+ * marginally intruding is left where it is rather than being teleported apart,
+ * because a teleport would be a larger lie than the overlap it fixed.
+ */
+function applyLateralClearance(v: Vehicle, world: World, yBefore: number): void {
+  const { geometry } = world;
+  const count = index.near(v.x, 1, clearanceScratch);
+
+  let lo = -Infinity;
+  let hi = Infinity;
+
+  for (let i = 0; i < count; i++) {
+    const other = clearanceScratch[i];
+    if (other.id === v.id) continue;
+
+    // Only bodies that are longitudinally alongside can be intruded upon.
+    const separation = geometry.ring
+      ? Math.min(
+          forwardDistance(v.x, other.x, geometry),
+          forwardDistance(other.x, v.x, geometry),
+        )
+      : Math.abs(v.x - other.x);
+    if (separation >= (v.length + other.length) / 2) continue;
+
+    const required = (v.width + other.width) / 2;
+    // Which side of the neighbour this vehicle was on before it moved. Using
+    // the pre-move position means a vehicle that has already crossed the
+    // centreline of a neighbour is pushed back the way it came, rather than
+    // being flipped to the far side.
+    if (yBefore >= other.y) lo = Math.max(lo, other.y + required);
+    else hi = Math.min(hi, other.y - required);
+  }
+
+  if (lo > hi) {
+    // Squeezed from both sides — there is no legal position. Hold the previous
+    // one rather than picking a side, which would push the vehicle into the
+    // neighbour it was not already touching.
+    v.y = yBefore;
+    v.vLat = 0;
+    return;
+  }
+
+  if (v.y < lo) {
+    v.y = lo;
+    if (v.vLat < 0) v.vLat = 0;
+  } else if (v.y > hi) {
+    v.y = hi;
+    if (v.vLat > 0) v.vLat = 0;
+  }
+}
+
+const overlapScratch: Vehicle[] = [];
+
 function checkOverlap(world: World, params: Params): void {
   const { geometry } = world;
   for (const v of world.vehicles) {
-    for (const other of index.near(v.x, 1)) {
+    const count = index.near(v.x, 1, overlapScratch);
+    for (let i = 0; i < count; i++) {
+      const other = overlapScratch[i];
       if (other.id <= v.id) continue;
-      if (overlapFraction(v, other) < 0.05) continue;
+      // Test against the model's own threshold rather than a stricter one.
+      //
+      // Below `overlapThreshold` the model deliberately treats two footprints
+      // as not constraining each other — that is the graded overlap rule, and
+      // it is the mechanism by which a motorcycle filters past a car rather
+      // than queueing behind it. Flagging a sub-threshold footprint intrusion
+      // as a collision would report the model working as specified as a bug.
+      //
+      // Above the threshold the two do constrain each other, so any
+      // interpenetration there is a genuine numerical failure.
+      if (overlapFraction(v, other) <= params.overlapThreshold) continue;
 
-      const forward = forwardDistance(v.x, other.x, geometry);
-      const backward = forwardDistance(other.x, v.x, geometry);
-      const separation = Math.min(forward, backward);
+      // On a ring both directions are non-negative and the nearer one is the
+      // real separation. On an open road forwardDistance is signed, so taking
+      // the minimum picks the negative one and reports a nonsense overlap of
+      // the whole corridor length. Absolute difference is the open-road case.
+      const separation = geometry.ring
+        ? Math.min(forwardDistance(v.x, other.x, geometry), forwardDistance(other.x, v.x, geometry))
+        : Math.abs(v.x - other.x);
       const required = (v.length + other.length) / 2;
 
       if (separation < required - OVERLAP_TOLERANCE) {
@@ -213,7 +333,6 @@ function checkOverlap(world: World, params: Params): void {
       }
     }
   }
-  void params;
 }
 
 export interface SpawnOptions {
