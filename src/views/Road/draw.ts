@@ -2,6 +2,7 @@ import type { Vehicle, World } from '../../sim/types';
 import { leftEdgeAt, rightEdgeAt } from '../../sim/geometry';
 import { speedColour } from '../render/speed-ramp';
 import { drawVehicleBody, headingOf } from '../render/vehicle-shape';
+import { positionToPixel } from '../render/axis';
 
 export interface RoadViewport {
   /** Metres of road at the left edge of the view. */
@@ -49,6 +50,7 @@ export function drawCorridor(
   const { from, to, widthPx, heightPx } = view;
   const span = to - from;
   const scaleX = widthPx / span;
+  const toPixel = (x: number) => positionToPixel(x, from, to, widthPx);
 
   ctx.clearRect(0, 0, widthPx, heightPx);
   ctx.fillStyle = ASPHALT_EDGE;
@@ -66,13 +68,11 @@ export function drawCorridor(
   const samples = Math.min(400, Math.max(2, Math.round(widthPx / 4)));
   for (let i = 0; i <= samples; i++) {
     const x = from + (span * i) / samples;
-    const px = (x - from) * scaleX;
-    ctx.lineTo(px, roadTop + leftEdgeAt(x, geometry) * scaleY);
+    ctx.lineTo(toPixel(x), roadTop + leftEdgeAt(x, geometry) * scaleY);
   }
   for (let i = samples; i >= 0; i--) {
     const x = from + (span * i) / samples;
-    const px = (x - from) * scaleX;
-    ctx.lineTo(px, roadTop + rightEdgeAt(x, geometry) * scaleY);
+    ctx.lineTo(toPixel(x), roadTop + rightEdgeAt(x, geometry) * scaleY);
   }
   ctx.closePath();
   ctx.fill();
@@ -102,7 +102,7 @@ export function drawCorridor(
   ctx.lineWidth = 1;
   for (const d of world.detectors) {
     if (d.position < from || d.position > to) continue;
-    const px = (d.position - from) * scaleX;
+    const px = toPixel(d.position);
     ctx.beginPath();
     ctx.moveTo(px, roadTop);
     ctx.lineTo(px, roadTop + roadHeight);
@@ -110,14 +110,14 @@ export function drawCorridor(
   }
   ctx.globalAlpha = 1;
 
-  drawSignal(ctx, world, view, roadTop, roadHeight, scaleX);
+  drawSignal(ctx, world, view, roadTop, roadHeight);
 
   let allToScale = true;
   for (const v of world.vehicles) {
     const x = interpolatedX(v, alpha, dt);
     if (x < from - 30 || x > to + 30) continue;
 
-    const px = (x - from) * scaleX;
+    const px = toPixel(x);
     const py = roadTop + v.y * scaleY;
 
     ctx.save();
@@ -151,18 +151,17 @@ function drawSignal(
   view: RoadViewport,
   roadTop: number,
   roadHeight: number,
-  scaleX: number,
 ): void {
   const s = world.signal;
   if (!s) return;
   if (s.position < view.from || s.position > view.to) return;
 
-  const px = (s.position - view.from) * scaleX;
+  const px = positionToPixel(s.position, view.from, view.to, view.widthPx);
 
   // The RHK box, outlined on the surface with a hatch, exactly as it is
   // painted on real roads.
   if (s.rhk) {
-    const boxStart = (s.position - s.rhkDepth - view.from) * scaleX;
+    const boxStart = positionToPixel(s.position - s.rhkDepth, view.from, view.to, view.widthPx);
     const boxWidth = px - boxStart;
     ctx.save();
     ctx.strokeStyle = MARKING;
@@ -317,13 +316,11 @@ export function hitTest(
     return bestDistance < 18 ? best : null;
   }
 
-  const span = view.to - view.from;
-  const scaleX = view.widthPx / span;
   const roadTop = view.heightPx * 0.08;
   const scaleY = (view.heightPx * 0.84) / geometry.width;
 
   for (const v of world.vehicles) {
-    const vx = (v.x - view.from) * scaleX;
+    const vx = positionToPixel(v.x, view.from, view.to, view.widthPx);
     const vy = roadTop + v.y * scaleY;
     const d = Math.hypot(vx - px, vy - py);
     if (d < bestDistance) {

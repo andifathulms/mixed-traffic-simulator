@@ -4,10 +4,25 @@ import { searchToState, stateToSearch } from '../state/url';
 import type { AppState } from '../state/app-state';
 import { useSimulation } from '../state/useSimulation';
 import type { World } from '../sim/types';
+import type { WaveTracker } from '../sim/analysis';
 import { Road } from '../views/Road/Road';
+import { TimeSpace } from '../views/TimeSpace/TimeSpace';
 import { TransportBar } from './TransportBar';
 import { Header } from './Header';
 import './app.css';
+
+function useNarrow(): boolean {
+  const [narrow, setNarrow] = useState(
+    () => typeof window !== 'undefined' && window.innerWidth < 860,
+  );
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 860px)');
+    const on = () => setNarrow(mq.matches);
+    mq.addEventListener('change', on);
+    return () => mq.removeEventListener('change', on);
+  }, []);
+  return narrow;
+}
 
 /** Reduced motion means the simulation opens paused (DESIGN.md §6.7). */
 function prefersReducedMotion(): boolean {
@@ -33,6 +48,20 @@ export function App() {
 
   const scenario = SCENARIOS[state.scenario];
 
+  // The shared position axis. Both views take the same two numbers, so there is
+  // exactly one place the alignment could be got wrong and it is here.
+  const viewFrom = 0;
+  const viewTo = scenario.geometry.length;
+
+  // §4.6 Below 860 px both shrink but stay stacked and keep their shared axis.
+  // They are the app and they do not collapse.
+  const narrow = useNarrow();
+  const roadHeight = narrow ? 120 : 220;
+  const recordHeight = narrow ? 200 : 300;
+  // A longer corridor needs a coarser record or the jam stripes compress into
+  // an unreadable band before the paper has scrolled once.
+  const secondsPerRow = scenario.geometry.ring ? 0.4 : 1;
+
   const { handleRef, generation, reset, stepOnce } = useSimulation({
     scenario: state.scenario,
     params: state.params,
@@ -45,6 +74,7 @@ export function App() {
   // twenty times a second would be pointless and far too slow.
   const worldRef = useRef<World | null>(null);
   const alphaRef = useRef(0);
+  const trackerRef = useRef<WaveTracker | null>(null);
 
   useEffect(() => {
     let raf = 0;
@@ -54,6 +84,7 @@ export function App() {
       if (!handle) return;
       worldRef.current = handle.world;
       alphaRef.current = handle.alpha;
+      trackerRef.current = handle.tracker;
     };
     raf = requestAnimationFrame(pump);
     return () => cancelAnimationFrame(raf);
@@ -78,18 +109,37 @@ export function App() {
 
       <Header scenario={scenario} state={state} onChange={update} />
 
-      <main className="app__main">
-        <Road
-          worldRef={worldRef}
-          alphaRef={alphaRef}
-          freeSpeed={scenario.rampSpeed}
-          selectedVehicle={state.selectedVehicle}
-          onSelect={(id) => update({ selectedVehicle: id })}
-          viewFrom={0}
-          viewTo={scenario.geometry.length}
-          generation={generation}
-          height={220}
-        />
+      {/*
+        The road and the time-space diagram are locked to one horizontal
+        position axis, pixel for pixel. Both are full-bleed, in the same
+        container, with no padding between them and no element that could
+        offset one relative to the other. Nothing may break this alignment —
+        not a legend, not a margin, not a responsive breakpoint (DESIGN.md §4.1).
+      */}
+      <main className="app__main" id="instruments">
+        <div className="app__axis">
+          <Road
+            worldRef={worldRef}
+            alphaRef={alphaRef}
+            freeSpeed={scenario.rampSpeed}
+            selectedVehicle={state.selectedVehicle}
+            onSelect={(id) => update({ selectedVehicle: id })}
+            viewFrom={viewFrom}
+            viewTo={viewTo}
+            generation={generation}
+            height={roadHeight}
+          />
+          <TimeSpace
+            worldRef={worldRef}
+            trackerRef={trackerRef}
+            freeSpeed={scenario.rampSpeed}
+            viewFrom={viewFrom}
+            viewTo={viewTo}
+            generation={generation}
+            height={recordHeight}
+            secondsPerRow={secondsPerRow}
+          />
+        </div>
       </main>
 
       <TransportBar

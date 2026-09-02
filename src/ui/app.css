@@ -188,3 +188,15 @@
     max-width: none;
   }
 }
+
+/*
+ * §4.1 The shared axis. The road and the record sit in one column with no
+ * horizontal padding, so their position axes line up pixel for pixel. Adding
+ * padding, a border, or a scrollbar to only one of these would break the
+ * single most important alignment in the app.
+ */
+.app__axis {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}

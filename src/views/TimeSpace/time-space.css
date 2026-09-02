@@ -1,0 +1,31 @@
+.timespace {
+  position: relative;
+  margin: 0;
+  width: 100%;
+  background: var(--paper);
+  border-top: 1px solid #000;
+}
+
+.timespace__canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.timespace__caption {
+  position: absolute;
+  left: var(--s-1);
+  top: var(--s-1);
+  display: flex;
+  gap: var(--s-2);
+  align-items: baseline;
+  color: var(--ink-mid);
+  font-size: var(--t-micro-size);
+  line-height: var(--t-micro-line);
+  font-family: var(--font-mono);
+  pointer-events: none;
+}
+
+.timespace__wave {
+  color: var(--ink);
+}
