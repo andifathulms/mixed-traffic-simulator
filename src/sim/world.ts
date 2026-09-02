@@ -1,0 +1,286 @@
+import type {
+  Params,
+  Vehicle,
+  VehicleType,
+  World,
+  Geometry,
+  SimWarning,
+  WarningKind,
+} from './types';
+import { DT } from './types';
+import { idmAcceleration } from './idm';
+import {
+  wrapPosition,
+  leftEdgeAt,
+  rightEdgeAt,
+  gradeAccelerationFactor,
+  forwardDistance,
+} from './geometry';
+import { SpatialIndex, findLeader, overlapFraction } from './neighbours';
+import { getLateralRule } from './lateral';
+import { advanceSignal, signalConstraint } from './signal';
+import { recordCrossings } from './detectors';
+import { applyFriction, blockedWidthAt } from './friction';
+import { admitArrivals } from './demand';
+
+/** Reused across steps so a 60 fps loop does not allocate a grid per frame. */
+const index = new SpatialIndex();
+
+/** Overlaps deeper than this are numerical noise rather than a genuine collision. */
+const OVERLAP_TOLERANCE = 0.05;
+
+export function addWarning(world: World, kind: WarningKind, message: string): void {
+  const existing = world.warnings.find((w) => w.kind === kind && w.message === message);
+  if (existing) {
+    existing.count++;
+    existing.t = world.t;
+    return;
+  }
+  world.warnings.push({ kind, message, t: world.t, count: 1 });
+  // Keep the list bounded — a pathological parameter set could otherwise
+  // accumulate warnings until the tab runs out of memory.
+  if (world.warnings.length > 40) world.warnings.shift();
+}
+
+/**
+ * Advance the world by one fixed timestep.
+ *
+ * Pure in behaviour: the same world, params and RNG state produce the same next
+ * world. Vehicles are mutated in place for performance, which is fine as long as
+ * that property holds (CLAUDE.md §1).
+ *
+ * The order matters. Accelerations for every vehicle are computed against the
+ * *current* state before any position is written, so the result does not depend
+ * on the order vehicles happen to sit in the array. Updating in place while
+ * iterating would make the simulation depend on array order, which is a subtle
+ * determinism bug that only shows up once vehicles are sorted differently.
+ */
+export function step(world: World, dt: number, params: Params): World {
+  const { geometry } = world;
+  const rule = getLateralRule(params.lateralRule);
+
+  index.rebuild(world.vehicles, geometry);
+  const ctx = { index, geometry, params, t: world.t };
+
+  advanceSignal(world, dt);
+  applyFriction(world, dt, params);
+
+  const n = world.vehicles.length;
+  const accel = new Float64Array(n);
+  const latAccel = new Float64Array(n);
+
+  // Pass 1 — decide, reading only current state.
+  for (let i = 0; i < n; i++) {
+    const v = world.vehicles[i];
+
+    const { leader, effectiveGap, gap, dv } = findLeader(v, index, geometry, params);
+
+    // A red signal is a stationary obstacle at the stop line. Motorcycles use
+    // the RHK stop line ahead of it when the box is enabled (PRD §4.4).
+    const signalGap = signalConstraint(v, world);
+    const useSignal = signalGap < effectiveGap;
+    const constraintGap = useSignal ? signalGap : effectiveGap;
+    const constraintDv = useSignal ? v.v : dv;
+
+    const isHeavy = v.type === 'HV';
+    const aMax = v.params.a * gradeAccelerationFactor(geometry.gradient, isHeavy);
+
+    const terms = idmAcceleration(v.v, constraintDv, constraintGap, v.params, aMax);
+    accel[i] = v.stopped ? Math.min(0, -v.v / dt) : terms.a;
+
+    if (terms.clamped) {
+      addWarning(
+        world,
+        'deceleration-clamp',
+        'Deceleration clamped at 8 m/s² — a vehicle was forced into braking harder ' +
+          'than is physical, which indicates a gap or parameter problem.',
+      );
+    }
+
+    latAccel[i] = rule.lateralAcceleration(v, ctx);
+
+    // Cached for the vehicle inspector (DESIGN.md §5.8). Not read by the physics.
+    v.leaderId = leader ? leader.id : null;
+    v.freeTerm = terms.free;
+    v.interactionTerm = terms.interaction;
+    v.desiredGap = terms.desiredGap;
+    v.currentGap = useSignal ? signalGap : gap;
+  }
+
+  // Pass 2 — integrate.
+  for (let i = 0; i < n; i++) {
+    const v = world.vehicles[i];
+
+    v.a = accel[i];
+    v.v += v.a * dt;
+    // Vehicles do not reverse. Clamping here rather than in the IDM keeps the
+    // model's returned acceleration honest for the inspector.
+    if (v.v < 0) v.v = 0;
+
+    const advance = v.v * dt;
+    v.x = wrapPosition(v.x + advance, geometry);
+    v.distance += advance;
+
+    const maxLat = params.maxLateralSpeed[v.type];
+    v.vLat = Math.max(-maxLat, Math.min(maxLat, v.vLat + latAccel[i] * dt));
+    v.y += v.vLat * dt;
+
+    // Vehicles cannot leave the carriageway. Roadside parking removes usable
+    // width from the kerbside edge, which is side friction acting on geometry
+    // rather than on a coefficient.
+    const left = leftEdgeAt(v.x, geometry) + v.width / 2;
+    const right =
+      rightEdgeAt(v.x, geometry) - blockedWidthAt(v.x, world, params) - v.width / 2;
+    if (right <= left) {
+      v.y = (left + right) / 2;
+      v.vLat = 0;
+    } else if (v.y < left) {
+      v.y = left;
+      v.vLat = Math.max(0, v.vLat);
+    } else if (v.y > right) {
+      v.y = right;
+      v.vLat = Math.min(0, v.vLat);
+    }
+
+    if (!Number.isFinite(v.x) || !Number.isFinite(v.v) || !Number.isFinite(v.y)) {
+      addWarning(
+        world,
+        'nan',
+        `Vehicle ${v.id} reached a non-finite state — the simulation is no longer ` +
+          'numerically valid from this step onward.',
+      );
+      v.v = 0;
+      v.vLat = 0;
+    }
+  }
+
+  recordCrossings(world, dt);
+
+  if (!geometry.ring) {
+    removeDeparted(world);
+    admitArrivals(world, dt, params);
+  }
+
+  world.t += dt;
+  world.step++;
+
+  checkOverlap(world, params);
+
+  return world;
+}
+
+/** Vehicles leaving through the downstream boundary. Conservation is asserted in tests. */
+function removeDeparted(world: World): void {
+  const { length } = world.geometry;
+  let write = 0;
+  for (let i = 0; i < world.vehicles.length; i++) {
+    const v = world.vehicles[i];
+    if (v.x - v.length / 2 > length) {
+      world.departed++;
+      continue;
+    }
+    world.vehicles[write++] = v;
+  }
+  world.vehicles.length = write;
+}
+
+/**
+ * Collisions are bugs (CLAUDE.md §1.5). In development this is an assertion; in
+ * production it surfaces a numerical warning rather than rendering vehicles
+ * inside each other.
+ */
+function checkOverlap(world: World, params: Params): void {
+  const { geometry } = world;
+  for (const v of world.vehicles) {
+    for (const other of index.near(v.x, 1)) {
+      if (other.id <= v.id) continue;
+      if (overlapFraction(v, other) < 0.05) continue;
+
+      const forward = forwardDistance(v.x, other.x, geometry);
+      const backward = forwardDistance(other.x, v.x, geometry);
+      const separation = Math.min(forward, backward);
+      const required = (v.length + other.length) / 2;
+
+      if (separation < required - OVERLAP_TOLERANCE) {
+        addWarning(
+          world,
+          'overlap',
+          `Vehicles ${v.id} and ${other.id} overlap longitudinally by ` +
+            `${(required - separation).toFixed(2)} m — this is a numerical failure, ` +
+            'not a simulated collision.',
+        );
+        return;
+      }
+    }
+  }
+  void params;
+}
+
+export interface SpawnOptions {
+  type: VehicleType;
+  x: number;
+  y: number;
+  v: number;
+}
+
+/** Create a vehicle with per-vehicle jittered parameters (PRD §4.2). */
+export function spawnVehicle(world: World, params: Params, opts: SpawnOptions): Vehicle {
+  const cfg = params.types[opts.type];
+  const { rng } = world;
+
+  // Heterogeneity is what makes jams form. Identical drivers on a ring stay
+  // in formation indefinitely, which is the wrong answer.
+  const v0 = Math.max(2, cfg.idm.v0 * (1 + rng.normal(0, cfg.v0Jitter)));
+  const T = Math.max(0.3, cfg.idm.T * (1 + rng.normal(0, cfg.tJitter)));
+
+  const vehicle: Vehicle = {
+    id: world.nextId++,
+    type: opts.type,
+    x: wrapPosition(opts.x, world.geometry),
+    y: opts.y,
+    v: opts.v,
+    a: 0,
+    vLat: 0,
+    length: cfg.length,
+    width: cfg.width,
+    params: { ...cfg.idm, v0, T },
+    entryTime: world.t,
+    stopped: false,
+    stoppedUntil: 0,
+    distance: 0,
+    lastDetectorIndex: -1,
+    leaderId: null,
+    freeTerm: 0,
+    interactionTerm: 0,
+    desiredGap: cfg.idm.s0,
+    currentGap: Infinity,
+  };
+
+  world.vehicles.push(vehicle);
+  return vehicle;
+}
+
+export function createWorld(
+  geometry: Geometry,
+  rng: World['rng'],
+  detectors: World['detectors'],
+  signal: World['signal'] = null,
+): World {
+  return {
+    t: 0,
+    step: 0,
+    vehicles: [],
+    geometry,
+    signal,
+    detectors,
+    rng,
+    warnings: [] as SimWarning[],
+    nextId: 1,
+    departed: 0,
+    unserved: 0,
+    arrivalCredit: { MC: 0, LV: 0, HV: 0, PU: 0 },
+    events: [],
+  };
+}
+
+export { DT };
