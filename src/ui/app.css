@@ -1,0 +1,190 @@
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  background: var(--asphalt-edge);
+}
+
+/* §4.4 The transport bar is pinned to the bottom, full width. */
+.app__main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-3);
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: var(--s-2) var(--s-3);
+  background: var(--asphalt);
+  border-bottom: 1px solid #000;
+  color: var(--paper);
+}
+
+.header h1 {
+  font-size: var(--t-h2-size);
+  line-height: var(--t-h2-line);
+}
+
+.header__descriptor {
+  margin: 2px 0 0;
+  color: var(--ink-faint);
+  font-size: var(--t-small-size);
+  line-height: var(--t-small-line);
+}
+
+.header__scenario {
+  display: grid;
+  grid-template-columns: auto auto auto;
+  gap: var(--s-1);
+  align-items: center;
+  max-width: 40rem;
+}
+
+.header__label {
+  color: var(--ink-faint);
+  font-size: var(--t-small-size);
+}
+
+.header__blurb,
+.header__notice {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--ink-faint);
+  font-size: var(--t-small-size);
+  line-height: var(--t-small-line);
+  max-width: 66ch;
+}
+
+.header__notice {
+  color: var(--ink-mid);
+}
+
+.header select,
+.transport select,
+.transport input[type='number'] {
+  background: var(--asphalt-edge);
+  border: 1px solid #2c3133;
+  color: var(--paper);
+  padding: 4px 6px;
+}
+
+/* §4.4 Dark, to match the road rather than the instruments. */
+.transport {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-3);
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--s-1) var(--s-3);
+  background: var(--asphalt);
+  border-top: 1px solid #000;
+  color: var(--paper);
+}
+
+.transport__group {
+  display: flex;
+  gap: var(--s-2);
+  align-items: center;
+}
+
+.transport__group--wide {
+  flex: 1;
+  min-width: 12rem;
+}
+
+.transport__button {
+  background: var(--asphalt-edge);
+  border: 1px solid #2c3133;
+  color: var(--paper);
+  padding: 5px 12px;
+  cursor: pointer;
+}
+
+.transport__button:hover {
+  border-color: var(--ink-faint);
+}
+
+.transport__field {
+  display: flex;
+  gap: var(--s-1);
+  align-items: center;
+}
+
+.transport__field--wide {
+  flex: 1;
+}
+
+.transport__field--wide input[type='range'] {
+  flex: 1;
+  min-width: 8rem;
+}
+
+.transport__label {
+  color: var(--ink-faint);
+  font-size: var(--t-small-size);
+  white-space: nowrap;
+}
+
+.transport__value {
+  color: var(--paper);
+  font-size: var(--t-data-size);
+}
+
+.transport__seed {
+  width: 7rem;
+}
+
+.citation {
+  position: relative;
+  display: inline-block;
+}
+
+.citation__marker {
+  background: none;
+  border: 0;
+  border-bottom: 1px dotted currentColor;
+  padding: 0;
+  color: var(--ink-mid);
+  font-size: var(--t-small-size);
+  cursor: pointer;
+}
+
+.citation--dark .citation__marker {
+  color: var(--ink-faint);
+}
+
+.citation__popover {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 0;
+  z-index: 20;
+  display: block;
+  width: 26rem;
+  max-width: 70vw;
+  padding: var(--s-2);
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  color: var(--ink);
+  font-size: var(--t-small-size);
+  line-height: 1.5;
+}
+
+/* §4.6 Below 860 px the road and record stay stacked and keep their axis. */
+@media (max-width: 860px) {
+  .header,
+  .transport {
+    padding-left: var(--s-2);
+    padding-right: var(--s-2);
+  }
+
+  .header__scenario {
+    max-width: none;
+  }
+}

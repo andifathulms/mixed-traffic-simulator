@@ -1,0 +1,108 @@
+/*
+ * Design tokens. DESIGN.md is the source of truth for every value here.
+ *
+ * The app has two grounds in one view: a dark road and paper instruments.
+ * That is deliberate (DESIGN.md §9) — the app is a phenomenon and a record of
+ * it, and collapsing them into one theme would erase the distinction the whole
+ * layout is built on. Do not unify them.
+ */
+
+:root {
+  /* §2.1 Two grounds */
+  --asphalt: #191c1e;
+  --asphalt-edge: #0f1112;
+  --marking: #8e9a9c;
+  --paper: #e9eae6;
+  --paper-edge: #dddfda;
+  --ink: #1b1e1f;
+  --ink-mid: #5b6162;
+  --ink-faint: #9aa0a0;
+  --rule: #c9ccc7;
+
+  /*
+   * §2.2 The speed ramp — the app's primary encoding.
+   * Achromatic by design: colourblind-safe without effort, survives being drawn
+   * at 3 px, and leaves hue free for the estimator palette. A stopped vehicle
+   * sits nearly at the asphalt's own value, so jams read as voids.
+   */
+  --speed-0: #232729;
+  --speed-25: #41484a;
+  --speed-50: #6e7779;
+  --speed-75: #a3acad;
+  --speed-100: #e4e9e7;
+
+  /* §2.4 The estimator palette — the only hue in the app. */
+  --method-truth: #1b1e1f;
+  --method-headway: #b4562a;
+  --method-regression: #2f6e7c;
+  --method-speed: #7a5296;
+  --method-occupancy: #4b7a3e;
+  --method-mkji: #9aa0a0;
+
+  /* §2.5 Functional colours. The traffic-light ramp appears nowhere else. */
+  --signal-red: #c0392b;
+  --signal-amber: #d89a2b;
+  --signal-green: #3e8e5a;
+  --warn: #d8543c;
+  --select: #e4e9e7;
+
+  /* §3.1 Type scale. Base 15 px, ratio 1.25. */
+  --font-sans: 'Overpass', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'Overpass Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --t-display-size: 36px;
+  --t-display-line: 1.05;
+  --t-figure-size: 23px;
+  --t-figure-line: 1.1;
+  --t-h2-size: 18px;
+  --t-h2-line: 1.25;
+  --t-body-size: 15px;
+  --t-body-line: 1.55;
+  --t-data-size: 13px;
+  --t-data-line: 1.45;
+  --t-small-size: 12px;
+  --t-small-line: 1.35;
+  --t-micro-size: 10px;
+  --t-micro-line: 1.2;
+
+  /* §4.5 Grid and rhythm. 8 px base. */
+  --s-1: 8px;
+  --s-2: 16px;
+  --s-3: 24px;
+  --s-4: 40px;
+  --s-5: 64px;
+  --max-width: 84rem;
+
+  /* §6.3 Motion. Continuous controls map directly; discrete ones transition. */
+  --ease-out: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --d-scenario: 400ms;
+  --d-lateral: 600ms;
+  --d-tab: 240ms;
+  --d-bench: 350ms;
+  --d-select: 160ms;
+  --d-warn: 200ms;
+}
+
+/*
+ * §6.7 Reduced motion. The user loses the animation, not the app: every number
+ * and every chart stays reachable.
+ */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --d-scenario: 0ms;
+    --d-lateral: 0ms;
+    --d-tab: 0ms;
+    --d-bench: 0ms;
+    --d-select: 0ms;
+    --d-warn: 0ms;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
