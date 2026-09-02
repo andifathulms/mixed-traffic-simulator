@@ -36,10 +36,154 @@ export function Parameters({
 }: ParametersProps) {
   const p = state.params;
   const set = (patch: Partial<typeof p>) => onChange({ params: { ...p, ...patch } });
+  const setOverride = (patch: Partial<typeof state.overrides>) =>
+    onChange({ overrides: { ...state.overrides, ...patch } });
+  const geometry = scenario.geometry;
 
   return (
     <aside className="params on-paper" aria-label="Parameters">
       <h2 className="params__title">Parameters</h2>
+
+      <section className="params__section">
+        <h3>Geometry</h3>
+
+        <label className="params__field">
+          <span>
+            Road width <span className="mono">{geometry.width.toFixed(1)} m</span>
+          </span>
+          <input
+            type="range"
+            min={25}
+            max={200}
+            value={Math.round(geometry.width * 10)}
+            onChange={(e) => setOverride({ width: Number(e.target.value) / 10 })}
+          />
+          <small>
+            Width, not lane count. Lanes are a marking and marking is optional.
+            Changing the width rebuilds the run, because a road cannot widen
+            under moving traffic without teleporting somebody.
+          </small>
+        </label>
+
+        <label className="params__check">
+          <input
+            type="checkbox"
+            checked={geometry.markings}
+            onChange={(e) => setOverride({ markings: e.target.checked })}
+          />
+          <span>
+            Lane markings
+            <small>
+              Only the strict-lane rule reads them. Under the other two,
+              switching them off changes nothing — which is the point.
+            </small>
+          </span>
+        </label>
+
+        <label className="params__field">
+          <span>
+            Marked lanes <span className="mono">{geometry.laneCount}</span>
+          </span>
+          <input
+            type="range"
+            min={1}
+            max={6}
+            value={geometry.laneCount}
+            onChange={(e) => setOverride({ laneCount: Number(e.target.value) })}
+          />
+        </label>
+
+        <label className="params__field">
+          <span>
+            Gradient <span className="mono">{(geometry.gradient * 100).toFixed(1)}%</span>
+          </span>
+          <input
+            type="range"
+            min={-100}
+            max={100}
+            value={Math.round(geometry.gradient * 1000)}
+            onChange={(e) => setOverride({ gradient: Number(e.target.value) / 1000 })}
+          />
+          <small>
+            Heavy vehicles lose far more on a grade than light ones, which is
+            why gradient is a capacity factor at all.
+          </small>
+        </label>
+
+        {geometry.reductions.length > 0 && (
+          <label className="params__field">
+            <span>
+              Bottleneck severity{' '}
+              <span className="mono">
+                {geometry.reductions[0].severity.toFixed(1)} m removed
+              </span>
+            </span>
+            <input
+              type="range"
+              min={0}
+              max={Math.round((geometry.width - 2) * 10)}
+              value={Math.round(geometry.reductions[0].severity * 10)}
+              onChange={(e) =>
+                setOverride({ bottleneckSeverity: Number(e.target.value) / 10 })
+              }
+            />
+          </label>
+        )}
+      </section>
+
+      {scenario.signal && (
+        <section className="params__section">
+          <h3>Signal</h3>
+
+          <label className="params__check">
+            <input
+              type="checkbox"
+              checked={scenario.signal.rhk}
+              onChange={(e) => setOverride({ rhk: e.target.checked })}
+            />
+            <span>
+              Ruang Henti Khusus
+              <small>
+                The advance motorcycle stop box. Without it motorcycles
+                percolate to the front anyway and stop where they arrive; with
+                it, they have a stop line of their own. The discharge plot
+                measures both, and the app draws no conclusion between them.
+              </small>
+            </span>
+          </label>
+
+          <label className="params__field">
+            <span>
+              Cycle length <span className="mono">{scenario.signal.cycle} s</span>
+            </span>
+            <input
+              type="range"
+              min={30}
+              max={180}
+              value={scenario.signal.cycle}
+              onChange={(e) => setOverride({ cycle: Number(e.target.value) })}
+            />
+          </label>
+
+          <label className="params__field">
+            <span>
+              Green time <span className="mono">{scenario.signal.green} s</span>
+            </span>
+            <input
+              type="range"
+              min={5}
+              max={150}
+              value={scenario.signal.green}
+              onChange={(e) => setOverride({ green: Number(e.target.value) })}
+            />
+            <small>
+              Capped below the cycle so the controller always shows red — a
+              green longer than its cycle would silently stop this being a
+              signalised approach at all.
+            </small>
+          </label>
+        </section>
+      )}
 
       <section className="params__section">
         <h3>Demand</h3>

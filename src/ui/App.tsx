@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { SCENARIOS } from '../scenarios';
 import { searchToState, stateToSearch } from '../state/url';
+import { effectiveScenario } from '../state/effective-scenario';
 import type { AppState } from '../state/app-state';
 import { useSimulation } from '../state/useSimulation';
 import type { World } from '../sim/types';
@@ -52,7 +53,11 @@ export function App() {
     return initial;
   });
 
-  const scenario = SCENARIOS[state.scenario];
+  const preset = SCENARIOS[state.scenario];
+  const scenario = useMemo(
+    () => effectiveScenario(preset, state.overrides),
+    [preset, state.overrides],
+  );
   const narrow = useNarrow();
 
   // The shared position axis. Both views take the same two numbers, so there is
@@ -65,7 +70,7 @@ export function App() {
   const secondsPerRow = scenario.geometry.ring ? 0.4 : 1;
 
   const { handleRef, generation, reset, stepOnce } = useSimulation({
-    scenario: state.scenario,
+    scenario,
     params: state.params,
     seed: state.seed,
     running: state.running,
@@ -187,7 +192,9 @@ export function App() {
           alphaRef={alphaRef}
           freeSpeed={scenario.rampSpeed}
           selectedVehicle={state.selectedVehicle}
-          onSelect={(id) => update({ selectedVehicle: id, tab: id === null ? state.tab : 'inspector' })}
+          onSelect={(id) =>
+            update({ selectedVehicle: id, tab: id === null ? state.tab : 'inspector' })
+          }
           viewFrom={viewFrom}
           viewTo={viewTo}
           generation={generation}

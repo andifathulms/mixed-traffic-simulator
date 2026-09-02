@@ -402,3 +402,21 @@
     padding-right: var(--s-2);
   }
 }
+
+.params__check {
+  display: flex;
+  gap: var(--s-1);
+  align-items: flex-start;
+  margin-bottom: var(--s-2);
+  max-width: 34rem;
+  font-size: var(--t-small-size);
+}
+
+.params__check small {
+  display: block;
+  margin-top: 2px;
+  max-width: 60ch;
+  color: var(--ink-mid);
+  font-size: var(--t-micro-size);
+  line-height: 1.45;
+}

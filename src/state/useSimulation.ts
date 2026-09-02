@@ -2,8 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { DT, type Params, type World } from '../sim/types';
 import { step } from '../sim/world';
 import { buildWorld } from '../scenarios/build';
-import { SCENARIOS } from '../scenarios';
-import type { ScenarioId } from '../scenarios/types';
+import type { Scenario } from '../scenarios/types';
 import {
   attachDetectorLog,
   createDetectorLog,
@@ -29,7 +28,8 @@ export interface SimulationHandle {
 }
 
 export interface UseSimulationOptions {
-  scenario: ScenarioId;
+  /** Already carrying the user's geometry and signal overrides. */
+  scenario: Scenario;
   params: Params;
   seed: number;
   running: boolean;
@@ -67,8 +67,7 @@ export function useSimulation(options: UseSimulationOptions) {
   onFrameRef.current = onFrame;
 
   const build = useCallback(() => {
-    const def = SCENARIOS[scenario];
-    const world = buildWorld(def, paramsRef.current, seed);
+    const world = buildWorld(scenario, paramsRef.current, seed);
     handleRef.current = {
       world,
       log: createDetectorLog(),
@@ -86,6 +85,8 @@ export function useSimulation(options: UseSimulationOptions) {
 
   // Rebuild whenever the scenario or seed changes. Parameter edits do not
   // rebuild — they take effect on the running simulation, which is the point.
+  // Geometry is different: a road cannot change width under moving traffic
+  // without teleporting somebody, so a geometry override does rebuild.
   useEffect(() => {
     build();
   }, [build]);

@@ -1,4 +1,5 @@
-import type { AppState } from './app-state';
+import type { AppState, ScenarioOverrides } from './app-state';
+import { NO_OVERRIDES } from './app-state';
 import { DEFAULT_PARAMS, cloneParams } from '../sim/defaults';
 import { SCENARIOS } from '../scenarios';
 import type { ScenarioId } from '../scenarios/types';
@@ -67,6 +68,18 @@ export function stateToSearch(state: AppState): string {
   if (f.accessRate !== fd.accessRate) p.set('fc', String(f.accessRate));
   if (f.parkingWidth !== fd.parkingWidth) p.set('fw', trim(f.parkingWidth, 2));
 
+  // Only overrides the user actually set are written, so a link says what was
+  // changed rather than restating the whole preset.
+  const o = state.overrides;
+  if (o.width !== null) p.set('w', trim(o.width, 2));
+  if (o.markings !== null) p.set('mk', o.markings ? '1' : '0');
+  if (o.laneCount !== null) p.set('ln', String(o.laneCount));
+  if (o.gradient !== null) p.set('gr', trim(o.gradient, 4));
+  if (o.bottleneckSeverity !== null) p.set('bs', trim(o.bottleneckSeverity, 2));
+  if (o.rhk !== null) p.set('rhk', o.rhk ? '1' : '0');
+  if (o.green !== null) p.set('gt', String(Math.round(o.green)));
+  if (o.cycle !== null) p.set('cy', String(Math.round(o.cycle)));
+
   return p.toString();
 }
 
@@ -129,8 +142,34 @@ export function searchToState(search: string): AppState {
     ? (aggRaw as AggregationInterval)
     : 300;
 
+  const optionalNum = (key: string, lo: number, hi: number): number | null => {
+    const raw = p.get(key);
+    if (raw === null) return null;
+    const parsed = Number(raw);
+    if (!Number.isFinite(parsed)) return null;
+    return Math.max(lo, Math.min(hi, parsed));
+  };
+  const optionalBool = (key: string): boolean | null => {
+    const raw = p.get(key);
+    if (raw === null) return null;
+    return raw === '1' || raw === 'true';
+  };
+
+  const overrides: ScenarioOverrides = {
+    ...NO_OVERRIDES,
+    width: optionalNum('w', 2, 30),
+    markings: optionalBool('mk'),
+    laneCount: optionalNum('ln', 1, 8),
+    gradient: optionalNum('gr', -0.15, 0.15),
+    bottleneckSeverity: optionalNum('bs', 0, 20),
+    rhk: optionalBool('rhk'),
+    green: optionalNum('gt', 3, 240),
+    cycle: optionalNum('cy', 10, 300),
+  };
+
   return {
     scenario: scenario.id,
+    overrides,
     params,
     lateralRule,
     seed: Math.round(num(p, 'seed', scenario.seed, 0, 4294967295)),
