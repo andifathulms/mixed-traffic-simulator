@@ -61,11 +61,19 @@ export class SpatialIndex {
  * it — partially — and how partially is the question the sublane rules answer.
  */
 export function overlapFraction(a: Vehicle, b: Vehicle): number {
-  const halfA = a.width / 2;
-  const halfB = b.width / 2;
-  const overlap = Math.min(a.y + halfA, b.y + halfB) - Math.max(a.y - halfA, b.y - halfB);
+  return overlapAt(a.y, a.width, b.y, b.width);
+}
+
+/**
+ * The same test on raw values, so a caller probing a hypothetical offset does
+ * not have to allocate a vehicle-shaped object. This runs for every vehicle
+ * against every neighbour every step, and at 400 vehicles the allocation
+ * dominated the frame.
+ */
+export function overlapAt(yA: number, wA: number, yB: number, wB: number): number {
+  const overlap = Math.min(yA + wA / 2, yB + wB / 2) - Math.max(yA - wA / 2, yB - wB / 2);
   if (overlap <= 0) return 0;
-  return Math.min(1, overlap / Math.min(a.width, b.width));
+  return Math.min(1, overlap / Math.min(wA, wB));
 }
 
 /**
@@ -112,12 +120,14 @@ export function findLeader(
   let bestGap = Infinity;
   let bestWeight = 1;
 
-  const probe = { ...v, y: atY } as Vehicle;
   const searchSpan = Math.max(1, Math.ceil(120 / CELL_SIZE));
 
   for (const other of index.near(v.x, searchSpan)) {
     if (other.id === v.id) continue;
-    const weight = constraintWeight(overlapFraction(probe, other), params);
+    const weight = constraintWeight(
+      overlapAt(atY, v.width, other.y, other.width),
+      params,
+    );
     if (weight === 0) continue;
 
     const centreGap = forwardDistance(v.x, other.x, geometry);
@@ -154,12 +164,11 @@ export function findFollower(
   let best: Vehicle | null = null;
   let bestGap = Infinity;
 
-  const probe = { ...v, y: atY } as Vehicle;
   const searchSpan = Math.max(1, Math.ceil(120 / CELL_SIZE));
 
   for (const other of index.near(v.x, searchSpan)) {
     if (other.id === v.id) continue;
-    if (constraintWeight(overlapFraction(probe, other), params) === 0) continue;
+    if (constraintWeight(overlapAt(atY, v.width, other.y, other.width), params) === 0) continue;
 
     const centreGap = forwardDistance(other.x, v.x, geometry);
     if (centreGap <= 0) continue;
