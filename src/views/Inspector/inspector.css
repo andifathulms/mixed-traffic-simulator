@@ -1,0 +1,140 @@
+.inspector {
+  padding: var(--s-2);
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.inspector__title {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-1);
+  align-items: baseline;
+  font-size: var(--t-h2-size);
+  margin-bottom: var(--s-2);
+}
+
+.inspector__id {
+  color: var(--ink-mid);
+  font-size: var(--t-data-size);
+  font-weight: 400;
+}
+
+.inspector__empty,
+.inspector__note {
+  margin: 0;
+  max-width: 66ch;
+  color: var(--ink-mid);
+  font-size: var(--t-small-size);
+  line-height: 1.55;
+}
+
+.inspector__note {
+  margin-top: var(--s-2);
+}
+
+.inspector__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: var(--s-2);
+  margin: 0 0 var(--s-3);
+}
+
+.inspector__grid--params {
+  margin-top: var(--s-3);
+  margin-bottom: 0;
+  padding-top: var(--s-2);
+  border-top: 1px solid var(--rule);
+}
+
+.inspector__grid dt {
+  color: var(--ink-mid);
+  font-size: var(--t-small-size);
+}
+
+.inspector__grid dd {
+  margin: 2px 0 0;
+  font-size: var(--t-figure-size);
+  font-weight: 600;
+  line-height: var(--t-figure-line);
+}
+
+.inspector__grid--params dd {
+  font-size: var(--t-data-size);
+  font-weight: 400;
+}
+
+.inspector__subtitle {
+  font-size: var(--t-body-size);
+  margin-bottom: var(--s-1);
+}
+
+.term {
+  display: grid;
+  grid-template-columns: 14rem 1fr 5rem;
+  gap: var(--s-2);
+  align-items: center;
+  padding: 4px 0;
+}
+
+.term__label {
+  display: flex;
+  flex-direction: column;
+  font-size: var(--t-small-size);
+}
+
+.term__hint {
+  color: var(--ink-mid);
+  font-size: var(--t-micro-size);
+  font-family: var(--font-sans);
+}
+
+.term__track {
+  position: relative;
+  display: block;
+  height: 14px;
+  background: var(--paper-edge);
+}
+
+.term__zero {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--ink-faint);
+}
+
+.term__bar {
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  background: var(--ink-mid);
+}
+
+.term--strong .term__bar {
+  background: var(--ink);
+}
+
+.term__value {
+  font-size: var(--t-data-size);
+  text-align: right;
+}
+
+@media (max-width: 640px) {
+  .term {
+    grid-template-columns: 1fr 4.5rem;
+    grid-template-areas: 'label value' 'track track';
+  }
+
+  .term__label {
+    grid-area: label;
+  }
+
+  .term__value {
+    grid-area: value;
+  }
+
+  .term__track {
+    grid-area: track;
+  }
+}

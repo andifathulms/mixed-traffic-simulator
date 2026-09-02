@@ -1,0 +1,85 @@
+.discharge {
+  margin: 0;
+  padding: var(--s-2);
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.discharge__head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-1);
+  align-items: baseline;
+  margin-bottom: var(--s-1);
+}
+
+.discharge__title {
+  font-size: var(--t-h2-size);
+  font-weight: 600;
+}
+
+.discharge__sub,
+.discharge__empty,
+.discharge__note {
+  color: var(--ink-mid);
+  font-size: var(--t-small-size);
+  line-height: 1.55;
+  max-width: 70ch;
+}
+
+.discharge__empty,
+.discharge__note {
+  margin: var(--s-1) 0 0;
+}
+
+.discharge__axis {
+  stroke: var(--ink-faint);
+  stroke-width: 1;
+}
+
+.discharge__cut {
+  stroke: var(--ink-faint);
+  stroke-width: 1;
+  stroke-dasharray: 2 3;
+}
+
+.discharge__cut-label,
+.discharge__axis-label {
+  fill: var(--ink-mid);
+  font-family: var(--font-sans);
+  font-size: var(--t-small-size);
+}
+
+.discharge__tick {
+  fill: var(--ink-mid);
+  font-family: var(--font-mono);
+  font-size: var(--t-micro-size);
+}
+
+.discharge__sat {
+  stroke: var(--ink);
+  stroke-width: 1.5;
+}
+
+.discharge__sat--box {
+  stroke-dasharray: 5 4;
+}
+
+.discharge__stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-4);
+  margin: var(--s-2) 0 0;
+}
+
+.discharge__stats dt {
+  color: var(--ink-mid);
+  font-size: var(--t-small-size);
+}
+
+.discharge__stats dd {
+  margin: 2px 0 0;
+  font-size: var(--t-figure-size);
+  font-weight: 600;
+  line-height: var(--t-figure-line);
+}
