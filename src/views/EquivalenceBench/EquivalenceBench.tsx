@@ -53,6 +53,87 @@ function valueOf(point: BenchPoint, key: (typeof SERIES)[number]['key']): number
  * so the series visibly move while ground truth and the MKJI line stay put.
  * That contrast is the whole argument, and it happens in under a second.
  */
+/**
+ * Lay out the value labels for off-scale estimates.
+ *
+ * Each series used to place its own label at the point, blind to every other.
+ * With five methods and a wide sweep that produced unreadable pile-ups: a
+ * value of 6695 printed straight over the axis maximum, and -13.7 and -30.3
+ * printed over each other. The estimates themselves are the point of this
+ * chart, so the labels are laid out together rather than dropped.
+ *
+ * Greedy and deterministic: take them left to right, and push a label that
+ * would collide further from the axis edge it belongs to. The label always
+ * keeps its own x, so it stays attached to its arrow.
+ */
+interface OffScaleLabel {
+  x: number;
+  y: number;
+  text: string;
+  anchor: 'start' | 'end';
+}
+
+const LABEL_LINE = 11;
+
+/*
+ * Advance width of the 10 px monospace the labels are set in, rounded up.
+ * Overestimating separates labels that would have just fitted; underestimating
+ * lets two of them touch, which is the failure this layout exists to prevent.
+ */
+const CHAR_W = 6.4;
+
+/*
+ * Clear space demanded between two labels on the same line. Touching is not the
+ * only failure: "-13.7" and "-30.3" five pixels apart read as one number.
+ */
+const LABEL_GAP = 9;
+
+function layOutOffScale(
+  raw: { x: number; y: number; text: string; low: boolean }[],
+  leftEdge: number,
+  rightEdge: number,
+): OffScaleLabel[] {
+  const placed: OffScaleLabel[] = [];
+
+  for (const item of [...raw].sort((a, b) => a.x - b.x)) {
+    const width = item.text.length * CHAR_W;
+
+    // Beside the arrow, flipping to its other side rather than running off the
+    // plot. The left flip also keeps a label near x = 0 clear of the tick
+    // numbers in the gutter.
+    let anchor: 'start' | 'end' = 'start';
+    let x = item.x + 6;
+    if (x + width > rightEdge) {
+      anchor = 'end';
+      x = item.x - 6;
+    }
+    if (anchor === 'start' && item.x - 6 - width < leftEdge && item.x < leftEdge + 4) {
+      x = item.x + 6;
+    }
+
+    const span = anchor === 'start' ? [x, x + width] : [x - width, x];
+
+    let y = item.low ? item.y - 6 : item.y + 12;
+    // Step away from the edge until the box is clear of everything placed.
+    for (let guard = 0; guard < 12; guard++) {
+      const clash = placed.some((o) => {
+        const ospan = o.anchor === 'start'
+          ? [o.x, o.x + o.text.length * CHAR_W]
+          : [o.x - o.text.length * CHAR_W, o.x];
+        const overlapX =
+          span[0] < ospan[1] + LABEL_GAP && ospan[0] < span[1] + LABEL_GAP;
+        return overlapX && Math.abs(o.y - y) < LABEL_LINE;
+      });
+      if (!clash) break;
+      y += item.low ? -LABEL_LINE : LABEL_LINE;
+    }
+
+    placed.push({ x, y, text: item.text, anchor });
+  }
+
+  return placed;
+}
+
 export function EquivalenceBench({
   points,
   interval,
@@ -246,10 +327,14 @@ export function EquivalenceBench({
             x2={pad.left + plotW}
             y2={py(MKJI_MC_EMP)}
           />
+          {/* Anchored right, where the estimates are least likely to be: at the
+              left it sat across both the 0.10 tick and whichever series happened
+              to pass through it. */}
           <text
             className="bench__mkji-label"
-            x={pad.left + 6}
+            x={pad.left + plotW - 4}
             y={py(MKJI_MC_EMP) - 6}
+            textAnchor="end"
           >
             MKJI 1997 constant, {MKJI_MC_EMP}
           </text>
@@ -298,25 +383,18 @@ export function EquivalenceBench({
                   return (
                     <g key={i}>
                       {offScale ? (
-                        /* Drawn at the edge it left through, pointing that way,
-                           with its value beside it. Not dropped. */
-                        <g className="bench__offscale">
-                          <path
-                            d={
-                              v < bounds.lo
-                                ? `M${x - 4},${y - 5}L${x + 4},${y - 5}L${x},${y}Z`
-                                : `M${x - 4},${y + 5}L${x + 4},${y + 5}L${x},${y}Z`
-                            }
-                            fill={s.colour}
-                          />
-                          <text
-                            className="bench__offscale-label"
-                            x={x + 6}
-                            y={v < bounds.lo ? y - 6 : y + 12}
-                          >
-                            {v.toFixed(1)}
-                          </text>
-                        </g>
+                        /* The arrow marks the edge it left through. Its value is
+                           drawn separately, after every series, so the labels can
+                           be laid out against one another. */
+                        <path
+                          className="bench__offscale"
+                          d={
+                            v < bounds.lo
+                              ? `M${x - 4},${y - 5}L${x + 4},${y - 5}L${x},${y}Z`
+                              : `M${x - 4},${y + 5}L${x + 4},${y + 5}L${x},${y}Z`
+                          }
+                          fill={s.colour}
+                        />
                       ) : (
                         <circle cx={x} cy={y} r={2.5} fill={s.colour} />
                       )}
@@ -330,6 +408,31 @@ export function EquivalenceBench({
               </g>
             );
           })}
+
+          {/* Every off-scale value, laid out against every other. */}
+          {layOutOffScale(
+            SERIES.flatMap((s) =>
+              points.flatMap((p) => {
+                const v = valueOf(p, s.key);
+                if (v === null) return [];
+                const { y, offScale } = place(v);
+                if (!offScale) return [];
+                return [{ x: px(p.mcFraction), y, text: v.toFixed(1), low: v < bounds.lo }];
+              }),
+            ),
+            pad.left,
+            pad.left + plotW,
+          ).map((l, i) => (
+            <text
+              key={i}
+              className="bench__offscale-label"
+              x={l.x}
+              y={l.y}
+              textAnchor={l.anchor}
+            >
+              {l.text}
+            </text>
+          ))}
         </svg>
       )}
 
