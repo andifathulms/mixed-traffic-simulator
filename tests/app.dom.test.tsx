@@ -120,6 +120,34 @@ describe('the app mounts and renders', () => {
     expect(screen.getByLabelText(/ruang henti khusus/i)).toBeTruthy();
   });
 
+  it('loads a scenario\'s own parameters when it is chosen, not just its name', () => {
+    // Arrive on the phantom jam — a closed ring with no inflow and no
+    // motorcycles by design — and pick the corridor from the dropdown. The
+    // picker used to change only the name, leaving the ring's inflow of zero
+    // in place, so the corridor simulated nothing at all and looked broken.
+    window.history.replaceState(null, '', '/?s=phantom-jam');
+    render(<App />);
+
+    // By label, not by range: the overlap threshold also runs 0 to 90, and
+    // picking sliders out of the document by their bounds finds whichever
+    // React rendered first.
+    const inflow = () => screen.getByLabelText(/^inflow/i) as HTMLInputElement;
+    const motorcycles = () =>
+      screen.getByLabelText(/^motorcycles/i) as HTMLInputElement;
+
+    // The ring's own demand: no inflow, no motorcycles.
+    expect(inflow().value).toBe('0');
+    expect(motorcycles().value).toBe('0');
+
+    fireEvent.change(screen.getByLabelText(/^scenario$/i), {
+      target: { value: 'corridor' },
+    });
+
+    // The corridor's, not the ring's.
+    expect(inflow().value).toBe('2400');
+    expect(motorcycles().value).toBe('60');
+  });
+
   it('writes the state into the URL so a run is linkable', () => {
     render(<App />);
     fireEvent.change(screen.getByLabelText(/lateral rule/i), {
