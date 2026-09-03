@@ -232,7 +232,11 @@
  */
 .sep {
   margin-inline: 0.45em;
-  color: var(--on-dark-faint);
+  /*
+   * Inherits its colour deliberately: it is used on the dark stage tags and on
+   * the paper maker's mark, and a hardcoded ground would be wrong on one of
+   * them. It was redundant on the tags anyway, which already set it.
+   */
 }
 
 /*

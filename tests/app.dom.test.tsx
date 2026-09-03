@@ -148,6 +148,36 @@ describe('the app mounts and renders', () => {
     expect(motorcycles().value).toBe('60');
   });
 
+  it('credits the maker, separately from the data caveat', () => {
+    render(<App />);
+
+    // The credit is personal and the non-calibration notice is a caveat about
+    // the numbers. They must not read as one statement.
+    const footer = screen.getByRole('contentinfo');
+    expect(footer.textContent).toMatch(/designed & built by andi fathul mukminin/i);
+    expect(footer.textContent).toContain(String(new Date().getFullYear()));
+    expect(footer.textContent).not.toMatch(/not calibrated/i);
+
+    const expected: Record<string, string> = {
+      Portfolio: 'https://andifathulms.github.io/en/',
+      GitHub: 'https://github.com/andifathulms',
+      LinkedIn: 'https://www.linkedin.com/in/andifathulmukminin/',
+      Instagram: 'https://www.instagram.com/andifathulms/',
+    };
+    for (const [label, href] of Object.entries(expected)) {
+      const link = within(footer).getByRole('link', { name: label });
+      expect(link.getAttribute('href')).toBe(href);
+      // A new tab without noopener hands the opened page a window reference.
+      expect(link.getAttribute('target')).toBe('_blank');
+      expect(link.getAttribute('rel')).toBe('noopener noreferrer');
+    }
+
+    // The name itself is the portfolio link, so it carries the same rel.
+    const name = within(footer).getByRole('link', { name: /andi fathul mukminin/i });
+    expect(name.getAttribute('href')).toBe(expected.Portfolio);
+    expect(name.getAttribute('rel')).toBe('noopener noreferrer');
+  });
+
   it('writes the state into the URL so a run is linkable', () => {
     render(<App />);
     fireEvent.change(screen.getByLabelText(/lateral rule/i), {

@@ -18,6 +18,7 @@ import { Ruler } from './Ruler';
 import { InstrumentBay } from './InstrumentBay';
 import { Parameters } from './Parameters';
 import { Warnings } from './Warnings';
+import { MakerSignature } from './MakerSignature';
 import { useSweep, measureSecondsFor } from '../batch/useSweep';
 import './app.css';
 
@@ -309,6 +310,14 @@ export function App() {
           dischargeRecords={discharge}
           sweepPoints={sweep.points}
         />
+
+        {/*
+          Inside main, not after the transport bar. The bar is sticky and the
+          last child of .app, which is what keeps it pinned to the bottom of
+          the viewport; putting anything after it would let the app's primary
+          controls scroll away at the end of the page.
+        */}
+        <MakerSignature />
       </main>
 
       <TransportBar

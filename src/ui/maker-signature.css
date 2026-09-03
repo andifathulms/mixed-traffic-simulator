@@ -1,0 +1,124 @@
+/*
+ * The maker's mark.
+ *
+ * It sits under the parameters plate, on the same sunken paper, separated by a
+ * single hairline. One seam: the plate above already carries its own top rule,
+ * and a second divider here would fence off a line of text that is quieter
+ * than the rule fencing it.
+ *
+ * Every value is a token. Nothing here introduces a size, colour or spacing
+ * step that the rest of the app does not already use.
+ */
+
+.maker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-1) var(--s-2);
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--s-2) var(--s-3);
+  background: var(--paper-sunken);
+  border-top: 1px solid var(--rule);
+  color: var(--ink-faint);
+}
+
+.maker__line {
+  margin: 0;
+  font-size: var(--t-small-size);
+  line-height: var(--t-small-line);
+}
+
+/*
+ * The name is the one bright thing in the line — it is the credit — but only
+ * one step up, to the mid ink the rest of the app uses for secondary text.
+ * Underlined from rest rather than on hover, because a link that only looks
+ * like a link once the pointer is over it is not discoverable.
+ */
+.maker__name {
+  color: var(--ink-mid);
+  text-decoration: underline;
+  text-decoration-color: var(--rule-strong);
+  text-underline-offset: 2px;
+  transition: color var(--d-control) var(--ease-standard),
+    text-decoration-color var(--d-control) var(--ease-standard);
+}
+
+.maker__name:hover,
+.maker__name:focus-visible {
+  color: var(--ink);
+  text-decoration-color: var(--brand-accent);
+}
+
+/*
+ * Tabular, so the year sits on the same rhythm as every other figure in the
+ * app. Only the digits: setting the © in the mono face too put a full
+ * monospace space between symbol and year and opened a visible hole.
+ */
+.maker__year {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.maker__links {
+  display: flex;
+  gap: var(--s-05);
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/*
+ * The tap target is 32 px while the glyph is 18 px. The padding is the
+ * difference: a 18 px hit area would fail on a touch screen, and growing the
+ * glyph instead would make a quiet credit loud.
+ */
+.maker__icon {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--r-control);
+  color: var(--ink-faint);
+  transition: color var(--d-control) var(--ease-standard),
+    background var(--d-control) var(--ease-standard);
+}
+
+.maker__icon svg {
+  width: 18px;
+  height: 18px;
+  /* The globe is stroked; without this it scales its own outline. */
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.maker__icon:hover,
+.maker__icon:focus-visible {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+@media (max-width: 640px) {
+  .maker {
+    justify-content: flex-start;
+    padding: var(--s-2);
+  }
+
+  /* Stacked, with the icons under the credit rather than beside it. */
+  .maker__line {
+    flex-basis: 100%;
+  }
+
+  .maker__icon {
+    /* Comfortable on a thumb, where the pointer is not a pixel. */
+    width: 36px;
+    height: 36px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .maker__name,
+  .maker__icon {
+    transition: none;
+  }
+}
