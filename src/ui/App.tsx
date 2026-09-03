@@ -3,6 +3,8 @@ import { SCENARIOS } from '../scenarios';
 import { searchToState, stateToSearch } from '../state/url';
 import { effectiveScenario } from '../state/effective-scenario';
 import type { AppState } from '../state/app-state';
+import { NO_OVERRIDES } from '../state/app-state';
+import { scenarioParams } from '../scenarios/build';
 import { useSimulation } from '../state/useSimulation';
 import type { World } from '../sim/types';
 import type { WaveTracker } from '../sim/analysis';
@@ -131,7 +133,39 @@ export function App() {
   }, [state]);
 
   const update = useCallback((patch: Partial<AppState>) => {
-    setState((prev) => ({ ...prev, ...patch }));
+    setState((prev) => {
+      /*
+       * Choosing a scenario loads that scenario, parameters and all.
+       *
+       * It used to change only the name. Everything else — inflow, motorcycle
+       * fraction, side friction, geometry overrides — stayed at the outgoing
+       * scenario's values, so arriving on the phantom jam (a closed ring, no
+       * inflow, no motorcycles) and picking "Corridor" gave an open road with
+       * an inflow of zero: a correct simulation of nothing at all, forever.
+       * Four of the six scenarios were unreachable from the picker.
+       *
+       * It also disagreed with the link: opening ?s=corridor loaded the
+       * corridor's own parameters, so the same scenario meant two different
+       * things depending on how you got there. Now both paths are the same
+       * path.
+       *
+       * The lateral rule survives, because it is a modelling choice rather than
+       * a property of the road — it is named in the transport bar at all times
+       * for exactly that reason (PRD §7.1).
+       */
+      if (patch.scenario && patch.scenario !== prev.scenario) {
+        return {
+          ...prev,
+          ...patch,
+          params: scenarioParams(SCENARIOS[patch.scenario], {
+            lateralRule: prev.lateralRule,
+          }),
+          overrides: NO_OVERRIDES,
+          selectedVehicle: null,
+        };
+      }
+      return { ...prev, ...patch };
+    });
   }, []);
 
   const runSweep = useCallback(() => {

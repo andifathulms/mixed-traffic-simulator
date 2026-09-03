@@ -612,8 +612,22 @@
   min-width: 8rem;
 }
 
+/*
+ * Nine digits of monospace and a platform spinner did not fit in 6.5 rem — the
+ * last digit sat under the spin buttons. The spinner goes: nudging a seed up by
+ * one is not a thing anyone wants, and the digits are the whole point.
+ */
 .transport__seed {
-  width: 6.5rem;
+  width: 8.5rem;
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.transport__seed::-webkit-outer-spin-button,
+.transport__seed::-webkit-inner-spin-button {
+  appearance: none;
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 /* =============================================================== citation */

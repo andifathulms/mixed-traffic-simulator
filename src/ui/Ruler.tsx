@@ -29,12 +29,13 @@ export function Ruler({ from, to, ring }: RulerProps) {
     <div className="ruler on-dark" aria-hidden="true">
       {ticks.map((x) => {
         const at = ((x - from) / span) * 100;
-        // The unit label lives at the right end, so the last tick's number is
-        // dropped rather than allowed to collide with it. The tick itself
+        // The unit label lives at the right end on a plate of its own, so a
+        // number that would run under it is dropped rather than half-covered —
+        // a partly occluded label reads as a rendering fault. The tick itself
         // stays: it is the axis, and the number is only its annotation.
         return (
           <span key={x} className="ruler__tick" style={{ left: `${at}%` }}>
-            {at < 88 && <span className="ruler__label mono">{formatMetres(x)}</span>}
+            {at < 72 && <span className="ruler__label mono">{formatMetres(x)}</span>}
           </span>
         );
       })}

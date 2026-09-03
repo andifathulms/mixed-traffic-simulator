@@ -121,7 +121,10 @@ export function TimeSpace({
           setWave(backwardWaveSpeed(tracker.events, world.geometry, after));
         }
         setSpan({ top: recorder.topTime, bottom: recorder.bottomTime });
-        const started = recorder.rowsWritten > recorder.height / 3;
+        // A visible band of paper, not a third of it: the recorder's height is
+        // in device pixels, so "a third full" is three minutes of simulated
+        // time on a corridor and the hint outstayed its welcome badly.
+        const started = recorder.rowsWritten > 24;
         setFilling((prev) => (prev === !started ? prev : !started));
       }
     };
