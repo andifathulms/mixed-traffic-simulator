@@ -63,19 +63,43 @@ app and nothing may break it — not a legend, not a margin, not a responsive br
 
 ## 2. Colour
 
-### 2.1 Two grounds
+### 2.1 Two grounds, each a scale
+
+The first version gave each ground a single value. That was the mistake the 2.0 rework
+fixed: with one flat value per ground, nothing could be raised above it, so every control
+looked painted on rather than pressable and a popover had no surface to float over. Each
+ground is now a scale.
+
+**The dark ground** — the road, and everything that commands it.
 
 | Token | Value | Use |
 |---|---|---|
-| `--asphalt` | `#191C1E` | The road surface. Cool near-black. |
-| `--asphalt-edge` | `#0F1112` | Beyond the road edge; the void the road sits on. |
+| `--void` | `#0A0C0D` | The page behind everything, and the inside of a slider track. |
+| `--asphalt-edge` | `#101314` | Beyond the road edge; the ground the stage sits on. |
+| `--asphalt` | `#171A1C` | The road surface. Cool near-black. |
+| `--surface` | `#1B1F21` | A plate raised off the ground: the telemetry cluster. |
+| `--surface-raised` | `#232A2C` | A control at rest. |
+| `--surface-hover` | `#2C3437` | A control under the pointer. |
+| `--surface-active` | `#353E41` | A control being pressed. |
+| `--border-dark` | `#2C3335` | Hairlines, control borders. |
+| `--border-dark-strong` | `#414B4D` | The same, hovered, and ruler ticks. |
+| `--on-dark` | `#E8ECE9` | Text and marks on the dark ground. |
+| `--on-dark-mid` | `#A2ACAC` | Labels. |
+| `--on-dark-faint` | `#6E7878` | Ticks, units, keyboard hints. |
 | `--marking` | `#8E9A9C` | Lane markings, stop lines, RHK box outline. Never pure white — thermoplastic is grey in real light. |
-| `--paper` | `#E9EAE6` | Instrument panel grounds. |
-| `--paper-edge` | `#DDDFDA` | Recessed areas within panels. |
-| `--ink` | `#1B1E1F` | Text and marks on paper. |
-| `--ink-mid` | `#5B6162` | Labels, axis text. |
-| `--ink-faint` | `#9AA0A0` | Ticks, disabled. |
-| `--rule` | `#C9CCC7` | Hairlines on paper. |
+
+**The paper ground** — the record, and everything that reads it.
+
+| Token | Value | Use |
+|---|---|---|
+| `--paper-raised` | `#F7F8F4` | A plate lifted off the panel: a parameter card, a popover. |
+| `--paper` | `#EEEFEB` | Instrument panel grounds. |
+| `--paper-sunken` | `#E4E6E0` | Recessed areas: tab strips, slider tracks, figure blocks. |
+| `--rule` | `#D5D8D1` | Hairlines on paper. |
+| `--rule-strong` | `#BCC0B8` | Chart axes, which must out-weigh a gridline. |
+| `--ink` | `#171A1A` | Text and marks on paper. |
+| `--ink-mid` | `#54595A` | Labels, axis text. |
+| `--ink-faint` | `#8A908F` | Ticks, disabled. |
 
 Dark road, light instruments, in one view. Do not unify them — the contrast between the
 lit road and the paper record is the app's structure, and flattening it into a single dark
@@ -87,11 +111,11 @@ The app's primary encoding. From the asphalt's own value to full brightness.
 
 | Speed | Colour | Reading |
 |---|---|---|
-| 0 | `#232729` | barely above the road; a stopped vehicle is nearly a hole |
-| 25% of free | `#41484A` | present but dim |
-| 50% | `#6E7779` | mid |
+| 0 | `#202426` | barely above the road; a stopped vehicle is nearly a hole |
+| 25% of free | `#3F4649` | present but dim |
+| 50% | `#6D7678` | mid |
 | 75% | `#A3ACAD` | bright |
-| 100%+ | `#E4E9E7` | full, near the marking value |
+| 100%+ | `#E6EBE9` | full, near the marking value |
 
 Achromatic by design. It is colourblind-safe without effort, it survives being drawn at
 3 px, and it leaves hue free for §2.4.
@@ -102,6 +126,11 @@ because a 30 km/h scenario and a 60 km/h scenario would otherwise look identical
 **Do not use a red–yellow–green traffic-light ramp.** It is the single most predictable
 choice available here, it fails for a tenth of male users, and it spends the hue channel on
 something luminance already carries.
+
+Canvas cannot read a custom property, so these values exist twice: in `tokens.css` and in
+`views/render/palette.ts`. That duplication is unavoidable, so it is confined to one file
+per side and each entry names its counterpart. It had already drifted once — the heatmap
+and the time–space recorder were painting two different papers on adjacent plates.
 
 ### 2.3 Type as shape
 
@@ -127,15 +156,17 @@ The only hue in the app, spent where categorical distinction is genuinely needed
 
 | Method | Colour |
 |---|---|
-| Ground truth (substitution) | `#1B1E1F` — ink, because it is not one method among five |
-| Time headway | `#B4562A` |
-| Regression | `#2F6E7C` |
-| Speed | `#7A5296` |
-| Occupancy time | `#4B7A3E` |
+| Ground truth (substitution) | `#171A1A` — ink, because it is not one method among five |
+| Time headway | `#BD5A31` |
+| Regression | `#2C6D7D` |
+| Speed | `#79539B` |
+| Occupancy time | `#527F3C` |
 | MKJI 1997 constant | `#9AA0A0` — drawn as a flat dashed rule, not a series |
 
 Ground truth is black and the MKJI constant is grey, so the two reference lines read as
-different in kind from the four estimates. That distinction is the chart's argument.
+different in kind from the four estimates. That distinction is the chart's argument, and it
+is carried in weight as well as value: ground truth is drawn at 3 px against the estimates'
+2 px.
 
 ### 2.5 Functional colours
 
@@ -143,12 +174,41 @@ different in kind from the four estimates. That distinction is the chart's argum
 |---|---|---|
 | `--signal-red` | `#C0392B` | Signal aspect only |
 | `--signal-amber` | `#D89A2B` | Signal aspect only |
-| `--signal-green` | `#3E8E5A` | Signal aspect only |
-| `--warn` | `#D8543C` | Numerical warnings, negative estimates, collision alerts |
-| `--select` | `#E4E9E7` | Selected vehicle ring |
+| `--signal-green` | `#3E8E5A` | Signal aspect, and the running indicator |
+| `--warn` | `#CF5136` | Numerical warnings, negative estimates, collision alerts |
+| `--warn-tint` | `#F7E7E2` | The ground a warning sits on |
+| `--select` | `#E6EBE9` | Selected vehicle ring |
 
 The signal colours are the one place a traffic-light palette is correct, because it is a
-traffic light. They appear nowhere else — not on vehicles, not on charts.
+traffic light. They appear nowhere else — not on vehicles, not on charts. The single
+exception is the running dot in the masthead, which is green because it means *going*, in
+the same sense the signal does.
+
+### 2.6 Interaction is achromatic
+
+Hue in this app means "estimator method" or "signal aspect" and nothing else. A hover state
+that borrowed a hue would be making a category error, so controls signal their state
+through value and border weight instead: a control lifts through `--surface-raised` →
+`hover` → `active`, and its border strengthens with it. Focus is a 2 px ring in the
+ground's own foreground — near-white on the road, near-black on paper.
+
+The one exception is `--btn--primary`, which inverts: the ground's foreground becomes its
+background. There is at most one of these per control group, and it is the thing the eye
+should land on first.
+
+### 2.7 Radius and elevation
+
+Panels stay square. They are full-bleed plates butted against one another and a rounded
+plate would float away from its neighbour, breaking the join the shared axis depends on.
+
+Controls get 4 px, cards and popovers 6 px, pills and slider thumbs a full round. That
+radius is what separates a pressable thing from a painted rectangle, and its absence was
+the single biggest reason the first version's controls read as inert.
+
+Three elevation steps and no more: `--shadow-1` for a thing that is merely lifted (a
+slider thumb, an active segment), `--shadow-2` for a plate, `--shadow-pop` for something
+that has left the plane entirely — a citation popover. The dark ground gets its own
+`--shadow-pop-dark`, because a shadow tuned for paper is invisible on asphalt.
 
 ---
 
@@ -168,64 +228,124 @@ No third family. The app has almost no running prose and does not need another v
 
 ### 3.1 Scale
 
-Base 15 px. Ratio 1.25.
+Base 15 px, ratio ~1.25, tracking tightened as size rises and opened only at label size.
 
-| Token | Size / line-height | Face | Use |
+| Token | Size / line-height / tracking | Face | Use |
 |---|---|---|---|
-| `--t-display` | 36 / 1.05, 600 | Overpass Mono | The headline figure: emp value, capacity |
-| `--t-figure` | 23 / 1.1, 600 | Overpass Mono | Live readouts, panel values |
-| `--t-h2` | 18 / 1.25, 600 | Overpass | Panel headings |
-| `--t-body` | 15 / 1.55, 400 | Overpass | Explanatory copy. Max 66 characters. |
+| `--t-display` | 34 / 1.05 / −0.02em, 600 | Overpass Mono | The headline figure: emp value, capacity |
+| `--t-figure` | 26 / 1.05 / −0.015em, 600 | Overpass Mono | Live readouts, panel values |
+| `--t-h2` | 17 / 1.25 / −0.008em, 600 | Overpass | Panel and instrument headings |
+| `--t-body` | 15 / 1.55, 400 | Overpass | Explanatory copy. Max 68 characters. |
 | `--t-data` | 13 / 1.45, 400 | Overpass Mono | Tables, parameter values, axis numbers |
-| `--t-small` | 12 / 1.35, 400 | Overpass | Labels, legend |
-| `--t-micro` | 10 / 1.2, 500 | Overpass Mono | Vehicle IDs at high zoom, tick labels |
+| `--t-small` | 12.5 / 1.4, 400 | Overpass | Subtitles, hints, legend |
+| `--t-label` | 11.5 / 1.3 / +0.04em, 500 | Overpass | Field and axis labels |
+| `--t-micro` | 11 / 1.25, 400 | Overpass Mono | Vehicle IDs at high zoom, tick labels, units |
 
 `font-variant-numeric: tabular-nums` on all Overpass Mono. Non-negotiable — a readout
 updating twenty times a second with proportional figures is unreadable.
 
-### 3.2 Prohibitions
+The gap between `--t-figure` at 26 px and `--t-small` at 12.5 px is doing the hierarchy.
+An instrument's answer should be findable without reading a word of it; its working should
+be there when the reader goes looking.
 
-No all-caps labels. No tracked-out eyebrows. No coloured words in headings — hue means
-estimator method here and nothing else. Sentence case throughout.
+### 3.2 The label style, and the prohibitions
+
+A field label is set at `--t-label`: 11.5 px, weight 500, in the mid ink, with 0.04em of
+tracking. **Sentence case, never caps.** The tracking is there because a label at 11.5 px
+sitting immediately above the value it names needs to be separable from it at a glance, and
+value and weight alone were not enough to do that.
+
+This is the one place tracking is opened up, and it is an amendment to the original
+prohibition rather than a repeal of it: the ban was on all-caps tracked-out eyebrows, which
+shout. A sentence-case label with a little air does not.
+
+Still prohibited: all-caps labels. Coloured words in headings — hue means estimator method
+here and nothing else. Any third typeface.
 
 ---
 
 ## 4. Layout
 
+### 4.0 The masthead
+
+```
+┌───────────────────────────────────────────────────────────────────────┐
+│ ▤ Mixed traffic simulator      Scenario [ Phantom jam ▾ ] ·source·     │
+│   Motorcycle-dominated traffic…    ┌──────────────────────────────┐   │
+│                                    │ ● 2:14 │ Vehicles │ Mean… │  │   │
+│                                    └──────────────────────────────┘   │
+├───────────────────────────────────────────────────────────────────────┤
+│ A ring of traffic with no obstruction…  │ Not calibrated to any…      │
+└───────────────────────────────────────────────────────────────────────┘
+```
+
+Three things in one band: what this is, which scenario is loaded, and what the simulation is
+doing right now.
+
+The last of those was missing entirely from the first version. The app animated a phenomenon
+at length without ever stating the clock, the fleet size or the mean speed in words — a
+reader could watch a jam form and still not be able to say how fast anything was going. The
+telemetry plate carries clock, vehicles, mean speed, density and motorcycle share, refreshed
+four times a second: fast enough to feel live, slow enough to be *read*, which a 60 Hz number
+is not.
+
+Whether the simulation is running is stated by a mark that is itself doing something — a slow
+two-second pulse on the clock dot. The alternative is watching the clock to see whether it
+advances, which takes a second and a half. It pulses rather than blinks, because §6.6 rules
+out anything that competes with the road for attention.
+
+The scenario's own sentence and the non-calibration fact (PRD §7.4) sit below the band on a
+quieter strip, where they can be read once and then ignored rather than competing with the
+controls for the same eye.
+
 ### 4.1 The shared axis
 
 ```
 ┌───────────────────────────────────────────────────────────────────┐
-│ Mixed Traffic Simulator          scenario: Phantom Jam            │
-├───────────────────────────────────────────────────────────────────┤
+│ Road · corridor, unrolled · speed is luminance                    │
 │ ░░░░░░░░░░░░░░░░░░░░░░░░ THE ROAD ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ │  dark
 │ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ │
 │ ░░░░░░░ ▪▪  ▫ ▪ ░░░░░░ ▪▪▪▪▫▪▪ ░░░░░░░░░░░░ ▪ ▫  ▪ ░░░░░░░░░░░░░░ │
-├───────────────────────────────────────────────────────────────────┤
-│ TIME–SPACE  (same position axis, pixel for pixel)                 │  paper
-│  t ↓  ╲╲╲╲╲     ╲╲╲╲╲╲╲╲        ╲╲╲╲                              │
+│ │0      │200     │400     │600     │800        position, m       │  ruler
+│ Record · time–space, same position axis · time runs downward      │
+│  t ↓  ╲╲╲╲╲     ╲╲╲╲╲╲╲╲        ╲╲╲╲                              │  paper
 │       ╲╲╲╲╲╲      ╲╲╲╲╲╲╲╲        ╲╲╲╲                            │
 │         ╲╲╲╲╲╲      ╲╲╲╲╲╲╲╲        ╲╲╲╲                          │
-│           position →                                              │
 ├──────────────────────────────┬────────────────────────────────────┤
 │ FUNDAMENTAL DIAGRAM          │ INSTRUMENT BAY                     │
-│  q ↑    ▁▂▄▆█▆▄▂            │ [bench|heatmap|lateral|discharge|  │
+│  q ↑    ▁▂▄▆█▆▄▂             │ [bench|heatmap|lateral|discharge|  │
 │         ░░░░░░░░             │  inspector]                        │
 │         k →                  │                                    │
 ├──────────────────────────────┴────────────────────────────────────┤
-│ ▶ ‖ ⏭  1×   seed 4471   ░ MC 60% ░░░░  width 7m   sublane ▾       │
+│ PARAMETERS  ▸ geometry · signal · demand · lateral · friction     │
+├───────────────────────────────────────────────────────────────────┤
+│ ▶Play Step Reset  1× ░ MC 60% ░░░░  seed 4471  sublane ▾ ·source· │
 └───────────────────────────────────────────────────────────────────┘
 ```
 
-The road and the time–space diagram are locked to one horizontal position axis. Zooming or
-panning one moves the other. A jam visible as a dark patch in the road sits directly above
-the backward-leaning stripe that is the same jam in the record.
+The road and the time–space diagram are locked to one horizontal position axis. A jam
+visible as a dark patch in the road sits directly above the backward-leaning stripe that is
+the same jam in the record.
 
 Everything else in the layout is negotiable. This is not.
 
+**The ruler states it.** The alignment was true in the first version and invisible: two
+canvases butted together, and the reader had to take the correspondence on trust. A 20 px
+ruler now sits between them carrying round tick positions in metres. It is laid out by
+percentage from the same two numbers the canvases use, which is the identical linear map
+`positionToPixel` applies — one calculation, so there is nothing to drift. On the ring
+scenario its label says the position is around a loop, because there 0 m and L m are the
+same place.
+
+Each canvas also carries a tag naming what it is and what its axes mean. "Speed is
+luminance" is the app's central encoding and it was nowhere on screen.
+
+Nothing in this column may take horizontal padding, a border, or a scrollbar that its
+neighbours do not.
+
 ### 4.2 The road view
 
-Full width, roughly 180 px tall for a corridor. Metres per pixel adjustable; default fits
+Full width, roughly 220 px tall for a corridor. Metres per pixel adjustable; default fits
 the scenario length.
 
 For the ring scenario the road is drawn as a ring rather than unrolled, because the ring is
@@ -245,38 +365,100 @@ inspector. One at a time, on paper ground.
 The fundamental diagram sits outside the bay, permanently visible beside it, because it
 accumulates continuously and hiding it behind a tab would lose the accumulation.
 
+Tabs sit on `--paper-sunken` and the active one is lifted onto `--paper` with a 2 px rule
+that scales in from the centre. The strip is a recessed groove and the selected tab is the
+plate at the front of it — the same physical idea the segmented control uses, at a larger
+size.
+
 ### 4.4 The transport bar
 
 Pinned to the bottom, full width, dark to match the road rather than the instruments —
-it controls the simulation, not the record.
+it controls the simulation, not the record. It carries a shadow upward, so it reads as
+sitting above the page rather than being the end of it.
 
-Left: play, pause, step, reset, and a speed multiplier from 0.25× to 16×.
-Centre: the motorcycle fraction slider, given the most width, because it is the app's
-principal independent variable.
-Right: seed, lateral rule selector, and the scenario chooser.
+Four groups, in the order they are reached for:
+
+1. **Run it.** Play as the one primary button on the bar, with a glyph, so the eye finds it
+   without reading. Step and reset beside it, and the keyboard shortcuts — `space`, `.`,
+   `r` — stated as key caps rather than left to be discovered.
+2. **Set its rate.** The speed multiplier as a segmented control, not a dropdown: seven
+   fixed steps where seeing the whole range at once tells the reader what the range *is*.
+3. **The variable.** The motorcycle fraction takes every pixel the other three groups do
+   not, with a filled track and a 15 px readout. It is the app's principal independent
+   variable and a two-centimetre slider for it would have been a lie about what matters.
+4. **Declare the model.** Seed and lateral rule.
 
 **The active lateral rule is named here at all times** (PRD §7.1), with its citation marker
-beside it. The social force rule's marker opens a popover stating it has no
-traffic-literature basis.
+beside it. The social force rule's marker reads "no citation" before it is even opened, and
+its popover states plainly that it has no traffic-literature basis.
 
 ### 4.5 Grid and rhythm
 
-8 px base. Spacing scale: 8 · 16 · 24 · 40 · 64. Full-bleed width for the road and
-time–space diagram; 84 rem max for everything else.
+8 px base, with a 4 px half step for control interiors. Spacing scale: 4 · 8 · 16 · 24 · 40
+· 64. Full-bleed width for the road and time–space diagram.
 
-Panels are separated by value and hairline. No radius, no shadow.
+Panels are separated by value and hairline; plates within a panel get 6 px of radius and a
+border. Prose is capped at 68 characters — `--measure`, so it is set in one place.
 
 ### 4.6 Mobile
 
 Below 860 px the road and time–space diagram stay stacked and keep their shared axis — they
 are the app and they do not collapse. Both shrink in height; the road to 120 px, the record
 to 200 px. The fundamental diagram moves into the instrument bay as another tab. The
-transport bar keeps play/pause, speed, and the motorcycle fraction; everything else moves
-behind a parameters sheet.
+scenario picker and the telemetry plate each take a full row, the motorcycle fraction moves
+to the top of the transport bar where it gets the whole width, and the parameter grid
+becomes one column.
+
+Below 1100 px the telemetry drops density and motorcycle share, keeping clock, vehicles and
+mean speed. Below 560 px the key caps and the canvas tag notes go, because at that width
+they are the difference between a bar that fits and one that wraps twice.
+
+### 4.7 The parameters panel
+
+It used to be one column, twenty-two controls tall, which meant the only way to reach the
+gradient was to scroll past the signal.
+
+It is now a grid of grouped plates — geometry, signal, demand, lateral model, side friction,
+dimensions, export — reflowing at a 21 rem minimum, so the number of columns follows the
+window and nothing is pinned to a position. The signal card exists only where there is a
+signal, and the grid closes around its absence.
+
+The header states how many settings differ from the scenario's own and offers one button to
+put them back. Without it, a reader who has moved six sliders has no way to get back to a
+known state short of reloading, and the scenario's meaning quietly decays as they explore.
+
+The whole panel collapses. The instruments are the point of the app; the knobs are how you
+interrogate them, and a reader who is done adjusting should be able to put them away.
+
+Every field is one shape — label, current value with units, control, and where the value
+needs defending, a sentence saying why it exists. That shape lives in `ui/Field.tsx`. Before,
+each of the twenty-odd sliders spelled it out by hand, which is how they drifted apart.
+
+---
 
 ---
 
 ## 5. Instruments
+
+### 5.0 Shared instrument chrome
+
+Seven instruments were each inventing their own header, padding, tick size and idea of how
+big a subtitle is. A reader moving between two of them was relearning the furniture before
+reading the data.
+
+One shape, in `views/instrument.css`: a title; a subtitle that says what is plotted against
+what, in words ("flow against density", "equivalence against motorcycle share"); an optional
+control row separated by a rule; the plot; a note. Each view's own stylesheet keeps only
+what is genuinely its own — the IDM equilibrium curve, the RHK dashed saturation line, the
+zero rule the bench plots below.
+
+Plot furniture is three weights and no more: the frame at `--rule-strong`, the gridline at
+`--rule`, the annotation in `--ink-faint`. Gridlines are drawn before the data, so every
+mark that means something sits over the furniture rather than through it. Anything heavier
+than this competes with what it is meant to be supporting.
+
+A headline figure is set at `--t-figure` over a `--t-label` caption. The figure is the
+answer and the rest is the working, and that relationship should survive being glanced at.
 
 ### 5.1 The road
 
@@ -407,6 +589,14 @@ Everything in this section applies to the interface *around* the simulation.
 | Vehicle select ring | 160 ms | `cubic-bezier(.4,0,.2,1)` |
 | Fundamental diagram point arrival | 200 ms fade in | linear |
 | Warning appearance | 200 ms | `cubic-bezier(.4,0,.2,1)` |
+| Control hover, press, focus | 120 ms | `cubic-bezier(.4,0,.2,1)` |
+| Running indicator pulse | 2 s, looping | `cubic-bezier(.4,0,.2,1)` |
+
+Controls transition at 120 ms — long enough to read as a response, short enough that a
+reader adjusting a slider never waits for the interface to catch up with them. The one
+exception is the slider thumb, which scales on hover but whose *value* changes with no
+easing at all: §6.1 requires a continuous control to map to the simulation on the frame it
+changes.
 
 The lateral rule switch is deliberately slow. Vehicles migrating from lane centres to a
 continuous distribution over 600 ms is a small piece of teaching and it should be watchable.
