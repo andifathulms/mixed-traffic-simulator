@@ -5,3 +5,7 @@ coverage
 *.local
 .DS_Store
 .vite
+
+# Brand source package. Only the handful of files the app actually
+# serves are committed, under public/.
+exports

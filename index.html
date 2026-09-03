@@ -3,8 +3,44 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
     <title>Mixed Traffic Simulator</title>
-    <meta name="description" content="Motorcycle-dominated traffic, and why the numbers that describe it disagree." />
+    <meta
+      name="description"
+      content="Motorcycle-dominated traffic, and why the numbers that describe it disagree."
+    />
+
+    <!--
+      The mark is a fundamental diagram with two curves that disagree, which is
+      the app's subject rather than a picture of a vehicle. The SVG carries the
+      32 px tier: below that size the dashes on the second curve close up into a
+      grey smear, so at favicon scale both curves are solid.
+    -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+
+    <!-- Asphalt, so the browser chrome joins the header rather than framing it. -->
+    <meta name="theme-color" content="#141516" />
+    <meta name="color-scheme" content="light dark" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Mixed Traffic Simulator" />
+    <meta
+      property="og:description"
+      content="Motorcycle-dominated traffic, and why the numbers that describe it disagree."
+    />
+    <meta
+      property="og:image"
+      content="https://andifathulms.github.io/mixed-traffic-simulator/og.png"
+    />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:url"
+      content="https://andifathulms.github.io/mixed-traffic-simulator/"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
   </head>
   <body>
     <div id="root"></div>
