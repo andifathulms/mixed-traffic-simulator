@@ -15,6 +15,8 @@ export const CANVAS = {
   asphalt: '#171a1c',
   /** --asphalt-edge: everything beside it. */
   asphaltEdge: '#101314',
+  /** --border-dark-strong: the kerb, drawn as a hairline at the road edge. */
+  kerb: '#414b4d',
   /** --marking: paint on the road, and the detector lines. */
   marking: '#8e9a9c',
   /** --select: the selection ring around an inspected vehicle. */

@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import type { World } from '../../sim/types';
 import { useCanvas } from '../render/useCanvas';
-import { speedRgb } from '../render/speed-ramp';
+import { speedRgbOnPaper } from '../render/speed-ramp';
 import { positionToPixel } from '../render/axis';
 import { CANVAS } from '../render/palette';
 import './heatmap.css';
@@ -110,7 +110,7 @@ export function SpeedHeatmap({
             row.data[i + 1] = 0xea;
             row.data[i + 2] = 0xe6;
           } else {
-            const [r, g, b] = speedRgb(sum[c] / count[c], freeSpeed);
+            const [r, g, b] = speedRgbOnPaper(sum[c] / count[c], freeSpeed);
             row.data[i] = r;
             row.data[i + 1] = g;
             row.data[i + 2] = b;

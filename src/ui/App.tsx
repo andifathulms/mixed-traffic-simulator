@@ -66,8 +66,11 @@ export function App() {
   const viewFrom = 0;
   const viewTo = scenario.geometry.length;
 
-  const roadHeight = narrow ? 120 : 220;
-  const recordHeight = narrow ? 200 : 300;
+  // The ring is drawn as a ring, and a ring in a 220 px band is a 79 px circle
+  // with twenty-two vehicles on it — too small to read the composition that is
+  // the whole point. It gets a taller stage (DESIGN.md §4.2).
+  const roadHeight = narrow ? (scenario.geometry.ring ? 220 : 120) : scenario.geometry.ring ? 380 : 220;
+  const recordHeight = narrow ? 200 : 280;
   const secondsPerRow = scenario.geometry.ring ? 0.4 : 1;
 
   const { handleRef, generation, reset, stepOnce } = useSimulation({
@@ -197,8 +200,8 @@ export function App() {
         <div className="stage__tag">
           <span className="label">Road</span>
           <span className="stage__tag-note">
-            {scenario.geometry.ring ? 'ring, drawn as a ring' : 'corridor, unrolled'} ·
-            speed is luminance
+            {scenario.geometry.ring ? 'ring, drawn as a ring' : 'corridor, unrolled'}
+            {' · speed is luminance'}
           </span>
         </div>
         <Road
@@ -213,12 +216,14 @@ export function App() {
           viewTo={viewTo}
           generation={generation}
           height={roadHeight}
+          roadWidth={scenario.geometry.width}
+          ring={scenario.geometry.ring}
         />
         <Ruler from={viewFrom} to={viewTo} ring={scenario.geometry.ring} />
         <div className="stage__tag">
           <span className="label">Record</span>
           <span className="stage__tag-note">
-            time–space, same position axis · time runs downward
+            {'time–space, same position axis · time runs downward'}
           </span>
         </div>
         <TimeSpace

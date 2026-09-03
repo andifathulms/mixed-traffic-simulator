@@ -103,7 +103,7 @@
   background: var(--warn-tint);
   border-left: 2px solid var(--warn);
   border-radius: 0 var(--r-control) var(--r-control) 0;
-  color: #8a3320;
+  color: var(--warn-ink);
 }
 
 .bench__warnings {

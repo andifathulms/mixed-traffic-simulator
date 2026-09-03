@@ -1,5 +1,5 @@
 import type { World } from '../../sim/types';
-import { speedRgb } from '../render/speed-ramp';
+import { speedRgbOnPaper } from '../render/speed-ramp';
 import { positionToPixel } from '../render/axis';
 import { CANVAS } from '../render/palette';
 
@@ -83,9 +83,9 @@ export class TimeSpaceRecorder {
     // Paper, with every pixel opaque — an unwritten pixel must read as blank
     // paper rather than as transparency over whatever was there before.
     for (let i = 0; i < data.length; i += 4) {
-      data[i] = 0xe9;
-      data[i + 1] = 0xea;
-      data[i + 2] = 0xe6;
+      data[i] = 0xee;
+      data[i + 1] = 0xef;
+      data[i + 2] = 0xeb;
       data[i + 3] = 255;
     }
 
@@ -94,7 +94,7 @@ export class TimeSpaceRecorder {
         // The same mapping the road uses, so the two axes cannot drift apart.
         const px = Math.round(positionToPixel(v.x, viewFrom, viewTo, this.width));
         if (px < 0 || px >= this.width) continue;
-        const [r, g, b] = speedRgb(v.v, freeSpeed);
+        const [r, g, b] = speedRgbOnPaper(v.v, freeSpeed);
         const i = px * 4;
         data[i] = r;
         data[i + 1] = g;

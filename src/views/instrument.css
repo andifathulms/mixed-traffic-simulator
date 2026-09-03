@@ -60,7 +60,8 @@
 .discharge__sub,
 .lateral__sub,
 .fd__sub,
-.heatmap__sub {
+.heatmap__sub,
+.inspector__sub {
   color: var(--ink-mid);
   font-size: var(--t-small-size);
   font-weight: 400;

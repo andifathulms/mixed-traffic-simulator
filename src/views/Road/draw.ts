@@ -20,6 +20,61 @@ const ASPHALT = CANVAS.asphalt;
 const ASPHALT_EDGE = CANVAS.asphaltEdge;
 const MARKING = CANVAS.marking;
 const SELECT = CANVAS.select;
+const KERB = CANVAS.kerb;
+
+/**
+ * How far the across-road scale may be stretched relative to the along-road one.
+ *
+ * A 2 km corridor in 1440 px is 0.72 px per metre. A 7 m road drawn to fill an
+ * 185 px band is 26 px per metre — a thirty-six-fold stretch, which turns a
+ * 4.4 m car into a 3 × 45 px vertical stick and makes the whole stream look
+ * like a picket fence. It was drawing a footprint nobody has.
+ *
+ * Some exaggeration is unavoidable: a road is two orders of magnitude longer
+ * than it is wide, and lateral behaviour is this app's subject. So it is capped
+ * and *stated* — the road view says by how much — rather than being applied
+ * silently at whatever factor the layout happened to produce.
+ */
+export const MAX_EXAGGERATION = 10;
+
+/** What the road view needs to tell the reader about how it drew this frame. */
+export interface DrawReport {
+  /** False when a minimum mark size had to be applied. */
+  toScale: boolean;
+  /** Across-road stretch relative to along-road. 1 means none. */
+  exaggeration: number;
+}
+
+export interface RoadBand {
+  /** Top of the carriageway in CSS pixels. */
+  top: number;
+  /** Its height in pixels. */
+  height: number;
+  /** Pixels per metre across the road. */
+  scaleY: number;
+  /** How much the across-road scale is stretched relative to along-road. */
+  exaggeration: number;
+}
+
+/**
+ * Where the carriageway sits in the canvas, and at what scale.
+ *
+ * One function, because the drawing code and the hit test have to agree: two
+ * copies of this arithmetic is two copies that can drift, and the symptom would
+ * be clicks selecting the wrong vehicle.
+ */
+export function roadBand(view: RoadViewport, widthMetres: number): RoadBand {
+  const scaleX = view.widthPx / (view.to - view.from);
+  const available = view.heightPx * 0.84;
+  const scaleY = Math.min(available / widthMetres, scaleX * MAX_EXAGGERATION);
+  const height = widthMetres * scaleY;
+  return {
+    top: (view.heightPx - height) / 2,
+    height,
+    scaleY,
+    exaggeration: scaleX > 0 ? scaleY / scaleX : 1,
+  };
+}
 
 /**
  * Interpolated longitudinal position for smooth drawing.
@@ -47,7 +102,7 @@ export function drawCorridor(
   alpha: number,
   dt: number,
   selectedId: number | null,
-): boolean {
+): DrawReport {
   const { from, to, widthPx, heightPx } = view;
   const span = to - from;
   const scaleX = widthPx / span;
@@ -58,9 +113,10 @@ export function drawCorridor(
   ctx.fillRect(0, 0, widthPx, heightPx);
 
   const { geometry } = world;
-  const roadTop = heightPx * 0.08;
-  const roadHeight = heightPx * 0.84;
-  const scaleY = roadHeight / geometry.width;
+  const band = roadBand(view, geometry.width);
+  const roadTop = band.top;
+  const roadHeight = band.height;
+  const scaleY = band.scaleY;
 
   // The carriageway, following the width profile so a bottleneck is visible as
   // a narrowing of the surface rather than as a label.
@@ -77,6 +133,14 @@ export function drawCorridor(
   }
   ctx.closePath();
   ctx.fill();
+  // The kerb. The carriageway and the ground beside it differ by seven points
+  // of luminance, which is the right relationship in a busy scene and
+  // invisible in an empty one — so the edge is drawn, not merely implied. It
+  // also makes the width profile legible: a bottleneck is a visible pinch in
+  // the outline rather than a shade of black against another shade of black.
+  ctx.strokeStyle = KERB;
+  ctx.lineWidth = 1;
+  ctx.stroke();
 
   // Markings, where enabled. When they are off the absence should be visible —
   // a bare surface with no lane structure, which is what much of the network
@@ -143,7 +207,7 @@ export function drawCorridor(
     }
   }
 
-  return allToScale;
+  return { toScale: allToScale, exaggeration: band.exaggeration };
 }
 
 function drawSignal(
@@ -217,7 +281,7 @@ export function drawRing(
   alpha: number,
   dt: number,
   selectedId: number | null,
-): boolean {
+): DrawReport {
   const { widthPx, heightPx } = view;
   ctx.clearRect(0, 0, widthPx, heightPx);
   ctx.fillStyle = ASPHALT_EDGE;
@@ -238,6 +302,15 @@ export function drawRing(
   ctx.beginPath();
   ctx.arc(cx, cy, radius, 0, Math.PI * 2);
   ctx.stroke();
+
+  // Both kerbs, for the same reason the corridor gets one.
+  ctx.strokeStyle = KERB;
+  ctx.lineWidth = 1;
+  for (const r of [radius - roadHalf, radius + roadHalf]) {
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.stroke();
+  }
 
   ctx.globalAlpha = 0.4;
   ctx.strokeStyle = MARKING;
@@ -283,7 +356,8 @@ export function drawRing(
     }
   }
 
-  return allToScale;
+  // The ring uses one scale for both axes, so nothing is stretched.
+  return { toScale: allToScale, exaggeration: 1 };
 }
 
 /**
@@ -321,8 +395,9 @@ export function hitTest(
     return bestDistance < 18 ? best : null;
   }
 
-  const roadTop = view.heightPx * 0.08;
-  const scaleY = (view.heightPx * 0.84) / geometry.width;
+  const band = roadBand(view, geometry.width);
+  const roadTop = band.top;
+  const scaleY = band.scaleY;
 
   for (const v of world.vehicles) {
     const vx = positionToPixel(v.x, view.from, view.to, view.widthPx);

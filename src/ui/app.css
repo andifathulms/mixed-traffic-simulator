@@ -286,7 +286,7 @@
   margin: 0;
   padding: 0;
   list-style: none;
-  color: #8a3320;
+  color: var(--warn-ink);
   font-size: var(--t-small-size);
   line-height: 1.5;
 }

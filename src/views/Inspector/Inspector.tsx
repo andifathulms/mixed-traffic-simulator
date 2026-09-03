@@ -61,7 +61,12 @@ export function Inspector({ worldRef, selectedVehicle }: InspectorProps) {
   if (selectedVehicle === null) {
     return (
       <div className="inspector on-paper">
-        <h2 className="inspector__title">Vehicle inspector</h2>
+        <h2 className="inspector__title">
+          Vehicle inspector
+          <span className="inspector__sub">
+            the IDM arithmetic behind one vehicle's acceleration
+          </span>
+        </h2>
         <p className="inspector__empty">
           Select a vehicle on the road to watch its arithmetic. Click one, or
           focus the road view and use the left and right arrow keys.
@@ -73,7 +78,12 @@ export function Inspector({ worldRef, selectedVehicle }: InspectorProps) {
   if (!snap) {
     return (
       <div className="inspector on-paper">
-        <h2 className="inspector__title">Vehicle inspector</h2>
+        <h2 className="inspector__title">
+          Vehicle inspector
+          <span className="inspector__sub">
+            the IDM arithmetic behind one vehicle's acceleration
+          </span>
+        </h2>
         <p className="inspector__empty">
           That vehicle has left the corridor. Select another.
         </p>

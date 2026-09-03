@@ -27,15 +27,17 @@ export function Ruler({ from, to, ring }: RulerProps) {
 
   return (
     <div className="ruler on-dark" aria-hidden="true">
-      {ticks.map((x) => (
-        <span
-          key={x}
-          className="ruler__tick"
-          style={{ left: `${((x - from) / span) * 100}%` }}
-        >
-          <span className="ruler__label mono">{formatMetres(x)}</span>
-        </span>
-      ))}
+      {ticks.map((x) => {
+        const at = ((x - from) / span) * 100;
+        // The unit label lives at the right end, so the last tick's number is
+        // dropped rather than allowed to collide with it. The tick itself
+        // stays: it is the axis, and the number is only its annotation.
+        return (
+          <span key={x} className="ruler__tick" style={{ left: `${at}%` }}>
+            {at < 80 && <span className="ruler__label mono">{formatMetres(x)}</span>}
+          </span>
+        );
+      })}
       <span className="ruler__unit label">
         {ring ? 'position around the ring, m' : 'position, m'}
       </span>

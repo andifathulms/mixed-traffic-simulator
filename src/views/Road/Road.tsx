@@ -2,7 +2,13 @@ import { useEffect, useRef, useState } from 'react';
 import type { World } from '../../sim/types';
 import { DT } from '../../sim/types';
 import { useCanvas } from '../render/useCanvas';
-import { drawCorridor, drawRing, hitTest, type RoadViewport } from './draw';
+import {
+  drawCorridor,
+  drawRing,
+  hitTest,
+  MAX_EXAGGERATION,
+  type RoadViewport,
+} from './draw';
 import './road.css';
 
 export interface RoadProps {
@@ -16,7 +22,12 @@ export interface RoadProps {
   viewTo: number;
   /** Redraw token, bumped when the world is rebuilt. */
   generation: number;
+  /** The most height the road may take. It takes less where it needs less. */
   height: number;
+  /** Usable road width in metres, for sizing the band. */
+  roadWidth: number;
+  /** Rings are drawn as rings and use the whole band they are given. */
+  ring: boolean;
 }
 
 /**
@@ -34,9 +45,13 @@ export function Road({
   viewTo,
   generation,
   height,
+  roadWidth,
+  ring,
 }: RoadProps) {
-  const { canvasRef, sizeRef } = useCanvas();
+  const [measuredWidth, setMeasuredWidth] = useState(0);
+  const { canvasRef, sizeRef } = useCanvas((w) => setMeasuredWidth(w));
   const [toScale, setToScale] = useState(true);
+  const [exaggeration, setExaggeration] = useState(1);
   const viewRef = useRef<RoadViewport | null>(null);
 
   useEffect(() => {
@@ -65,7 +80,7 @@ export function Road({
       viewRef.current = view;
 
       const draw = world.geometry.ring ? drawRing : drawCorridor;
-      const ok = draw(
+      const report = draw(
         ctx,
         world,
         view,
@@ -74,7 +89,10 @@ export function Road({
         DT,
         selectedVehicle,
       );
-      setToScale((prev) => (prev === ok ? prev : ok));
+      setToScale((prev) => (prev === report.toScale ? prev : report.toScale));
+      // Rounded before comparing, so a sub-pixel resize does not re-render.
+      const stretch = Math.round(report.exaggeration);
+      setExaggeration((prev) => (prev === stretch ? prev : stretch));
     };
 
     raf = requestAnimationFrame(render);
@@ -97,8 +115,24 @@ export function Road({
     onSelect(hit ? hit.id : null);
   };
 
+  /*
+   * The road takes exactly the height its geometry earns.
+   *
+   * With the across-road scale capped, a 2 km corridor 7 m wide has about 50 px
+   * of carriageway to draw however tall the canvas is — so a 220 px band left
+   * 170 px of empty asphalt above and below it. The record below is the more
+   * informative view at that length, and it gets the space back.
+   */
+  const bandHeight =
+    measuredWidth > 0 && viewTo > viewFrom
+      ? (roadWidth * (measuredWidth / (viewTo - viewFrom)) * MAX_EXAGGERATION) / 0.84
+      : height;
+  const effectiveHeight = ring
+    ? height
+    : Math.round(Math.max(96, Math.min(height, bandHeight)));
+
   return (
-    <div className="road" style={{ height }}>
+    <div className="road" style={{ height: effectiveHeight }}>
       <canvas
         ref={canvasRef}
         className="road__canvas"
@@ -123,8 +157,18 @@ export function Road({
           onSelect(next.id);
         }}
       />
-      {!toScale && (
-        <p className="road__note">Marks are enlarged to stay visible — not to scale</p>
+      {/*
+        What the view had to do to fit the road on the screen, said out loud.
+        A road is two orders of magnitude longer than it is wide and some
+        across-road exaggeration is unavoidable; leaving it unstated would mean
+        the reader takes the footprints at face value (DESIGN.md §4.2).
+      */}
+      {(!toScale || exaggeration > 1) && (
+        <p className="road__note">
+          {exaggeration > 1 && `Across-road scale ×${exaggeration}`}
+          {exaggeration > 1 && !toScale && ' · '}
+          {!toScale && 'marks enlarged to stay visible'}
+        </p>
       )}
     </div>
   );
