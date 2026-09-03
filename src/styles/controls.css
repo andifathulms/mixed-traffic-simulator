@@ -200,10 +200,20 @@ input[type='range'] {
   cursor: pointer;
 }
 
+/*
+ * The track is filled to the current value. WebKit has no ::-moz-range-progress
+ * equivalent, so the fill is a gradient stop driven by a --fill custom property
+ * the component sets; Firefox uses its native progress pseudo-element and
+ * ignores it. Both end up looking the same.
+ */
 input[type='range']::-webkit-slider-runnable-track {
   height: 4px;
   border-radius: var(--r-pill);
-  background: var(--ctl-track);
+  background: linear-gradient(
+    to right,
+    var(--ctl-fill) var(--fill, 0%),
+    var(--ctl-track) var(--fill, 0%)
+  );
   border: 1px solid var(--ctl-border);
 }
 

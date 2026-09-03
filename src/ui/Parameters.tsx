@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { AppState } from '../state/app-state';
 import type { Scenario } from '../scenarios/types';
 import type { World, VehicleType, ArrivalProcess } from '../sim/types';
@@ -7,6 +8,7 @@ import type { DischargeRecord } from '../sim/discharge';
 import type { SweepPointResult } from '../batch/protocol';
 import { CITATIONS } from '../sim/defaults';
 import { Citation } from './Citation';
+import { Card, Slider, Toggle } from './Field';
 import { TYPE_LABELS } from '../views/render/vehicle-shape';
 import { detectorCsv, dischargeCsv, sweepCsv, download } from './csv';
 
@@ -26,6 +28,19 @@ const ARRIVALS: Array<{ id: ArrivalProcess; label: string }> = [
   { id: 'platooned', label: 'Platooned' },
 ];
 
+/**
+ * The parameters panel.
+ *
+ * It used to be one column, twenty-two controls tall, which meant the only way
+ * to find the gradient was to scroll past the signal. It is now a grid of
+ * grouped plates that reflows to the width available, with a header that says
+ * how many settings differ from the scenario's own and offers to put them back
+ * (DESIGN.md §4.7).
+ *
+ * It also collapses. The instruments above it are the point of the app; the
+ * knobs are how you interrogate them, and a reader who is done adjusting should
+ * be able to get the knobs out of the way.
+ */
 export function Parameters({
   state,
   scenario,
@@ -34,411 +49,348 @@ export function Parameters({
   dischargeRecords,
   sweepPoints,
 }: ParametersProps) {
+  const [open, setOpen] = useState(true);
   const p = state.params;
   const set = (patch: Partial<typeof p>) => onChange({ params: { ...p, ...patch } });
   const setOverride = (patch: Partial<typeof state.overrides>) =>
     onChange({ overrides: { ...state.overrides, ...patch } });
   const geometry = scenario.geometry;
 
+  const overridden = Object.values(state.overrides).filter((v) => v !== null).length;
+
   return (
     <aside className="params on-paper" aria-label="Parameters">
-      <h2 className="params__title">Parameters</h2>
+      <div className="params__head">
+        <button
+          type="button"
+          className="params__disclosure"
+          aria-expanded={open}
+          onClick={() => setOpen((v) => !v)}
+        >
+          <span className={`params__chevron${open ? ' params__chevron--open' : ''}`} aria-hidden="true" />
+          <h2 className="params__title">Parameters</h2>
+        </button>
 
-      <section className="params__section">
-        <h3>Geometry</h3>
-
-        <label className="params__field">
-          <span>
-            Road width <span className="mono">{geometry.width.toFixed(1)} m</span>
-          </span>
-          <input
-            type="range"
-            min={25}
-            max={200}
-            value={Math.round(geometry.width * 10)}
-            onChange={(e) => setOverride({ width: Number(e.target.value) / 10 })}
-          />
-          <small>
-            Width, not lane count. Lanes are a marking and marking is optional.
-            Changing the width rebuilds the run, because a road cannot widen
-            under moving traffic without teleporting somebody.
-          </small>
-        </label>
-
-        <label className="params__check">
-          <input
-            type="checkbox"
-            checked={geometry.markings}
-            onChange={(e) => setOverride({ markings: e.target.checked })}
-          />
-          <span>
-            Lane markings
-            <small>
-              Only the strict-lane rule reads them. Under the other two,
-              switching them off changes nothing — which is the point.
-            </small>
-          </span>
-        </label>
-
-        <label className="params__field">
-          <span>
-            Marked lanes <span className="mono">{geometry.laneCount}</span>
-          </span>
-          <input
-            type="range"
-            min={1}
-            max={6}
-            value={geometry.laneCount}
-            onChange={(e) => setOverride({ laneCount: Number(e.target.value) })}
-          />
-        </label>
-
-        <label className="params__field">
-          <span>
-            Gradient <span className="mono">{(geometry.gradient * 100).toFixed(1)}%</span>
-          </span>
-          <input
-            type="range"
-            min={-100}
-            max={100}
-            value={Math.round(geometry.gradient * 1000)}
-            onChange={(e) => setOverride({ gradient: Number(e.target.value) / 1000 })}
-          />
-          <small>
-            Heavy vehicles lose far more on a grade than light ones, which is
-            why gradient is a capacity factor at all.
-          </small>
-        </label>
-
-        {geometry.reductions.length > 0 && (
-          <label className="params__field">
-            <span>
-              Bottleneck severity{' '}
-              <span className="mono">
-                {geometry.reductions[0].severity.toFixed(1)} m removed
-              </span>
+        {overridden > 0 && (
+          <>
+            <span className="chip">
+              {overridden} changed from {scenario.name}
             </span>
-            <input
-              type="range"
-              min={0}
-              max={Math.round((geometry.width - 2) * 10)}
-              value={Math.round(geometry.reductions[0].severity * 10)}
-              onChange={(e) =>
-                setOverride({ bottleneckSeverity: Number(e.target.value) / 10 })
+            <button
+              type="button"
+              className="btn"
+              onClick={() =>
+                onChange({
+                  overrides: {
+                    width: null,
+                    markings: null,
+                    laneCount: null,
+                    gradient: null,
+                    bottleneckSeverity: null,
+                    rhk: null,
+                    green: null,
+                    cycle: null,
+                  },
+                })
               }
-            />
-          </label>
+            >
+              Restore scenario
+            </button>
+          </>
         )}
-      </section>
+      </div>
 
-      {scenario.signal && (
-        <section className="params__section">
-          <h3>Signal</h3>
-
-          <label className="params__check">
-            <input
-              type="checkbox"
-              checked={scenario.signal.rhk}
-              onChange={(e) => setOverride({ rhk: e.target.checked })}
+      {open && (
+        <div className="params__grid">
+          <Card title="Geometry">
+            <Slider
+              label="Road width"
+              value={`${geometry.width.toFixed(1)} m`}
+              min={25}
+              max={200}
+              raw={Math.round(geometry.width * 10)}
+              onChange={(n) => setOverride({ width: n / 10 })}
+              hint="Width, not lane count. Lanes are a marking and marking is optional. Changing the width rebuilds the run, because a road cannot widen under moving traffic without teleporting somebody."
             />
-            <span>
-              Ruang Henti Khusus
-              <small>
-                The advance motorcycle stop box. Without it motorcycles
-                percolate to the front anyway and stop where they arrive; with
-                it, they have a stop line of their own. The discharge plot
-                measures both, and the app draws no conclusion between them.
-              </small>
-            </span>
-          </label>
 
-          <label className="params__field">
-            <span>
-              Cycle length <span className="mono">{scenario.signal.cycle} s</span>
-            </span>
-            <input
-              type="range"
-              min={30}
-              max={180}
-              value={scenario.signal.cycle}
-              onChange={(e) => setOverride({ cycle: Number(e.target.value) })}
+            <Toggle
+              label="Lane markings"
+              checked={geometry.markings}
+              onChange={(checked) => setOverride({ markings: checked })}
+              hint="Only the strict-lane rule reads them. Under the other two, switching them off changes nothing — which is the point."
             />
-          </label>
 
-          <label className="params__field">
-            <span>
-              Green time <span className="mono">{scenario.signal.green} s</span>
-            </span>
-            <input
-              type="range"
-              min={5}
-              max={150}
-              value={scenario.signal.green}
-              onChange={(e) => setOverride({ green: Number(e.target.value) })}
+            <Slider
+              label="Marked lanes"
+              value={String(geometry.laneCount)}
+              min={1}
+              max={6}
+              raw={geometry.laneCount}
+              onChange={(n) => setOverride({ laneCount: n })}
             />
-            <small>
-              Capped below the cycle so the controller always shows red — a
-              green longer than its cycle would silently stop this being a
-              signalised approach at all.
-            </small>
-          </label>
-        </section>
-      )}
 
-      <section className="params__section">
-        <h3>Demand</h3>
+            <Slider
+              label="Gradient"
+              value={`${(geometry.gradient * 100).toFixed(1)}%`}
+              min={-100}
+              max={100}
+              raw={Math.round(geometry.gradient * 1000)}
+              onChange={(n) => setOverride({ gradient: n / 1000 })}
+              hint="Heavy vehicles lose far more on a grade than light ones, which is why gradient is a capacity factor at all."
+            />
 
-        <label className="params__field">
-          <span>
-            Inflow <span className="mono">{Math.round(p.inflow)} veh/h</span>
-          </span>
-          <input
-            type="range"
-            min={0}
-            max={8000}
-            step={100}
-            value={p.inflow}
-            onChange={(e) => set({ inflow: Number(e.target.value) })}
-          />
-        </label>
-
-        <label className="params__field">
-          <span>
-            Heavy vehicles <span className="mono">{Math.round(p.hvShare * 100)}%</span> of
-            non-motorcycles
-          </span>
-          <input
-            type="range"
-            min={0}
-            max={40}
-            value={Math.round(p.hvShare * 100)}
-            onChange={(e) => set({ hvShare: Number(e.target.value) / 100 })}
-          />
-        </label>
-
-        <label className="params__field">
-          <span>
-            Public transport <span className="mono">{Math.round(p.puShare * 100)}%</span> of
-            non-motorcycles
-          </span>
-          <input
-            type="range"
-            min={0}
-            max={50}
-            value={Math.round(p.puShare * 100)}
-            onChange={(e) => set({ puShare: Number(e.target.value) / 100 })}
-          />
-        </label>
-
-        <fieldset className="params__radios">
-          <legend>Arrival process</legend>
-          {ARRIVALS.map((a) => (
-            <label key={a.id}>
-              <input
-                type="radio"
-                name="arrival"
-                checked={p.arrival === a.id}
-                onChange={() => set({ arrival: a.id })}
+            {geometry.reductions.length > 0 && (
+              <Slider
+                label="Bottleneck severity"
+                value={`${geometry.reductions[0].severity.toFixed(1)} m removed`}
+                min={0}
+                max={Math.round((geometry.width - 2) * 10)}
+                raw={Math.round(geometry.reductions[0].severity * 10)}
+                onChange={(n) => setOverride({ bottleneckSeverity: n / 10 })}
               />
-              <span>{a.label}</span>
-            </label>
-          ))}
-        </fieldset>
-      </section>
+            )}
+          </Card>
 
-      <section className="params__section">
-        <h3>
-          Lateral model{' '}
-          <Citation
-            marker={state.lateralRule === 'social' ? 'no citation' : 'source'}
-            text={
-              state.lateralRule === 'social'
-                ? CITATIONS.socialForce.text
-                : CITATIONS.mobil.text
-            }
-          />
-        </h3>
+          {scenario.signal && (
+            <Card title="Signal">
+              <Toggle
+                label="Ruang Henti Khusus"
+                checked={scenario.signal.rhk}
+                onChange={(checked) => setOverride({ rhk: checked })}
+                hint="The advance motorcycle stop box. Without it motorcycles percolate to the front anyway and stop where they arrive; with it, they have a stop line of their own. The discharge plot measures both, and the app draws no conclusion between them."
+              />
 
-        <label className="params__field">
-          <span>
-            Overlap threshold <span className="mono">{p.overlapThreshold.toFixed(2)}</span>
-          </span>
-          <input
-            type="range"
-            min={0}
-            max={90}
-            value={Math.round(p.overlapThreshold * 100)}
-            onChange={(e) => set({ overlapThreshold: Number(e.target.value) / 100 })}
-          />
-          <small>
-            How much two footprints must overlap before the one in front
-            constrains the one behind. This is a model parameter, not a
-            constant — a motorcycle half in a car's path still constrains it,
-            partially.
-          </small>
-        </label>
+              <Slider
+                label="Cycle length"
+                value={`${scenario.signal.cycle} s`}
+                min={30}
+                max={180}
+                raw={scenario.signal.cycle}
+                onChange={(n) => setOverride({ cycle: n })}
+              />
 
-        <label className="params__field">
-          <span>
-            Overlap weighting exponent{' '}
-            <span className="mono">{p.overlapExponent.toFixed(2)}</span>
-          </span>
-          <input
-            type="range"
-            min={10}
-            max={400}
-            value={Math.round(p.overlapExponent * 100)}
-            onChange={(e) => set({ overlapExponent: Number(e.target.value) / 100 })}
-          />
-          <small>
-            Above the threshold, the constraint rises from none to full across
-            the remaining range, raised to this power. It materially changes
-            filtering behaviour, so it is exposed rather than buried.
-          </small>
-        </label>
+              <Slider
+                label="Green time"
+                value={`${scenario.signal.green} s`}
+                min={5}
+                max={150}
+                raw={scenario.signal.green}
+                onChange={(n) => setOverride({ green: n })}
+                hint="Capped below the cycle so the controller always shows red — a green longer than its cycle would silently stop this being a signalised approach at all."
+              />
+            </Card>
+          )}
 
-        <label className="params__field">
-          <span>
-            Lateral decision interval <span className="mono">{p.lateralDecisionInterval.toFixed(2)} s</span>
-          </span>
-          <input
-            type="range"
-            min={5}
-            max={100}
-            value={Math.round(p.lateralDecisionInterval * 100)}
-            onChange={(e) => set({ lateralDecisionInterval: Number(e.target.value) / 100 })}
-          />
-          <small>
-            How often a driver re-decides where to sit across the road. Braking
-            is reactive and runs every timestep; choosing a lateral position is
-            deliberate and does not.
-          </small>
-        </label>
-      </section>
+          <Card title="Demand">
+            <Slider
+              label="Inflow"
+              value={`${Math.round(p.inflow)} veh/h`}
+              min={0}
+              max={8000}
+              step={100}
+              raw={p.inflow}
+              onChange={(n) => set({ inflow: n })}
+            />
 
-      <section className="params__section">
-        <h3>
-          Side friction <Citation marker="MKJI 1997" text={CITATIONS.sideFriction.text} />
-        </h3>
+            <Slider
+              label="Heavy vehicles"
+              value={`${Math.round(p.hvShare * 100)}% of non-motorcycles`}
+              min={0}
+              max={40}
+              raw={Math.round(p.hvShare * 100)}
+              onChange={(n) => set({ hvShare: n / 100 })}
+            />
 
-        <label className="params__field">
-          <span>
-            Angkot stops <span className="mono">{p.friction.angkotStopRate}/h</span>
-          </span>
-          <input
-            type="range"
-            min={0}
-            max={120}
-            value={p.friction.angkotStopRate}
-            onChange={(e) =>
-              set({ friction: { ...p.friction, angkotStopRate: Number(e.target.value) } })
-            }
-          />
-        </label>
+            <Slider
+              label="Public transport"
+              value={`${Math.round(p.puShare * 100)}% of non-motorcycles`}
+              min={0}
+              max={50}
+              raw={Math.round(p.puShare * 100)}
+              onChange={(n) => set({ puShare: n / 100 })}
+            />
 
-        <label className="params__field">
-          <span>
-            Pedestrian crossings <span className="mono">{p.friction.pedestrianRate}/h</span>
-          </span>
-          <input
-            type="range"
-            min={0}
-            max={200}
-            value={p.friction.pedestrianRate}
-            onChange={(e) =>
-              set({ friction: { ...p.friction, pedestrianRate: Number(e.target.value) } })
-            }
-          />
-        </label>
+            <fieldset className="pfield pradios">
+              <legend className="pfield__label">Arrival process</legend>
+              <div className="segmented">
+                {ARRIVALS.map((a) => (
+                  <label key={a.id} className="segmented__item">
+                    <input
+                      type="radio"
+                      name="arrival"
+                      checked={p.arrival === a.id}
+                      onChange={() => set({ arrival: a.id })}
+                    />
+                    <span>{a.label}</span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+          </Card>
 
-        <label className="params__field">
-          <span>
-            Roadside parking <span className="mono">{p.friction.parkingWidth.toFixed(1)} m</span>
-          </span>
-          <input
-            type="range"
-            min={0}
-            max={30}
-            value={Math.round(p.friction.parkingWidth * 10)}
-            onChange={(e) =>
-              set({
-                friction: { ...p.friction, parkingWidth: Number(e.target.value) / 10 },
-              })
-            }
-          />
-        </label>
-      </section>
-
-      <section className="params__section">
-        <h3>
-          Vehicle dimensions{' '}
-          <Citation marker="MKJI 1997" text={CITATIONS.mkjiDimensions.text} />
-        </h3>
-        <table className="params__table">
-          <thead>
-            <tr>
-              <th scope="col">Type</th>
-              <th scope="col">Length, m</th>
-              <th scope="col">Width, m</th>
-              <th scope="col">v₀, km/h</th>
-            </tr>
-          </thead>
-          <tbody>
-            {VEHICLE_TYPES.map((t: VehicleType) => (
-              <tr key={t}>
-                <th scope="row">{TYPE_LABELS[t]}</th>
-                <td>{p.types[t].length.toFixed(1)}</td>
-                <td>{p.types[t].width.toFixed(1)}</td>
-                <td>{(p.types[t].idm.v0 * 3.6).toFixed(0)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <p className="params__note">
-          Free-flow speed for the speed ramp on this scenario is{' '}
-          <span className="mono">{(scenario.rampSpeed * 3.6).toFixed(0)} km/h</span>. The
-          ramp is normalised to it, so a 30 km/h scene and a 60 km/h scene do not
-          look the same.
-        </p>
-      </section>
-
-      <section className="params__section">
-        <h3>Export</h3>
-        <div className="params__buttons">
-          <button
-            type="button"
-            onClick={() =>
-              download('detector-records.csv', detectorCsv(logRef.current?.records ?? []))
+          <Card
+            title={
+              <>
+                Lateral model{' '}
+                <Citation
+                  marker={state.lateralRule === 'social' ? 'no citation' : 'source'}
+                  text={
+                    state.lateralRule === 'social'
+                      ? CITATIONS.socialForce.text
+                      : CITATIONS.mobil.text
+                  }
+                />
+              </>
             }
           >
-            Detector records
-          </button>
-          <button
-            type="button"
-            disabled={dischargeRecords.length === 0}
-            onClick={() => download('discharge.csv', dischargeCsv(dischargeRecords))}
+            <Slider
+              label="Overlap threshold"
+              value={p.overlapThreshold.toFixed(2)}
+              min={0}
+              max={90}
+              raw={Math.round(p.overlapThreshold * 100)}
+              onChange={(n) => set({ overlapThreshold: n / 100 })}
+              hint="How much two footprints must overlap before the one in front constrains the one behind. This is a model parameter, not a constant — a motorcycle half in a car's path still constrains it, partially."
+            />
+
+            <Slider
+              label="Overlap weighting exponent"
+              value={p.overlapExponent.toFixed(2)}
+              min={10}
+              max={400}
+              raw={Math.round(p.overlapExponent * 100)}
+              onChange={(n) => set({ overlapExponent: n / 100 })}
+              hint="Above the threshold, the constraint rises from none to full across the remaining range, raised to this power. It materially changes filtering behaviour, so it is exposed rather than buried."
+            />
+
+            <Slider
+              label="Lateral decision interval"
+              value={`${p.lateralDecisionInterval.toFixed(2)} s`}
+              min={5}
+              max={100}
+              raw={Math.round(p.lateralDecisionInterval * 100)}
+              onChange={(n) => set({ lateralDecisionInterval: n / 100 })}
+              hint="How often a driver re-decides where to sit across the road. Braking is reactive and runs every timestep; choosing a lateral position is deliberate and does not."
+            />
+          </Card>
+
+          <Card
+            title={
+              <>
+                Side friction{' '}
+                <Citation marker="MKJI 1997" text={CITATIONS.sideFriction.text} />
+              </>
+            }
           >
-            Discharge
-          </button>
-          <button
-            type="button"
-            disabled={sweepPoints.length === 0}
-            onClick={() => download('sweep.csv', sweepCsv(sweepPoints))}
+            <Slider
+              label="Angkot stops"
+              value={`${p.friction.angkotStopRate}/h`}
+              min={0}
+              max={120}
+              raw={p.friction.angkotStopRate}
+              onChange={(n) => set({ friction: { ...p.friction, angkotStopRate: n } })}
+            />
+
+            <Slider
+              label="Pedestrian crossings"
+              value={`${p.friction.pedestrianRate}/h`}
+              min={0}
+              max={200}
+              raw={p.friction.pedestrianRate}
+              onChange={(n) => set({ friction: { ...p.friction, pedestrianRate: n } })}
+            />
+
+            <Slider
+              label="Roadside parking"
+              value={`${p.friction.parkingWidth.toFixed(1)} m`}
+              min={0}
+              max={30}
+              raw={Math.round(p.friction.parkingWidth * 10)}
+              onChange={(n) => set({ friction: { ...p.friction, parkingWidth: n / 10 } })}
+            />
+          </Card>
+
+          <Card
+            title={
+              <>
+                Vehicle dimensions{' '}
+                <Citation marker="MKJI 1997" text={CITATIONS.mkjiDimensions.text} />
+              </>
+            }
           >
-            Sweep
-          </button>
-          <button
-            type="button"
-            onClick={() => navigator.clipboard?.writeText(window.location.href)}
-          >
-            Copy link to this run
-          </button>
+            <table className="params__table">
+              <thead>
+                <tr>
+                  <th scope="col">Type</th>
+                  <th scope="col">Length, m</th>
+                  <th scope="col">Width, m</th>
+                  <th scope="col">v₀, km/h</th>
+                </tr>
+              </thead>
+              <tbody>
+                {VEHICLE_TYPES.map((t: VehicleType) => (
+                  <tr key={t}>
+                    <th scope="row">{TYPE_LABELS[t]}</th>
+                    <td>{p.types[t].length.toFixed(1)}</td>
+                    <td>{p.types[t].width.toFixed(1)}</td>
+                    <td>{(p.types[t].idm.v0 * 3.6).toFixed(0)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <p className="pfield__hint">
+              Free-flow speed for the speed ramp on this scenario is{' '}
+              <span className="mono">{(scenario.rampSpeed * 3.6).toFixed(0)} km/h</span>.
+              The ramp is normalised to it, so a 30 km/h scene and a 60 km/h scene do
+              not look the same.
+            </p>
+          </Card>
+
+          <Card title="Export">
+            <div className="params__buttons">
+              <button
+                type="button"
+                className="btn"
+                onClick={() =>
+                  download(
+                    'detector-records.csv',
+                    detectorCsv(logRef.current?.records ?? []),
+                  )
+                }
+              >
+                Detector records
+              </button>
+              <button
+                type="button"
+                className="btn"
+                disabled={dischargeRecords.length === 0}
+                onClick={() => download('discharge.csv', dischargeCsv(dischargeRecords))}
+              >
+                Discharge
+              </button>
+              <button
+                type="button"
+                className="btn"
+                disabled={sweepPoints.length === 0}
+                onClick={() => download('sweep.csv', sweepCsv(sweepPoints))}
+              >
+                Sweep
+              </button>
+              <button
+                type="button"
+                className="btn"
+                onClick={() => navigator.clipboard?.writeText(window.location.href)}
+              >
+                Copy link to this run
+              </button>
+            </div>
+            <p className="pfield__hint">
+              Files are built in the browser. The app makes no network requests at
+              runtime.
+            </p>
+          </Card>
         </div>
-        <p className="params__note">
-          Files are built in the browser. The app makes no network requests at
-          runtime.
-        </p>
-      </section>
+      )}
     </aside>
   );
 }

@@ -2,10 +2,9 @@
   display: flex;
   flex-direction: column;
   min-height: 100%;
-  background: var(--asphalt-edge);
+  background: var(--void);
 }
 
-/* §4.4 The transport bar is pinned to the bottom, full width. */
 .app__main {
   flex: 1;
   display: flex;
@@ -13,201 +12,298 @@
   min-height: 0;
 }
 
+/* ============================================================== masthead */
+
 .header {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--s-3);
-  align-items: flex-start;
-  justify-content: space-between;
-  padding: var(--s-2) var(--s-3);
   background: var(--asphalt);
-  border-bottom: 1px solid #000;
-  color: var(--paper);
+  border-bottom: 1px solid var(--void);
+  color: var(--on-dark);
 }
 
-.header h1 {
+.header__bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2) var(--s-3);
+  align-items: center;
+  padding: var(--s-2) var(--s-3);
+}
+
+.header__brand {
+  display: flex;
+  gap: var(--s-1);
+  align-items: center;
+  min-width: 0;
+}
+
+.header__mark {
+  flex: none;
+  width: 30px;
+  height: 30px;
+}
+
+.header__names {
+  min-width: 0;
+}
+
+.header__title {
   font-size: var(--t-h2-size);
   line-height: var(--t-h2-line);
+  font-weight: 600;
+  color: var(--on-dark);
 }
 
 .header__descriptor {
-  margin: 2px 0 0;
-  color: var(--ink-faint);
-  font-size: var(--t-small-size);
-  line-height: var(--t-small-line);
+  margin: 1px 0 0;
+  max-width: 44ch;
+  color: var(--on-dark-faint);
+  font-size: var(--t-micro-size);
+  line-height: var(--t-micro-line);
 }
 
-.header__scenario {
-  display: grid;
-  grid-template-columns: auto auto auto;
+.header__controls {
+  display: flex;
   gap: var(--s-1);
   align-items: center;
-  max-width: 40rem;
+  /* Sits between the brand and the readings, and takes the slack. */
+  margin-left: auto;
 }
 
-.header__label {
-  color: var(--ink-faint);
-  font-size: var(--t-small-size);
+.header__scenario select {
+  min-width: 13rem;
+}
+
+/*
+ * §5.0 The live readings. Right-hand end of the masthead, monospaced, on a
+ * plate of their own so they read as one instrument rather than four labels
+ * that happen to be adjacent.
+ */
+.telemetry {
+  display: flex;
+  gap: var(--s-3);
+  align-items: center;
+  margin: 0;
+  padding: var(--s-1) var(--s-2);
+  background: var(--surface);
+  border: 1px solid var(--border-dark);
+  border-radius: var(--r-panel);
+}
+
+.telemetry__item {
+  min-width: 0;
+}
+
+.telemetry__label {
+  color: var(--on-dark-faint);
+}
+
+.telemetry__value {
+  margin: 1px 0 0;
+  color: var(--on-dark);
+  font-size: 15px;
+  line-height: 1.2;
+  font-weight: 500;
+}
+
+.telemetry__unit {
+  color: var(--on-dark-faint);
+  font-size: var(--t-micro-size);
+  font-weight: 400;
+}
+
+.telemetry__state {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  padding-right: var(--s-2);
+  border-right: 1px solid var(--border-dark);
+}
+
+.telemetry__clock {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+.telemetry__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: var(--r-pill);
+  background: var(--on-dark-faint);
+  transition: background var(--d-control) var(--ease-standard);
+}
+
+/*
+ * Running is stated by a mark that is *doing* something, because the alternative
+ * — reading the clock to see whether it is advancing — takes a second and a
+ * half. It is a slow pulse, not a blink; §6.6 rules out anything that would
+ * compete with the road for attention.
+ */
+.telemetry__state--running .telemetry__dot {
+  background: var(--signal-green);
+  animation: pulse 2s var(--ease-standard) infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+/* The scenario's own sentence, and the fact stated once (PRD §7.4). */
+.header__strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-1) var(--s-2);
+  align-items: baseline;
+  padding: var(--s-1) var(--s-3);
+  background: var(--asphalt-edge);
+  border-top: 1px solid var(--border-dark);
 }
 
 .header__blurb,
 .header__notice {
-  grid-column: 1 / -1;
   margin: 0;
-  color: var(--ink-faint);
+  max-width: var(--measure);
   font-size: var(--t-small-size);
   line-height: var(--t-small-line);
-  max-width: 66ch;
+}
+
+.header__blurb {
+  color: var(--on-dark-mid);
 }
 
 .header__notice {
-  color: var(--ink-mid);
+  padding-left: var(--s-2);
+  border-left: 1px solid var(--border-dark);
+  color: var(--on-dark-faint);
 }
 
-.header select,
-.transport select,
-.transport input[type='number'] {
-  background: var(--asphalt-edge);
-  border: 1px solid #2c3133;
-  color: var(--paper);
-  padding: 4px 6px;
-}
-
-/* §4.4 Dark, to match the road rather than the instruments. */
-.transport {
-  position: sticky;
-  bottom: 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--s-3);
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--s-1) var(--s-3);
-  background: var(--asphalt);
-  border-top: 1px solid #000;
-  color: var(--paper);
-}
-
-.transport__group {
-  display: flex;
-  gap: var(--s-2);
-  align-items: center;
-}
-
-.transport__group--wide {
-  flex: 1;
-  min-width: 12rem;
-}
-
-.transport__button {
-  background: var(--asphalt-edge);
-  border: 1px solid #2c3133;
-  color: var(--paper);
-  padding: 5px 12px;
-  cursor: pointer;
-}
-
-.transport__button:hover {
-  border-color: var(--ink-faint);
-}
-
-.transport__field {
-  display: flex;
-  gap: var(--s-1);
-  align-items: center;
-}
-
-.transport__field--wide {
-  flex: 1;
-}
-
-.transport__field--wide input[type='range'] {
-  flex: 1;
-  min-width: 8rem;
-}
-
-.transport__label {
-  color: var(--ink-faint);
-  font-size: var(--t-small-size);
-  white-space: nowrap;
-}
-
-.transport__value {
-  color: var(--paper);
-  font-size: var(--t-data-size);
-}
-
-.transport__seed {
-  width: 7rem;
-}
-
-.citation {
-  position: relative;
-  display: inline-block;
-}
-
-.citation__marker {
-  background: none;
-  border: 0;
-  border-bottom: 1px dotted currentColor;
-  padding: 0;
-  color: var(--ink-mid);
-  font-size: var(--t-small-size);
-  cursor: pointer;
-}
-
-.citation--dark .citation__marker {
-  color: var(--ink-faint);
-}
-
-.citation__popover {
-  position: absolute;
-  bottom: calc(100% + 6px);
-  left: 0;
-  z-index: 20;
-  display: block;
-  width: 26rem;
-  max-width: 70vw;
-  padding: var(--s-2);
-  background: var(--paper);
-  border: 1px solid var(--rule);
-  color: var(--ink);
-  font-size: var(--t-small-size);
-  line-height: 1.5;
-}
-
-/* §4.6 Below 860 px the road and record stay stacked and keep their axis. */
-@media (max-width: 860px) {
-  .header,
-  .transport {
-    padding-left: var(--s-2);
-    padding-right: var(--s-2);
-  }
-
-  .header__scenario {
-    max-width: none;
-  }
-}
+/* ================================================================= stage */
 
 /*
  * §4.1 The shared axis. The road and the record sit in one column with no
  * horizontal padding, so their position axes line up pixel for pixel. Adding
  * padding, a border, or a scrollbar to only one of these would break the
  * single most important alignment in the app.
+ *
+ * The tags and the ruler are inside the same column and are laid out from the
+ * same two numbers, so they cannot introduce an offset either.
  */
 .app__axis {
   display: flex;
   flex-direction: column;
   width: 100%;
+  background: var(--asphalt-edge);
 }
+
+.stage__tag {
+  display: flex;
+  gap: var(--s-1);
+  align-items: baseline;
+  padding: 6px var(--s-2) 5px;
+  background: var(--asphalt-edge);
+  color: var(--on-dark-mid);
+}
+
+.stage__tag .label {
+  color: var(--on-dark);
+}
+
+.stage__tag-note {
+  color: var(--on-dark-faint);
+  font-size: var(--t-micro-size);
+  line-height: var(--t-micro-line);
+}
+
+/*
+ * §4.1 The ruler. It is the only thing in the app that says out loud that the
+ * two canvases share an axis; everything else relies on the reader noticing.
+ */
+.ruler {
+  position: relative;
+  height: 20px;
+  background: var(--asphalt-edge);
+  border-top: 1px solid var(--border-dark);
+  overflow: hidden;
+}
+
+.ruler__tick {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--border-dark-strong);
+}
+
+.ruler__label {
+  position: absolute;
+  left: 4px;
+  top: 3px;
+  color: var(--on-dark-faint);
+  font-size: 10px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.ruler__unit {
+  position: absolute;
+  right: var(--s-2);
+  top: 4px;
+  color: var(--on-dark-faint);
+}
+
+/* ============================================================== warnings */
+
+/* §6.3 Warnings appear in 200 ms and name what happened. */
+.warnings {
+  display: flex;
+  gap: var(--s-1);
+  padding: var(--s-1) var(--s-3);
+  background: var(--warn-tint);
+  border-top: 2px solid var(--warn);
+  animation: warn-in var(--d-warn) var(--ease-standard);
+}
+
+@keyframes warn-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.warnings__mark {
+  flex: none;
+  margin-top: 3px;
+  color: var(--warn);
+}
+
+.warnings ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: #8a3320;
+  font-size: var(--t-small-size);
+  line-height: 1.5;
+}
+
+.warnings__count {
+  color: var(--ink-mid);
+}
+
+/* ======================================================== instrument bay */
 
 /* §4.3 The instrument bay, on paper ground. */
 .bay {
   display: grid;
-  grid-template-columns: minmax(320px, 26rem) 1fr;
+  grid-template-columns: minmax(320px, 27rem) 1fr;
   gap: 1px;
   background: var(--rule);
-  border-top: 1px solid #000;
+  border-top: 1px solid var(--void);
 }
 
 .bay__fd {
@@ -224,27 +320,50 @@
 .bay__tabs {
   display: flex;
   flex-wrap: wrap;
-  gap: 0;
-  background: var(--paper-edge);
+  gap: 2px;
+  padding: 0 var(--s-2);
+  background: var(--paper-sunken);
   border-bottom: 1px solid var(--rule);
 }
 
 .bay__tab {
+  position: relative;
   background: none;
   border: 0;
-  border-bottom: 2px solid transparent;
-  padding: var(--s-1) var(--s-2);
+  padding: 10px 12px 9px;
   color: var(--ink-mid);
   font-size: var(--t-small-size);
   cursor: pointer;
   /* §6.3 Discrete control: a timed transition. */
   transition: color var(--d-tab) var(--ease-standard),
-    border-color var(--d-tab) var(--ease-standard);
+    background var(--d-tab) var(--ease-standard);
+}
+
+.bay__tab::after {
+  content: '';
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 0;
+  height: 2px;
+  background: var(--ink);
+  transform: scaleX(0);
+  transition: transform var(--d-tab) var(--ease-out);
+}
+
+.bay__tab:hover {
+  color: var(--ink);
+  background: var(--paper);
 }
 
 .bay__tab--active {
   color: var(--ink);
-  border-bottom-color: var(--ink);
+  font-weight: 600;
+  background: var(--paper);
+}
+
+.bay__tab--active::after {
+  transform: scaleX(1);
 }
 
 .bay__content {
@@ -253,74 +372,140 @@
   overflow: auto;
 }
 
+/* ============================================================ parameters */
+
 .params {
-  background: var(--paper);
-  border-top: 1px solid var(--rule);
-  padding: var(--s-2) var(--s-3);
+  background: var(--paper-sunken);
+  border-top: 1px solid var(--rule-strong);
+  padding: var(--s-2) var(--s-3) var(--s-4);
   color: var(--ink);
 }
 
-.params__title {
-  font-size: var(--t-h2-size);
-  margin-bottom: var(--s-2);
-}
-
-.params__section {
-  margin-bottom: var(--s-3);
-  max-width: 84rem;
-}
-
-.params__section h3 {
-  font-size: var(--t-body-size);
-  margin-bottom: var(--s-1);
-}
-
-.params__field {
-  display: block;
-  margin-bottom: var(--s-2);
-  max-width: 34rem;
-  font-size: var(--t-small-size);
-}
-
-.params__field input[type='range'] {
-  width: 100%;
-  max-width: 22rem;
-  display: block;
-  margin-top: 2px;
-}
-
-.params__field small {
-  display: block;
-  margin-top: 2px;
-  max-width: 60ch;
-  color: var(--ink-mid);
-  font-size: var(--t-micro-size);
-  line-height: 1.45;
-}
-
-.params__radios {
-  border: 0;
-  padding: 0;
-  margin: 0 0 var(--s-2);
+.params__head {
   display: flex;
   flex-wrap: wrap;
   gap: var(--s-2);
   align-items: center;
-  font-size: var(--t-small-size);
+  margin-bottom: var(--s-2);
 }
 
-.params__radios legend {
-  padding: 0;
-  color: var(--ink-mid);
-}
-
-.params__radios label {
+.params__disclosure {
   display: flex;
-  gap: 4px;
+  gap: var(--s-1);
   align-items: center;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+.params__title {
+  font-size: var(--t-h2-size);
+  color: var(--ink);
+}
+
+.params__chevron {
+  width: 0;
+  height: 0;
+  border-left: 5px solid var(--ink-mid);
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  transition: transform var(--d-tab) var(--ease-out);
+}
+
+.params__chevron--open {
+  transform: rotate(90deg) translateX(1px);
+}
+
+/*
+ * §4.7 The grid. Plates reflow to whatever width there is; nothing is pinned
+ * to a column, because the number of groups changes with the scenario — the
+ * signal card exists only where there is a signal.
+ */
+.params__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(21rem, 1fr));
+  gap: var(--s-2);
+  align-items: start;
+}
+
+.pcard {
+  padding: var(--s-2);
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: var(--r-panel);
+}
+
+.pcard__title {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: baseline;
+  margin-bottom: var(--s-2);
+  padding-bottom: var(--s-1);
+  border-bottom: 1px solid var(--rule);
+  font-size: var(--t-body-size);
+  font-weight: 600;
+}
+
+.pfield {
+  margin: 0 0 var(--s-2);
+}
+
+.pfield:last-child {
+  margin-bottom: 0;
+}
+
+.pfield__head {
+  display: flex;
+  gap: var(--s-1);
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: var(--s-05);
+  cursor: pointer;
+}
+
+.pfield__label {
+  color: var(--ink);
+  font-size: var(--t-small-size);
+  line-height: 1.35;
+}
+
+.pfield__value {
+  flex: none;
+  color: var(--ink);
+  font-size: var(--t-data-size);
+  font-weight: 500;
+  text-align: right;
+}
+
+.pfield__hint {
+  margin: var(--s-05) 0 0;
+  max-width: 58ch;
+  color: var(--ink-mid);
+  font-size: var(--t-micro-size);
+  line-height: 1.5;
+}
+
+.pfield__toggle {
+  display: flex;
+  gap: var(--s-1);
+  align-items: center;
+  cursor: pointer;
+}
+
+.pradios {
+  border: 0;
+  padding: 0;
+  margin: 0 0 var(--s-2);
+}
+
+.pradios legend {
+  padding: 0 0 var(--s-05);
 }
 
 .params__table {
+  width: 100%;
   border-collapse: collapse;
   font-size: var(--t-data-size);
 }
@@ -328,24 +513,21 @@
 .params__table th,
 .params__table td {
   border-bottom: 1px solid var(--rule);
-  padding: 2px 12px 2px 0;
+  padding: 4px 8px 4px 0;
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-.params__table thead th,
-.params__table tbody th {
+.params__table thead th {
   color: var(--ink-mid);
   font-weight: 400;
-  text-align: left;
+  font-size: var(--t-micro-size);
 }
 
-.params__note {
-  margin: var(--s-1) 0 0;
-  max-width: 66ch;
-  color: var(--ink-mid);
-  font-size: var(--t-small-size);
-  line-height: 1.5;
+.params__table tbody th {
+  color: var(--ink);
+  font-weight: 500;
+  text-align: left;
 }
 
 .params__buttons {
@@ -354,69 +536,203 @@
   gap: var(--s-1);
 }
 
-.params__buttons button {
-  background: var(--paper-edge);
-  border: 1px solid var(--rule);
-  padding: 4px 12px;
+/* ========================================================= transport bar */
+
+/* §4.4 Dark, to match the road rather than the instruments. */
+.transport {
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2) var(--s-3);
+  align-items: center;
+  padding: 10px var(--s-3);
+  background: var(--asphalt);
+  border-top: 1px solid var(--void);
+  box-shadow: 0 -8px 24px -12px rgba(0, 0, 0, 0.8);
+  color: var(--on-dark);
+}
+
+.transport__group {
+  display: flex;
+  gap: var(--s-1);
+  align-items: center;
+}
+
+.transport__group--run {
+  gap: 6px;
+}
+
+.transport__group--wide {
+  flex: 1;
+  min-width: 14rem;
+  gap: var(--s-2);
+}
+
+.transport__group--model {
+  gap: var(--s-2);
+  margin-left: auto;
+}
+
+.transport__keys {
+  display: flex;
+  gap: 3px;
+  margin: 0 0 0 var(--s-05);
+}
+
+/*
+ * §4.4 The motorcycle fraction: the app's principal independent variable, and
+ * the widest control on the bar by a wide margin.
+ */
+.transport__mc {
+  display: flex;
+  gap: var(--s-1);
+  align-items: baseline;
   cursor: pointer;
 }
 
-.params__buttons button:disabled {
-  color: var(--ink-faint);
-  cursor: default;
+.transport__mc-value {
+  min-width: 3ch;
+  color: var(--on-dark);
+  font-size: var(--t-body-size);
+  font-weight: 600;
 }
 
-/* §6.3 Warnings appear in 200 ms and name what happened. */
-.warnings {
-  background: var(--paper);
-  border-top: 1px solid var(--warn);
-  padding: var(--s-1) var(--s-3);
-  animation: warn-in var(--d-warn) var(--ease-standard);
+.transport__slider {
+  flex: 1;
+  min-width: 8rem;
 }
 
-@keyframes warn-in {
-  from {
-    opacity: 0;
+.transport__seed {
+  width: 6.5rem;
+}
+
+/* =============================================================== citation */
+
+.citation {
+  position: relative;
+  display: inline-flex;
+}
+
+.citation__marker {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: 1px solid var(--ctl-border, var(--rule));
+  border-radius: var(--r-pill);
+  padding: 1px 8px;
+  color: var(--ctl-fg-mid, var(--ink-mid));
+  font-size: var(--t-micro-size);
+  line-height: 1.5;
+  cursor: pointer;
+  transition: border-color var(--d-control) var(--ease-standard),
+    color var(--d-control) var(--ease-standard);
+}
+
+.citation__marker::before {
+  content: '';
+  width: 4px;
+  height: 4px;
+  border-radius: var(--r-pill);
+  background: currentColor;
+}
+
+.citation__marker:hover {
+  border-color: var(--ctl-border-hover, var(--rule-strong));
+  color: var(--ctl-fg, var(--ink));
+}
+
+.citation__popover {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  z-index: 40;
+  display: block;
+  width: 26rem;
+  max-width: min(70vw, 26rem);
+  padding: var(--s-2);
+  background: var(--paper-raised);
+  border: 1px solid var(--rule);
+  border-radius: var(--r-panel);
+  box-shadow: var(--shadow-pop);
+  color: var(--ink);
+  font-size: var(--t-small-size);
+  line-height: 1.55;
+}
+
+/* ============================================================ responsive */
+
+/* §4.6 Below 860 px the road and record stay stacked and keep their axis. */
+@media (max-width: 1100px) {
+  .telemetry {
+    gap: var(--s-2);
+  }
+
+  .telemetry__item:nth-child(n + 4) {
+    display: none;
   }
 }
 
-.warnings ul {
-  margin: 0;
-  padding-left: var(--s-2);
-  color: var(--warn);
-  font-size: var(--t-small-size);
-  line-height: 1.5;
-}
-
-.warnings__count {
-  color: var(--ink-mid);
-}
-
 @media (max-width: 860px) {
+  .header__bar,
+  .header__strip,
+  .transport {
+    padding-left: var(--s-2);
+    padding-right: var(--s-2);
+  }
+
+  .header__controls {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .header__scenario {
+    flex: 1;
+  }
+
+  .header__scenario select {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .telemetry {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .header__notice {
+    padding-left: 0;
+    border-left: 0;
+  }
+
   .bay {
     grid-template-columns: 1fr;
   }
 
   .params {
-    padding-left: var(--s-2);
-    padding-right: var(--s-2);
+    padding: var(--s-2) var(--s-2) var(--s-3);
+  }
+
+  .transport__group--model {
+    margin-left: 0;
+    flex-wrap: wrap;
+  }
+
+  .transport__group--wide {
+    order: -1;
+    width: 100%;
+    flex-basis: 100%;
   }
 }
 
-.params__check {
-  display: flex;
-  gap: var(--s-1);
-  align-items: flex-start;
-  margin-bottom: var(--s-2);
-  max-width: 34rem;
-  font-size: var(--t-small-size);
-}
+@media (max-width: 560px) {
+  .transport__keys {
+    display: none;
+  }
 
-.params__check small {
-  display: block;
-  margin-top: 2px;
-  max-width: 60ch;
-  color: var(--ink-mid);
-  font-size: var(--t-micro-size);
-  line-height: 1.45;
+  .stage__tag-note {
+    display: none;
+  }
 }

@@ -12,6 +12,7 @@ import { Road } from '../views/Road/Road';
 import { TimeSpace } from '../views/TimeSpace/TimeSpace';
 import { TransportBar } from './TransportBar';
 import { Header } from './Header';
+import { Ruler } from './Ruler';
 import { InstrumentBay } from './InstrumentBay';
 import { Parameters } from './Parameters';
 import { Warnings } from './Warnings';
@@ -178,7 +179,13 @@ export function App() {
         Skip to instruments
       </a>
 
-      <Header scenario={scenario} state={state} onChange={update} />
+      <Header
+        scenario={scenario}
+        state={state}
+        onChange={update}
+        worldRef={worldRef}
+        tick={tick}
+      />
 
       {/*
         The road and the time-space diagram are locked to one horizontal
@@ -187,6 +194,13 @@ export function App() {
         one relative to the other. Nothing may break this (DESIGN.md §4.1).
       */}
       <div className="app__axis">
+        <div className="stage__tag">
+          <span className="label">Road</span>
+          <span className="stage__tag-note">
+            {scenario.geometry.ring ? 'ring, drawn as a ring' : 'corridor, unrolled'} ·
+            speed is luminance
+          </span>
+        </div>
         <Road
           worldRef={worldRef}
           alphaRef={alphaRef}
@@ -200,6 +214,13 @@ export function App() {
           generation={generation}
           height={roadHeight}
         />
+        <Ruler from={viewFrom} to={viewTo} ring={scenario.geometry.ring} />
+        <div className="stage__tag">
+          <span className="label">Record</span>
+          <span className="stage__tag-note">
+            time–space, same position axis · time runs downward
+          </span>
+        </div>
         <TimeSpace
           worldRef={worldRef}
           trackerRef={trackerRef}
