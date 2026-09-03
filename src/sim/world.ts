@@ -61,14 +61,32 @@ const RELAX_TOLERANCE = 0.01;
 /** Overlaps deeper than this are numerical noise rather than a genuine collision. */
 const OVERLAP_TOLERANCE = 0.05;
 
-export function addWarning(world: World, kind: WarningKind, message: string): void {
-  const existing = world.warnings.find((w) => w.kind === kind && w.message === message);
+/**
+ * Record a warning, folding repeats of the same event into one entry.
+ *
+ * `key` identifies the event — a pair of vehicles, a detector, a parameter.
+ * Where the warning has a magnitude, `severity` carries it, and the message is
+ * replaced when a worse instance turns up, so the reader sees the worst case
+ * once rather than every case in sequence.
+ */
+export function addWarning(
+  world: World,
+  kind: WarningKind,
+  message: string,
+  key = message,
+  severity = 0,
+): void {
+  const existing = world.warnings.find((w) => w.kind === kind && w.key === key);
   if (existing) {
     existing.count++;
     existing.t = world.t;
+    if (severity > existing.severity) {
+      existing.severity = severity;
+      existing.message = message;
+    }
     return;
   }
-  world.warnings.push({ kind, message, t: world.t, count: 1 });
+  world.warnings.push({ kind, message, key, severity, t: world.t, count: 1 });
   // Keep the list bounded — a pathological parameter set could otherwise
   // accumulate warnings until the tab runs out of memory.
   if (world.warnings.length > 40) world.warnings.shift();
@@ -512,12 +530,18 @@ function checkOverlap(world: World, params: Params): void {
       const required = (v.length + other.length) / 2;
 
       if (separation < required - OVERLAP_TOLERANCE) {
+        // One entry per pair, reporting the deepest overlap seen. The same
+        // pair drifting apart over three steps is one event, not three.
+        const depth = required - separation;
+        const pair = v.id < other.id ? `${v.id}-${other.id}` : `${other.id}-${v.id}`;
         addWarning(
           world,
           'overlap',
-          `Vehicles ${v.id} and ${other.id} overlap longitudinally by ` +
-            `${(required - separation).toFixed(2)} m — this is a numerical failure, ` +
+          `Vehicles ${v.id} and ${other.id} overlap longitudinally by up to ` +
+            `${depth.toFixed(2)} m — this is a numerical failure, ` +
             'not a simulated collision.',
+          `overlap:${pair}`,
+          depth,
         );
         return;
       }

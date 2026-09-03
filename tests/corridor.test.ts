@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { step } from '@/sim/world';
+import { addWarning, step } from '@/sim/world';
 import { DT } from '@/sim/types';
 import { corridor, bottleneck, angkot, signalised } from '@/scenarios';
 import { buildWorld, scenarioParams } from '@/scenarios/build';
@@ -178,5 +178,27 @@ describe('angkot side friction', () => {
       },
     });
     expect(withFriction.world.departed).toBeLessThan(without.world.departed);
+  });
+});
+
+describe('warnings', () => {
+  it('folds repeats of one event into a single entry carrying the worst case', () => {
+    // A warning's message carries a measurement and the measurement changes
+    // every step, so the same pair of vehicles drifting apart over three steps
+    // used to fill the list with three near-identical lines. One event, one
+    // entry, the worst depth reported.
+    const world = buildWorld(corridor, scenarioParams(corridor), 1);
+
+    addWarning(world, 'overlap', 'overlap by 0.22 m', 'overlap:46-47', 0.22);
+    addWarning(world, 'overlap', 'overlap by 1.48 m', 'overlap:46-47', 1.48);
+    addWarning(world, 'overlap', 'overlap by 0.86 m', 'overlap:46-47', 0.86);
+
+    expect(world.warnings).toHaveLength(1);
+    expect(world.warnings[0].count).toBe(3);
+    expect(world.warnings[0].message).toBe('overlap by 1.48 m');
+
+    // A different pair is a different event.
+    addWarning(world, 'overlap', 'overlap by 0.1 m', 'overlap:12-13', 0.1);
+    expect(world.warnings).toHaveLength(2);
   });
 });

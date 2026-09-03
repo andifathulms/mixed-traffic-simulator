@@ -46,7 +46,7 @@ export function Warnings({ worldRef, count }: WarningsProps) {
       </svg>
       <ul>
         {warnings.slice(-3).map((w) => (
-          <li key={`${w.kind}:${w.message}`}>
+          <li key={`${w.kind}:${w.key}`}>
             {w.message}
             {w.count > 1 && <span className="warnings__count mono"> ×{w.count}</span>}
           </li>

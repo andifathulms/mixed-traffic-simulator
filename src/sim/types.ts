@@ -128,6 +128,17 @@ export interface SimWarning {
   kind: WarningKind;
   /** Specific, per DESIGN.md §7 — never 'invalid result'. */
   message: string;
+  /**
+   * What makes this the same warning as another.
+   *
+   * The message carries a measurement, and the measurement changes every step,
+   * so one event reported repeatedly used to fill the list with near-identical
+   * lines: the same pair of vehicles, three depths, three warnings. The key
+   * identifies the event; the message describes the worst of it.
+   */
+  key: string;
+  /** How bad the worst instance was, where the warning has a magnitude. */
+  severity: number;
   t: number;
   count: number;
 }
