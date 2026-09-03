@@ -211,6 +211,12 @@ Controls get 4 px, cards and popovers 6 px, pills and slider thumbs a full round
 radius is what separates a pressable thing from a painted rectangle, and its absence was
 the single biggest reason the first version's controls read as inert.
 
+One nested tier below that: an item sitting inside a 4 px control gets 3 px. The segmented
+control's items and the keycap hints are the only things in the app that qualify. A nested
+radius has to be the outer radius minus the inset or the two curves fight, and the inset
+here is 1 px. Four tiers is the whole scale: 3, 4, 6, round. A fifth would be an accident
+rather than a decision.
+
 Three elevation steps and no more: `--shadow-1` for a thing that is merely lifted (a
 slider thumb, an active segment), `--shadow-2` for a plate, `--shadow-pop` for something
 that has left the plane entirely — a citation popover. The dark ground gets its own

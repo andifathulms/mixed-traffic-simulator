@@ -95,7 +95,7 @@ export function speedEmp(
   }
   if (value < 0) {
     warnings.push(
-      'Negative equivalence — the fitted speed rises with motorcycle share. The ' +
+      'Negative equivalence. The fitted speed rises with motorcycle share. The ' +
         'method assumes every added vehicle slows the stream, and filtering ' +
         'motorcycles do not.',
     );

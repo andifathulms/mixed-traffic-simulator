@@ -235,7 +235,10 @@ export function App() {
           <span className="label">Road</span>
           <span className="stage__tag-note">
             {scenario.geometry.ring ? 'ring, drawn as a ring' : 'corridor, unrolled'}
-            {' · speed is luminance'}
+            <span className="sep" aria-hidden="true">
+              ·
+            </span>
+            speed is luminance
           </span>
         </div>
         <Road
@@ -257,7 +260,11 @@ export function App() {
         <div className="stage__tag">
           <span className="label">Record</span>
           <span className="stage__tag-note">
-            {'time–space, same position axis · time runs downward'}
+            time–space, same position axis
+            <span className="sep" aria-hidden="true">
+              ·
+            </span>
+            time runs downward
           </span>
         </div>
         <TimeSpace

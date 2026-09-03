@@ -147,7 +147,7 @@ export function FundamentalDiagram({
 
       <p className="fd__note">
         The line is the analytic single-lane IDM equilibrium. Where the cloud
-        departs from it, the difference is lateral use and heterogeneity — the
+        departs from it, the difference is lateral use and heterogeneity: the
         things the closed form does not have.
       </p>
 

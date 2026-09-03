@@ -117,7 +117,7 @@ export function Parameters({
               label="Lane markings"
               checked={geometry.markings}
               onChange={(checked) => setOverride({ markings: checked })}
-              hint="Only the strict-lane rule reads them. Under the other two, switching them off changes nothing — which is the point."
+              hint="Only the strict-lane rule reads them. Under the other two, switching them off changes nothing, which is the point."
             />
 
             <Slider
@@ -176,7 +176,7 @@ export function Parameters({
                 max={150}
                 raw={scenario.signal.green}
                 onChange={(n) => setOverride({ green: n })}
-                hint="Capped below the cycle so the controller always shows red — a green longer than its cycle would silently stop this being a signalised approach at all."
+                hint="Capped below the cycle so the controller always shows red. A green longer than its cycle would silently stop this being a signalised approach at all."
               />
             </Card>
           )}
@@ -250,7 +250,7 @@ export function Parameters({
               max={90}
               raw={Math.round(p.overlapThreshold * 100)}
               onChange={(n) => set({ overlapThreshold: n / 100 })}
-              hint="How much two footprints must overlap before the one in front constrains the one behind. This is a model parameter, not a constant — a motorcycle half in a car's path still constrains it, partially."
+              hint="How much two footprints must overlap before the one in front constrains the one behind. This is a model parameter, not a constant: a motorcycle half in a car's path still constrains it, partially."
             />
 
             <Slider

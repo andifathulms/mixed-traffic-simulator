@@ -350,7 +350,7 @@ export function EquivalenceBench({
       {anyNegative && (
         <p className="bench__warning">
           At least one method returned a negative equivalence. A vehicle cannot
-          consume negative road space — the estimator has lost its meaning at
+          consume negative road space. The estimator has lost its meaning at
           this interval rather than found a new one. The value is plotted where
           it falls.
         </p>

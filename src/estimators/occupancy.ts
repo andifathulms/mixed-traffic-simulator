@@ -46,7 +46,7 @@ export function occupancyEmp(
 
   if (mcCount < 5 || lvCount < 5) {
     warnings.push(
-      `Too few crossings to compare — ${mcCount} motorcycles and ${lvCount} light ` +
+      `Too few crossings to compare: ${mcCount} motorcycles and ${lvCount} light ` +
         'vehicles. Both classes must appear for a ratio to exist.',
     );
     return {
@@ -63,7 +63,7 @@ export function occupancyEmp(
   const meanLv = lvTime / lvCount;
 
   if (meanLv <= 0) {
-    warnings.push('Mean light vehicle occupancy is zero — the detector recorded nothing.');
+    warnings.push('Mean light vehicle occupancy is zero. The detector recorded nothing.');
     return {
       method: 'Occupancy time',
       value: NaN,

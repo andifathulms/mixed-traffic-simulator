@@ -60,7 +60,7 @@ export function regressionEmp(
   const fit = ols(X, y);
   if (!fit) {
     warnings.push(
-      'The regression design is rank-deficient at this interval — the type counts ' +
+      'The regression design is rank-deficient at this interval: the type counts ' +
         'carry no independent variation and no coefficient can be recovered.',
     );
     return {
@@ -101,7 +101,7 @@ export function regressionEmp(
   }
   if (value < 0) {
     warnings.push(
-      `Negative equivalence at ${minutes}-minute aggregation — the regression is not ` +
+      `Negative equivalence at ${minutes}-minute aggregation. The regression is not ` +
         'applicable at this interval. A vehicle cannot consume negative road space; ' +
         'the coefficient has lost its meaning, not found a new one.',
     );

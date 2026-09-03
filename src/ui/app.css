@@ -222,6 +222,20 @@
 }
 
 /*
+ * The middle dot, spaced explicitly.
+ *
+ * The glyph carries almost no right side bearing in this face, so a dot with
+ * an ordinary space either side renders as "unrolled ·speed is luminance" —
+ * attached to the word after it and detached from the word before. The text
+ * was correct and the typesetting was not. Margins do not depend on the
+ * font's opinion.
+ */
+.sep {
+  margin-inline: 0.45em;
+  color: var(--on-dark-faint);
+}
+
+/*
  * §4.1 The ruler. It is the only thing in the app that says out loud that the
  * two canvases share an axis; everything else relies on the reader noticing.
  */

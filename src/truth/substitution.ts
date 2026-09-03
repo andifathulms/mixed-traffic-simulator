@@ -130,7 +130,7 @@ export function substitutionEmp(
   }
 
   if (reference.throughput <= 0) {
-    warnings.push('The all-car reference stream carried no vehicles — nothing to compare.');
+    warnings.push('The all-car reference stream carried no vehicles, so there is nothing to compare.');
     return {
       emp: NaN,
       mixedThroughput: mixed.throughput,
@@ -154,7 +154,7 @@ export function substitutionEmp(
 
   if (mixed.world.unserved === 0 || reference.world.unserved === 0) {
     warnings.push(
-      'At least one run was not saturated — the entry never turned demand away, so ' +
+      'At least one run was not saturated. The entry never turned demand away, so ' +
         'throughput measured demand rather than capacity and the ratio understates ' +
         'the difference between the streams.',
     );

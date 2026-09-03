@@ -161,7 +161,7 @@ export function step(world: World, dt: number, params: Params): World {
       addWarning(
         world,
         'deceleration-clamp',
-        'Deceleration clamped at 8 m/s² — a vehicle was forced into braking harder ' +
+        'Deceleration clamped at 8 m/s². A vehicle was forced into braking harder ' +
           'than is physical, which indicates a gap or parameter problem.',
       );
     }
@@ -207,7 +207,7 @@ export function step(world: World, dt: number, params: Params): World {
       addWarning(
         world,
         'nan',
-        `Vehicle ${v.id} reached a non-finite state — the simulation is no longer ` +
+        `Vehicle ${v.id} reached a non-finite state. The simulation is no longer ` +
           'numerically valid from this step onward.',
       );
       v.v = 0;
@@ -538,7 +538,7 @@ function checkOverlap(world: World, params: Params): void {
           world,
           'overlap',
           `Vehicles ${v.id} and ${other.id} overlap longitudinally by up to ` +
-            `${depth.toFixed(2)} m — this is a numerical failure, ` +
+            `${depth.toFixed(2)} m. This is a numerical failure, ` +
             'not a simulated collision.',
           `overlap:${pair}`,
           depth,

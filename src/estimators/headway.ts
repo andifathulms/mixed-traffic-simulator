@@ -33,7 +33,7 @@ export function headwayEmp(
 
   if (mcFollowing.length < 5 || lvFollowing.length < 5) {
     warnings.push(
-      `Too few following pairs behind a light vehicle — ${mcFollowing.length} ` +
+      `Too few following pairs behind a light vehicle: ${mcFollowing.length} ` +
         `motorcycle and ${lvFollowing.length} car followers. The method needs both ` +
         'and cannot be applied to this stream.',
     );
@@ -45,7 +45,7 @@ export function headwayEmp(
   const hLv = mean(lvFollowing);
 
   if (hLv <= 0) {
-    warnings.push('Mean car headway is zero — the detector recorded no separation.');
+    warnings.push('Mean car headway is zero. The detector recorded no separation.');
     return { method: 'Time headway', value: NaN, r2: null, sampleCount, interval, warnings };
   }
 
@@ -53,7 +53,7 @@ export function headwayEmp(
 
   if (mcFollowing.length < 30 || lvFollowing.length < 30) {
     warnings.push(
-      `Small sample — ${mcFollowing.length} motorcycle and ${lvFollowing.length} car ` +
+      `Small sample: ${mcFollowing.length} motorcycle and ${lvFollowing.length} car ` +
         'followers. The ratio is unstable at this count.',
     );
   }

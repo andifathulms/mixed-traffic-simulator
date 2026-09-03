@@ -18,7 +18,7 @@ export const phantomJam: Scenario = {
   id: 'phantom-jam',
   name: 'Phantom jam',
   blurb:
-    'Twenty-two vehicles on a 230 m ring. No bottleneck and no incident — the jam ' +
+    'Twenty-two vehicles on a 230 m ring. No bottleneck and no incident. The jam ' +
     'forms from reaction dynamics alone and then travels backward forever.',
   citation:
     'Sugiyama et al. (2008), "Traffic jams without bottlenecks — experimental ' +

@@ -142,7 +142,7 @@ export function SpeedHeatmap({
       <figcaption className="heatmap__title">
         Speed heatmap
         <span className="heatmap__sub">
-          position × time, mean speed per cell — the same axes as the record
+          position × time, mean speed per cell, on the same axes as the record
         </span>
       </figcaption>
       <canvas ref={canvasRef} className="heatmap__canvas" />

@@ -115,7 +115,7 @@ export function LateralOccupancy({
       <figcaption className="lateral__head">
         <span className="lateral__title">Lateral occupancy</span>
         <span className="lateral__sub">
-          where the width is actually used, by type — under {ruleName}
+          where the width is actually used, by type, under {ruleName}
         </span>
       </figcaption>
 
