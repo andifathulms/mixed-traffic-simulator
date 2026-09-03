@@ -1,0 +1,374 @@
+/*
+ * Control primitives (DESIGN.md §2.6, §3.2).
+ *
+ * Every control in the app is one of these. They are written once against a
+ * set of ground-local custom properties, and each ground — dark road, paper
+ * record — supplies the values. That is why a button on the transport bar and
+ * a button in the parameters panel behave identically and look native to where
+ * they sit, without either being a special case.
+ *
+ * Set the ground with `.on-dark` or `.on-paper` on any ancestor.
+ */
+
+.on-dark {
+  --ctl-bg: var(--surface-raised);
+  --ctl-bg-hover: var(--surface-hover);
+  --ctl-bg-active: var(--surface-active);
+  --ctl-border: var(--border-dark);
+  --ctl-border-hover: var(--border-dark-strong);
+  --ctl-fg: var(--on-dark);
+  --ctl-fg-mid: var(--on-dark-mid);
+  --ctl-fg-faint: var(--on-dark-faint);
+  --ctl-track: var(--void);
+  --ctl-fill: var(--on-dark-mid);
+  --ctl-thumb: var(--on-dark);
+  --ctl-focus: var(--focus-dark);
+  --ctl-pop-bg: var(--surface-raised);
+  --ctl-pop-shadow: var(--shadow-pop-dark);
+  color: var(--on-dark);
+}
+
+.on-paper {
+  --ctl-bg: var(--paper-raised);
+  --ctl-bg-hover: var(--paper);
+  --ctl-bg-active: var(--paper-sunken);
+  --ctl-border: var(--rule);
+  --ctl-border-hover: var(--rule-strong);
+  --ctl-fg: var(--ink);
+  --ctl-fg-mid: var(--ink-mid);
+  --ctl-fg-faint: var(--ink-faint);
+  --ctl-track: var(--paper-sunken);
+  --ctl-fill: var(--ink-mid);
+  --ctl-thumb: var(--ink);
+  --ctl-focus: var(--focus-paper);
+  --ctl-pop-bg: var(--paper-raised);
+  --ctl-pop-shadow: var(--shadow-pop);
+  color: var(--ink);
+}
+
+/* ---------------------------------------------------------------- labels */
+
+.label {
+  color: var(--ctl-fg-mid);
+  font-size: var(--t-label-size);
+  font-weight: var(--t-label-weight);
+  letter-spacing: var(--t-label-track);
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+/*
+ * A readout. Tabular figures, because a number that changes twenty times a
+ * second must not change width while it does (DESIGN.md §3.1).
+ */
+.readout {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--t-data-size);
+  color: var(--ctl-fg);
+}
+
+/* --------------------------------------------------------------- buttons */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  min-height: 30px;
+  padding: 0 12px;
+  background: var(--ctl-bg);
+  border: 1px solid var(--ctl-border);
+  border-radius: var(--r-control);
+  color: var(--ctl-fg);
+  font-size: var(--t-small-size);
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background var(--d-control) var(--ease-standard),
+    border-color var(--d-control) var(--ease-standard);
+}
+
+.btn:hover:not(:disabled) {
+  background: var(--ctl-bg-hover);
+  border-color: var(--ctl-border-hover);
+}
+
+.btn:active:not(:disabled) {
+  background: var(--ctl-bg-active);
+}
+
+.btn:disabled {
+  color: var(--ctl-fg-faint);
+  cursor: default;
+}
+
+/* The one control the eye should land on first in its group. */
+.btn--primary {
+  background: var(--ctl-fg);
+  border-color: var(--ctl-fg);
+  color: var(--ctl-bg);
+  font-weight: 600;
+  min-width: 5.5rem;
+  justify-content: center;
+}
+
+.btn--primary:hover:not(:disabled) {
+  background: var(--ctl-fg);
+  border-color: var(--ctl-fg);
+  opacity: 0.88;
+}
+
+.btn--icon {
+  min-width: 30px;
+  padding: 0 8px;
+  justify-content: center;
+}
+
+/* --------------------------------------------------------------- selects */
+
+/*
+ * A native select, with the platform arrow replaced by one that matches the
+ * rest of the app. Native because five scenarios on a phone is a picker, not a
+ * row of tabs — and because it stays labelled and keyboard operable for free.
+ */
+.field select,
+select.control {
+  appearance: none;
+  -webkit-appearance: none;
+  min-height: 30px;
+  padding: 0 26px 0 10px;
+  background-color: var(--ctl-bg);
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%),
+    linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position: right 12px center, right 7px center;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  border: 1px solid var(--ctl-border);
+  border-radius: var(--r-control);
+  color: var(--ctl-fg);
+  font-size: var(--t-small-size);
+  cursor: pointer;
+  transition: border-color var(--d-control) var(--ease-standard);
+}
+
+.field select:hover,
+select.control:hover {
+  border-color: var(--ctl-border-hover);
+}
+
+/* Options are drawn by the platform; give it a ground it can use. */
+.on-dark select option {
+  background: var(--surface-raised);
+  color: var(--on-dark);
+}
+
+/* ------------------------------------------------------ text and numbers */
+
+.field input[type='number'],
+.field input[type='text'],
+input.control {
+  min-height: 30px;
+  padding: 0 8px;
+  background: var(--ctl-bg);
+  border: 1px solid var(--ctl-border);
+  border-radius: var(--r-control);
+  color: var(--ctl-fg);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--t-data-size);
+}
+
+.field input[type='number']:hover,
+input.control:hover {
+  border-color: var(--ctl-border-hover);
+}
+
+/* --------------------------------------------------------------- sliders */
+
+/*
+ * Continuous controls. §6.1: these take effect on the frame they change, with
+ * no easing, so the thumb and the road move together. The track is drawn thin
+ * and the thumb small — this is an instrument, not a media player.
+ */
+input[type='range'] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  height: 18px;
+  margin: 0;
+  background: none;
+  cursor: pointer;
+}
+
+input[type='range']::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: var(--r-pill);
+  background: var(--ctl-track);
+  border: 1px solid var(--ctl-border);
+}
+
+input[type='range']::-moz-range-track {
+  height: 4px;
+  border-radius: var(--r-pill);
+  background: var(--ctl-track);
+  border: 1px solid var(--ctl-border);
+}
+
+input[type='range']::-moz-range-progress {
+  height: 4px;
+  border-radius: var(--r-pill);
+  background: var(--ctl-fill);
+}
+
+input[type='range']::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  margin-top: -6px;
+  border-radius: var(--r-pill);
+  background: var(--ctl-thumb);
+  border: 1px solid var(--ctl-track);
+  box-shadow: var(--shadow-1);
+  transition: transform var(--d-control) var(--ease-standard);
+}
+
+input[type='range']::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: var(--r-pill);
+  background: var(--ctl-thumb);
+  border: 1px solid var(--ctl-track);
+  box-shadow: var(--shadow-1);
+}
+
+input[type='range']:hover::-webkit-slider-thumb {
+  transform: scale(1.12);
+}
+
+input[type='range']:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+/* ------------------------------------------------ checkboxes and radios */
+
+input[type='checkbox'],
+input[type='radio'] {
+  accent-color: var(--ctl-thumb);
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  cursor: pointer;
+}
+
+/* ------------------------------------------------------------ segmented */
+
+/*
+ * A segmented control: a small, closed set where seeing every option at once
+ * is worth the width. Speed multipliers and aggregation intervals qualify;
+ * scenarios do not.
+ */
+.segmented {
+  display: inline-flex;
+  padding: 2px;
+  background: var(--ctl-track);
+  border: 1px solid var(--ctl-border);
+  border-radius: var(--r-control);
+}
+
+.segmented__item {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 24px;
+  padding: 0 9px;
+  border: 0;
+  border-radius: 3px;
+  background: none;
+  color: var(--ctl-fg-mid);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--t-micro-size);
+  cursor: pointer;
+  transition: background var(--d-control) var(--ease-standard),
+    color var(--d-control) var(--ease-standard);
+}
+
+.segmented__item:hover {
+  color: var(--ctl-fg);
+}
+
+.segmented__item[aria-checked='true'],
+.segmented__item[aria-pressed='true'] {
+  background: var(--ctl-bg);
+  border: 0;
+  color: var(--ctl-fg);
+  box-shadow: var(--shadow-1);
+}
+
+/* The radio itself stays in the DOM, labelled; only its box is hidden. */
+.segmented input {
+  position: absolute;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  left: 0;
+  top: 0;
+  margin: 0;
+  cursor: pointer;
+}
+
+.segmented label.segmented__item:has(input:checked) {
+  background: var(--ctl-bg);
+  color: var(--ctl-fg);
+  box-shadow: var(--shadow-1);
+}
+
+.segmented label.segmented__item:has(input:focus-visible) {
+  outline: 2px solid var(--ctl-focus);
+  outline-offset: 1px;
+}
+
+/* ------------------------------------------------------ fields and chips */
+
+.field {
+  display: inline-flex;
+  gap: var(--s-1);
+  align-items: center;
+}
+
+.field--stacked {
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--s-05);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border: 1px solid var(--ctl-border);
+  border-radius: var(--r-pill);
+  color: var(--ctl-fg-mid);
+  font-size: var(--t-micro-size);
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+/* A keyboard shortcut, shown next to the control it drives. */
+.kbd {
+  display: inline-block;
+  min-width: 16px;
+  padding: 1px 4px;
+  background: var(--ctl-track);
+  border: 1px solid var(--ctl-border);
+  border-radius: 3px;
+  color: var(--ctl-fg-faint);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  line-height: 1.4;
+  text-align: center;
+}

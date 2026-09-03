@@ -5,19 +5,39 @@
  * That is deliberate (DESIGN.md §9) — the app is a phenomenon and a record of
  * it, and collapsing them into one theme would erase the distinction the whole
  * layout is built on. Do not unify them.
+ *
+ * Each ground is a *scale*, not a single value. A control has to sit on its
+ * ground and read as a thing you can press; a popover has to float above it.
+ * Flat grounds made every control ambiguous, which is what the 2.0 rework
+ * fixed (DESIGN.md §2.1).
  */
 
 :root {
-  /* §2.1 Two grounds */
-  --asphalt: #191c1e;
-  --asphalt-edge: #0f1112;
+  /* §2.1 The dark ground — the road, and everything that commands it. */
+  --void: #0a0c0d;
+  --asphalt-edge: #101314;
+  --asphalt: #171a1c;
+  --surface: #1b1f21;
+  --surface-raised: #232a2c;
+  --surface-hover: #2c3437;
+  --surface-active: #353e41;
+  --border-dark: #2c3335;
+  --border-dark-strong: #414b4d;
+  --on-dark: #e8ece9;
+  --on-dark-mid: #a2acac;
+  --on-dark-faint: #6e7878;
   --marking: #8e9a9c;
-  --paper: #e9eae6;
-  --paper-edge: #dddfda;
-  --ink: #1b1e1f;
-  --ink-mid: #5b6162;
-  --ink-faint: #9aa0a0;
-  --rule: #c9ccc7;
+
+  /* §2.1 The paper ground — the record, and everything that reads it. */
+  --paper: #eeefeb;
+  --paper-raised: #f7f8f4;
+  --paper-sunken: #e4e6e0;
+  --paper-edge: #e4e6e0;
+  --rule: #d5d8d1;
+  --rule-strong: #bcc0b8;
+  --ink: #171a1a;
+  --ink-mid: #54595a;
+  --ink-faint: #8a908f;
 
   /*
    * §2.2 The speed ramp — the app's primary encoding.
@@ -25,57 +45,97 @@
    * at 3 px, and leaves hue free for the estimator palette. A stopped vehicle
    * sits nearly at the asphalt's own value, so jams read as voids.
    */
-  --speed-0: #232729;
-  --speed-25: #41484a;
-  --speed-50: #6e7779;
+  --speed-0: #202426;
+  --speed-25: #3f4649;
+  --speed-50: #6d7678;
   --speed-75: #a3acad;
-  --speed-100: #e4e9e7;
+  --speed-100: #e6ebe9;
 
   /* §2.4 The estimator palette — the only hue in the app. */
-  --method-truth: #1b1e1f;
-  --method-headway: #b4562a;
-  --method-regression: #2f6e7c;
-  --method-speed: #7a5296;
-  --method-occupancy: #4b7a3e;
+  --method-truth: #171a1a;
+  --method-headway: #bd5a31;
+  --method-regression: #2c6d7d;
+  --method-speed: #79539b;
+  --method-occupancy: #527f3c;
   --method-mkji: #9aa0a0;
 
   /* §2.5 Functional colours. The traffic-light ramp appears nowhere else. */
   --signal-red: #c0392b;
   --signal-amber: #d89a2b;
   --signal-green: #3e8e5a;
-  --warn: #d8543c;
-  --select: #e4e9e7;
+  --warn: #cf5136;
+  --warn-tint: #f7e7e2;
+  --select: #e6ebe9;
 
-  /* §3.1 Type scale. Base 15 px, ratio 1.25. */
+  /*
+   * §2.6 Interaction is achromatic on both grounds. Hue in this app means
+   * "estimator" or "signal aspect" and nothing else, so a hover state that
+   * borrowed a hue would be lying about its category. Controls signal state
+   * through value and border weight instead.
+   */
+  --focus-dark: #e6ebe9;
+  --focus-paper: #171a1a;
+
+  /* §3.1 Type scale. Base 15 px, ratio ~1.25, tracking tightened as size rises. */
   --font-sans: 'Overpass', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: 'Overpass Mono', ui-monospace, 'SF Mono', Menlo, monospace;
 
-  --t-display-size: 36px;
+  --t-display-size: 34px;
   --t-display-line: 1.05;
-  --t-figure-size: 23px;
-  --t-figure-line: 1.1;
-  --t-h2-size: 18px;
+  --t-display-track: -0.02em;
+  --t-figure-size: 26px;
+  --t-figure-line: 1.05;
+  --t-figure-track: -0.015em;
+  --t-h2-size: 17px;
   --t-h2-line: 1.25;
+  --t-h2-track: -0.008em;
   --t-body-size: 15px;
   --t-body-line: 1.55;
   --t-data-size: 13px;
   --t-data-line: 1.45;
-  --t-small-size: 12px;
-  --t-small-line: 1.35;
-  --t-micro-size: 10px;
-  --t-micro-line: 1.2;
+  --t-small-size: 12.5px;
+  --t-small-line: 1.4;
+  --t-micro-size: 11px;
+  --t-micro-line: 1.25;
 
-  /* §4.5 Grid and rhythm. 8 px base. */
+  /*
+   * §3.2 The label style. Sentence case, never all caps — but tracked a little
+   * and set in the mid ink, so a field label reads as a label at a glance
+   * without shouting. This is the one place tracking is opened up.
+   */
+  --t-label-size: 11.5px;
+  --t-label-track: 0.04em;
+  --t-label-weight: 500;
+
+  /* §4.5 Grid and rhythm. 8 px base, with a half step for control interiors. */
+  --s-05: 4px;
   --s-1: 8px;
   --s-2: 16px;
   --s-3: 24px;
   --s-4: 40px;
   --s-5: 64px;
   --max-width: 84rem;
+  --measure: 68ch;
+
+  /*
+   * §2.7 Radii and elevation. The panels stay square — they are full-bleed
+   * plates butted against one another and a rounded plate would float away
+   * from its neighbour. Controls get 4 px, which is what separates a pressable
+   * thing from a painted rectangle.
+   */
+  --r-control: 4px;
+  --r-panel: 6px;
+  --r-pill: 999px;
+
+  --shadow-1: 0 1px 2px rgba(10, 12, 13, 0.1);
+  --shadow-2: 0 4px 12px -3px rgba(10, 12, 13, 0.16), 0 1px 3px rgba(10, 12, 13, 0.08);
+  --shadow-pop: 0 16px 40px -12px rgba(10, 12, 13, 0.34), 0 2px 8px rgba(10, 12, 13, 0.12);
+  --shadow-pop-dark: 0 16px 40px -12px rgba(0, 0, 0, 0.72), 0 2px 8px rgba(0, 0, 0, 0.4);
 
   /* §6.3 Motion. Continuous controls map directly; discrete ones transition. */
   --ease-out: cubic-bezier(0.32, 0.72, 0, 1);
   --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --d-control: 120ms;
   --d-scenario: 400ms;
   --d-lateral: 600ms;
   --d-tab: 240ms;
@@ -90,6 +150,7 @@
  */
 @media (prefers-reduced-motion: reduce) {
   :root {
+    --d-control: 0ms;
     --d-scenario: 0ms;
     --d-lateral: 0ms;
     --d-tab: 0ms;

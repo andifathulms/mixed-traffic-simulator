@@ -1,9 +1,12 @@
 @import '@fontsource/overpass/latin-400.css';
+@import '@fontsource/overpass/latin-500.css';
 @import '@fontsource/overpass/latin-600.css';
+@import '@fontsource/overpass/latin-700.css';
 @import '@fontsource/overpass-mono/latin-400.css';
 @import '@fontsource/overpass-mono/latin-500.css';
 @import '@fontsource/overpass-mono/latin-600.css';
 @import './tokens.css';
+@import './controls.css';
 
 *,
 *::before,
@@ -19,12 +22,14 @@ body,
 
 body {
   margin: 0;
-  background: var(--asphalt-edge);
+  background: var(--void);
   color: var(--ink);
   font-family: var(--font-sans);
   font-size: var(--t-body-size);
   line-height: var(--t-body-line);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 /*
@@ -47,7 +52,12 @@ h3 {
   font-weight: 600;
   /* §3.2 No all-caps labels, no tracked-out eyebrows, sentence case throughout. */
   text-transform: none;
-  letter-spacing: 0;
+  letter-spacing: var(--t-h2-track);
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
 }
 
 button,
@@ -59,12 +69,34 @@ input {
 
 /* §8 Visible keyboard focus everywhere, including vehicle selection. */
 :focus-visible {
-  outline: 2px solid var(--select);
+  outline: 2px solid var(--focus-dark);
   outline-offset: 2px;
+  border-radius: 2px;
 }
 
 .on-paper :focus-visible {
-  outline-color: var(--ink);
+  outline-color: var(--focus-paper);
+}
+
+/* Custom scrollbars, so a scrolling panel does not punch a bright hole in the
+ * dark ground on platforms that draw them. */
+* {
+  scrollbar-width: thin;
+}
+
+.on-paper *::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.on-paper *::-webkit-scrollbar-thumb {
+  background: var(--rule-strong);
+  border: 3px solid var(--paper);
+  border-radius: var(--r-pill);
+}
+
+.on-paper *::-webkit-scrollbar-track {
+  background: var(--paper);
 }
 
 /* Reachable by keyboard and screen readers, not shown. */
@@ -82,15 +114,18 @@ input {
 
 .skip-link {
   position: absolute;
-  left: var(--s-1);
+  left: var(--s-2);
   top: -100px;
   z-index: 100;
   padding: var(--s-1) var(--s-2);
   background: var(--paper);
+  border-radius: 0 0 var(--r-control) var(--r-control);
+  box-shadow: var(--shadow-2);
   color: var(--ink);
+  font-size: var(--t-small-size);
   text-decoration: none;
 }
 
 .skip-link:focus {
-  top: var(--s-1);
+  top: 0;
 }
