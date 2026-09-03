@@ -2,6 +2,7 @@ import type { Params, VehicleType, World } from './types';
 import { spawnVehicle } from './world';
 import { findLeader, findFollower, SpatialIndex } from './neighbours';
 import { leftEdgeAt, rightEdgeAt } from './geometry';
+import { blockedWidthAt } from './friction';
 
 /** Composition shares from the motorcycle fraction and the remainder splits. */
 export function composition(params: Params): Record<VehicleType, number> {
@@ -80,8 +81,21 @@ function tryAdmit(world: World, params: Params, type: VehicleType): boolean {
   const { geometry } = world;
   const x = cfg.length / 2;
 
-  const left = leftEdgeAt(0, geometry) + cfg.width / 2;
-  const right = rightEdgeAt(0, geometry) - cfg.width / 2;
+  // The usable width at the entry, computed the same way the road computes it
+  // everywhere else — roadside blockage included.
+  //
+  // It used to use the kerb-to-kerb width. A stopping angkot or a strip of
+  // roadside parking narrows the entry like anywhere else, but the gate could
+  // not see it, so it admitted vehicles into the occupied strip and left the
+  // lateral resolver to sort out an overlap it had no room to sort out. Every
+  // deep overlap in the angkot scenario was one of these, all of them within
+  // a few metres of x = 0.
+  const blocked = blockedWidthAt(x, world, params);
+  const left = leftEdgeAt(x, geometry) + cfg.width / 2;
+  const right = rightEdgeAt(x, geometry) - blocked - cfg.width / 2;
+
+  // Too narrow for this vehicle at any offset: the entry is blocked, which is
+  // an unserved arrival rather than a vehicle squeezed in sideways.
   if (right <= left) return false;
 
   // Try several lateral offsets, widest gap first. A motorcycle can enter

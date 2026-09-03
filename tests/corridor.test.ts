@@ -181,6 +181,27 @@ describe('angkot side friction', () => {
   });
 });
 
+describe('the entry gate', () => {
+  it('will not admit a vehicle into a blocked roadside strip', () => {
+    // A stopping angkot or a strip of roadside parking narrows the entry like
+    // anywhere else. The gate used to measure kerb to kerb, so it admitted
+    // vehicles into the occupied strip at full entry speed and left the
+    // lateral resolver to unpick an overlap it had no room to unpick — a
+    // heavy vehicle and a car interpenetrating by six metres within a few
+    // metres of x = 0.
+    const { world } = run(corridor, 180, {
+      inflow: 3000,
+      friction: { ...scenarioParams(corridor).friction, parkingWidth: 3 },
+    });
+
+    expect(world.warnings.filter((w) => w.kind === 'overlap')).toHaveLength(0);
+
+    // The narrowed entry serves less than it is asked for, and says so, rather
+    // than squeezing vehicles in sideways.
+    expect(world.unserved).toBeGreaterThan(0);
+  });
+});
+
 describe('warnings', () => {
   it('folds repeats of one event into a single entry carrying the worst case', () => {
     // A warning's message carries a measurement and the measurement changes
