@@ -11,15 +11,21 @@
   cursor: crosshair;
 }
 
+/*
+ * Below about 2.5 px a vehicle stops being drawn to scale, and the app says so
+ * rather than quietly lying about the dimensions that are its whole subject.
+ */
 .road__note {
   position: absolute;
-  right: var(--s-1);
+  right: var(--s-2);
   bottom: var(--s-1);
   margin: 0;
-  padding: 2px 6px;
-  background: rgba(15, 17, 18, 0.8);
-  color: var(--ink-faint);
-  font-size: var(--t-micro-size);
-  line-height: var(--t-micro-line);
+  padding: 3px 8px;
+  background: rgba(10, 12, 13, 0.82);
+  border: 1px solid var(--border-dark);
+  border-radius: var(--r-pill);
+  color: var(--on-dark-mid);
+  font-size: 10px;
+  line-height: 1.5;
   font-family: var(--font-mono);
 }

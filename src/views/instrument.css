@@ -1,0 +1,245 @@
+/*
+ * Shared instrument chrome (DESIGN.md §5.0).
+ *
+ * Seven instruments were each inventing their own header, their own padding
+ * and their own idea of how big a subtitle is. They now share one: a title,
+ * a subtitle that says what is plotted against what, an optional row of
+ * controls, the plot, and a note underneath. A reader moving between two
+ * instruments should be reading the instrument, not relearning the furniture.
+ */
+
+.instrument,
+.bench,
+.fd,
+.discharge,
+.lateral,
+.heatmap,
+.inspector {
+  margin: 0;
+  padding: var(--s-3);
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.instrument__head,
+.bench__head,
+.discharge__head,
+.lateral__head,
+.fd__title,
+.heatmap__title,
+.inspector__title {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px var(--s-1);
+  align-items: baseline;
+  margin: 0 0 var(--s-2);
+}
+
+.instrument__title,
+.bench__title,
+.discharge__title,
+.lateral__title,
+/* These three carry their title inline in the head element itself. */
+.fd__title,
+.heatmap__title,
+.inspector__title {
+  font-size: var(--t-h2-size);
+  line-height: var(--t-h2-line);
+  letter-spacing: var(--t-h2-track);
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/*
+ * The subtitle carries the axes: "flow against density", "equivalence against
+ * motorcycle share". It is not decoration — it is what makes an unlabelled
+ * chart legible in one glance.
+ */
+.instrument__sub,
+.bench__sub,
+.discharge__sub,
+.lateral__sub,
+.fd__sub,
+.heatmap__sub {
+  color: var(--ink-mid);
+  font-size: var(--t-small-size);
+  font-weight: 400;
+  line-height: var(--t-small-line);
+}
+
+.instrument__note,
+.bench__empty,
+.discharge__empty,
+.discharge__note,
+.fd__note,
+.heatmap__note,
+.inspector__empty,
+.inspector__note {
+  margin: var(--s-2) 0 0;
+  max-width: var(--measure);
+  color: var(--ink-mid);
+  font-size: var(--t-small-size);
+  line-height: 1.6;
+}
+
+.instrument__controls,
+.bench__controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  align-items: center;
+  margin-bottom: var(--s-2);
+  padding-bottom: var(--s-2);
+  border-bottom: 1px solid var(--rule);
+}
+
+/* -------------------------------------------------------------- plotting */
+
+/*
+ * Axes, ticks and gridlines. Three weights and no more: the frame, the
+ * gridline, the annotation. Anything heavier competes with the data.
+ */
+.plot__axis,
+.bench__axis,
+.discharge__axis,
+.lateral__axis,
+.fd__axes line {
+  stroke: var(--rule-strong);
+  stroke-width: 1;
+}
+
+.plot__grid {
+  stroke: var(--rule);
+  stroke-width: 1;
+}
+
+.plot__tick,
+.bench__tick,
+.discharge__tick,
+.lateral__tick,
+.fd__tick {
+  fill: var(--ink-faint);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 10.5px;
+}
+
+.plot__axis-label,
+.bench__axis-label,
+.discharge__axis-label,
+.lateral__axis-label,
+.fd__axis-label {
+  fill: var(--ink-mid);
+  font-family: var(--font-sans);
+  font-size: var(--t-micro-size);
+  font-weight: 500;
+  letter-spacing: var(--t-label-track);
+}
+
+/* ---------------------------------------------------------------- figures */
+
+/*
+ * A headline figure and its label. §3.1: the figure is the largest type in the
+ * instrument, because it is the answer and the rest is the working.
+ */
+.figures {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-3);
+  margin: var(--s-2) 0 0;
+}
+
+.figures dt,
+.figure__label {
+  color: var(--ink-mid);
+  font-size: var(--t-label-size);
+  font-weight: var(--t-label-weight);
+  letter-spacing: var(--t-label-track);
+}
+
+.figures dd,
+.figure__value {
+  margin: 2px 0 0;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--t-figure-size);
+  font-weight: 600;
+  line-height: var(--t-figure-line);
+  letter-spacing: var(--t-figure-track);
+  color: var(--ink);
+}
+
+/* ----------------------------------------------------------------- legend */
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-1) var(--s-2);
+  margin: var(--s-2) 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--ink-mid);
+  font-size: var(--t-small-size);
+}
+
+.legend li {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+/* --------------------------------------------------------- detail tables */
+
+.instrument__table,
+.fd__table {
+  margin-top: var(--s-3);
+  font-size: var(--t-data-size);
+}
+
+.instrument__table summary,
+.fd__table summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 0;
+  cursor: pointer;
+  color: var(--ink-mid);
+  font-family: var(--font-sans);
+  font-size: var(--t-small-size);
+}
+
+.instrument__table summary:hover,
+.fd__table summary:hover {
+  color: var(--ink);
+}
+
+.instrument__table table,
+.fd__table table {
+  margin-top: var(--s-1);
+  border-collapse: collapse;
+  width: 100%;
+  max-height: 16rem;
+  display: block;
+  overflow: auto;
+}
+
+.instrument__table th,
+.instrument__table td,
+.fd__table th,
+.fd__table td {
+  border-bottom: 1px solid var(--rule);
+  padding: 4px 10px 4px 0;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.instrument__table th,
+.fd__table th {
+  position: sticky;
+  top: 0;
+  background: var(--paper);
+  color: var(--ink-mid);
+  font-weight: 500;
+  font-size: var(--t-micro-size);
+  text-align: right;
+}

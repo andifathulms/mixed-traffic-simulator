@@ -162,7 +162,7 @@ export function LateralOccupancy({
         </text>
       </svg>
 
-      <ul className="lateral__legend">
+      <ul className="legend lateral__legend">
         {VEHICLE_TYPES.map((t) => (
           <li key={t}>
             <span className="lateral__swatch" style={{ background: TYPE_COLOUR[t] }} />

@@ -1,68 +1,14 @@
-.lateral {
-  margin: 0;
-  padding: var(--s-2);
-  background: var(--paper);
-  color: var(--ink);
-}
-
-.lateral__head {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--s-1);
-  align-items: baseline;
-  margin-bottom: var(--s-1);
-}
-
-.lateral__title {
-  font-size: var(--t-h2-size);
-  font-weight: 600;
-}
-
-.lateral__sub {
-  color: var(--ink-mid);
-  font-size: var(--t-small-size);
-}
+/* The lateral cross-section. Shared chrome lives in ../instrument.css. */
 
 .lateral__road {
-  fill: var(--paper-edge);
-}
-
-.lateral__axis {
-  stroke: var(--ink-faint);
+  fill: var(--paper-sunken);
+  stroke: var(--rule-strong);
   stroke-width: 1;
-}
-
-.lateral__tick {
-  fill: var(--ink-mid);
-  font-family: var(--font-mono);
-  font-size: var(--t-micro-size);
-}
-
-.lateral__axis-label {
-  fill: var(--ink-mid);
-  font-family: var(--font-sans);
-  font-size: var(--t-small-size);
-}
-
-.lateral__legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--s-2);
-  margin: var(--s-1) 0 0;
-  padding: 0;
-  list-style: none;
-  color: var(--ink-mid);
-  font-size: var(--t-small-size);
-}
-
-.lateral__legend li {
-  display: flex;
-  gap: 6px;
-  align-items: center;
 }
 
 .lateral__swatch {
   width: 12px;
   height: 12px;
+  border-radius: 2px;
   display: inline-block;
 }

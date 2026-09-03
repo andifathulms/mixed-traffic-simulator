@@ -107,27 +107,34 @@ export function EquivalenceBench({
       <div className="bench__controls">
         <fieldset className="bench__intervals">
           <legend>Aggregation interval</legend>
-          {AGGREGATION_INTERVALS.map((s) => (
-            <label key={s} className="bench__interval">
-              <input
-                type="radio"
-                name="aggregation"
-                checked={interval === s}
-                onChange={() => onIntervalChange(s)}
-              />
-              <span>{s / 60} min</span>
-            </label>
-          ))}
+          {/*
+            A segmented control, not four loose radios: the whole set is four
+            items, and seeing all four at once is what makes it obvious the
+            interval is a choice the reader is meant to sweep.
+          */}
+          <div className="segmented">
+            {AGGREGATION_INTERVALS.map((s) => (
+              <label key={s} className="segmented__item">
+                <input
+                  type="radio"
+                  name="aggregation"
+                  checked={interval === s}
+                  onChange={() => onIntervalChange(s)}
+                />
+                <span>{s / 60} min</span>
+              </label>
+            ))}
+          </div>
         </fieldset>
 
         {progress === null ? (
-          <button type="button" className="bench__run" onClick={onRun}>
+          <button type="button" className="btn btn--primary" onClick={onRun}>
             {points.length > 0 ? 'Run sweep again' : 'Run sweep'}
           </button>
         ) : (
           <span className="bench__progress">
             <progress value={progress} max={1} />
-            <button type="button" className="bench__run" onClick={onCancel}>
+            <button type="button" className="btn" onClick={onCancel}>
               Cancel
             </button>
           </span>
@@ -146,6 +153,19 @@ export function EquivalenceBench({
           role="img"
           aria-label="Equivalence estimates by method against motorcycle share"
         >
+          {/* Gridlines first, so every mark that means something is drawn
+              over the furniture rather than through it. */}
+          {[0, 0.25, 0.5, 0.75, 1].map((f) => (
+            <line
+              key={f}
+              className="plot__grid"
+              x1={pad.left}
+              y1={pad.top + f * plotH}
+              x2={pad.left + plotW}
+              y2={pad.top + f * plotH}
+            />
+          ))}
+
           <line
             className="bench__axis"
             x1={pad.left}
@@ -250,7 +270,7 @@ export function EquivalenceBench({
         </svg>
       )}
 
-      <ul className="bench__legend">
+      <ul className="legend bench__legend">
         {SERIES.map((s) => (
           <li key={s.key}>
             <span className="bench__swatch" style={{ background: s.colour }} />

@@ -1,43 +1,10 @@
-.fd {
-  margin: 0;
-  padding: var(--s-2);
-  background: var(--paper);
-  color: var(--ink);
-}
+/* The fundamental diagram. Shared chrome lives in ../instrument.css. */
 
-.fd__title {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--s-1);
-  align-items: baseline;
-  font-size: var(--t-h2-size);
-  font-weight: 600;
-  margin-bottom: var(--s-1);
-}
-
-.fd__sub {
-  color: var(--ink-mid);
-  font-size: var(--t-small-size);
-  font-weight: 400;
-}
-
-.fd__axes line {
-  stroke: var(--ink-faint);
-  stroke-width: 1;
-}
-
-.fd__tick {
-  fill: var(--ink-mid);
-  font-family: var(--font-mono);
-  font-size: var(--t-micro-size);
-}
-
-.fd__axis-label {
-  fill: var(--ink-mid);
-  font-family: var(--font-sans);
-  font-size: var(--t-small-size);
-}
-
+/*
+ * The IDM equilibrium, drawn as a dashed reference curve. It is what the model
+ * says should happen; the points are what did. Keeping both on one plate is
+ * the instrument's whole reason to exist.
+ */
 .fd__curve {
   fill: none;
   stroke: var(--ink-faint);
@@ -47,53 +14,5 @@
 
 .fd__point {
   fill: var(--ink);
-}
-
-.fd__note {
-  margin: var(--s-1) 0 0;
-  max-width: 66ch;
-  color: var(--ink-mid);
-  font-size: var(--t-small-size);
-  line-height: 1.5;
-}
-
-.fd__table,
-.instrument__table {
-  margin-top: var(--s-2);
-  font-size: var(--t-data-size);
-}
-
-.fd__table summary,
-.instrument__table summary {
-  cursor: pointer;
-  color: var(--ink-mid);
-  font-family: var(--font-sans);
-  font-size: var(--t-small-size);
-}
-
-.fd__table table,
-.instrument__table table {
-  margin-top: var(--s-1);
-  border-collapse: collapse;
-  width: 100%;
-  max-height: 16rem;
-  display: block;
-  overflow: auto;
-}
-
-.fd__table th,
-.fd__table td,
-.instrument__table th,
-.instrument__table td {
-  border-bottom: 1px solid var(--rule);
-  padding: 2px 8px 2px 0;
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-
-.fd__table th,
-.instrument__table th {
-  color: var(--ink-mid);
-  font-weight: 400;
-  text-align: right;
+  fill-opacity: 0.78;
 }

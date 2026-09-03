@@ -138,7 +138,7 @@ export function DischargePlot({
         </svg>
       )}
 
-      <dl className="discharge__stats">
+      <dl className="figures discharge__stats">
         <div>
           <dt>Without the box</dt>
           <dd className="mono">

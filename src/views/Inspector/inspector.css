@@ -1,66 +1,51 @@
-.inspector {
-  padding: var(--s-2);
-  background: var(--paper);
-  color: var(--ink);
-}
-
-.inspector__title {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--s-1);
-  align-items: baseline;
-  font-size: var(--t-h2-size);
-  margin-bottom: var(--s-2);
-}
+/* The vehicle inspector. Shared chrome lives in ../instrument.css. */
 
 .inspector__id {
   color: var(--ink-mid);
+  font-family: var(--font-mono);
   font-size: var(--t-data-size);
   font-weight: 400;
 }
 
-.inspector__empty,
-.inspector__note {
-  margin: 0;
-  max-width: 66ch;
-  color: var(--ink-mid);
-  font-size: var(--t-small-size);
-  line-height: 1.55;
-}
-
-.inspector__note {
-  margin-top: var(--s-2);
-}
-
 .inspector__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
   gap: var(--s-2);
   margin: 0 0 var(--s-3);
+  padding: var(--s-2);
+  background: var(--paper-sunken);
+  border-radius: var(--r-panel);
+}
+
+.inspector__grid dt {
+  color: var(--ink-mid);
+  font-size: var(--t-label-size);
+  font-weight: var(--t-label-weight);
+  letter-spacing: var(--t-label-track);
+}
+
+.inspector__grid dd {
+  margin: 2px 0 0;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--t-figure-size);
+  font-weight: 600;
+  line-height: var(--t-figure-line);
+  letter-spacing: var(--t-figure-track);
 }
 
 .inspector__grid--params {
   margin-top: var(--s-3);
   margin-bottom: 0;
-  padding-top: var(--s-2);
+  background: none;
+  padding: var(--s-2) 0 0;
   border-top: 1px solid var(--rule);
-}
-
-.inspector__grid dt {
-  color: var(--ink-mid);
-  font-size: var(--t-small-size);
-}
-
-.inspector__grid dd {
-  margin: 2px 0 0;
-  font-size: var(--t-figure-size);
-  font-weight: 600;
-  line-height: var(--t-figure-line);
+  border-radius: 0;
 }
 
 .inspector__grid--params dd {
   font-size: var(--t-data-size);
-  font-weight: 400;
+  font-weight: 500;
 }
 
 .inspector__subtitle {
@@ -68,12 +53,22 @@
   margin-bottom: var(--s-1);
 }
 
+/*
+ * §5.8 The IDM terms, each as a signed bar about a zero line. This is the one
+ * place in the app where a vehicle's acceleration is decomposed into the terms
+ * that produced it, so the bars are the content and the numbers are the check.
+ */
 .term {
   display: grid;
-  grid-template-columns: 14rem 1fr 5rem;
+  grid-template-columns: 13rem 1fr 5rem;
   gap: var(--s-2);
   align-items: center;
-  padding: 4px 0;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.term:last-child {
+  border-bottom: 0;
 }
 
 .term__label {
@@ -83,7 +78,7 @@
 }
 
 .term__hint {
-  color: var(--ink-mid);
+  color: var(--ink-faint);
   font-size: var(--t-micro-size);
   font-family: var(--font-sans);
 }
@@ -91,8 +86,9 @@
 .term__track {
   position: relative;
   display: block;
-  height: 14px;
-  background: var(--paper-edge);
+  height: 16px;
+  background: var(--paper-sunken);
+  border-radius: 3px;
 }
 
 .term__zero {
@@ -101,14 +97,17 @@
   top: 0;
   bottom: 0;
   width: 1px;
-  background: var(--ink-faint);
+  background: var(--rule-strong);
 }
 
 .term__bar {
   position: absolute;
-  top: 2px;
-  bottom: 2px;
-  background: var(--ink-mid);
+  top: 3px;
+  bottom: 3px;
+  background: var(--ink-faint);
+  border-radius: 2px;
+  transition: width var(--d-select) var(--ease-out),
+    left var(--d-select) var(--ease-out);
 }
 
 .term--strong .term__bar {
@@ -116,6 +115,8 @@
 }
 
 .term__value {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--t-data-size);
   text-align: right;
 }

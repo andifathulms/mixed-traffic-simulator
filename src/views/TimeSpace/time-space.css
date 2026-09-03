@@ -3,7 +3,7 @@
   margin: 0;
   width: 100%;
   background: var(--paper);
-  border-top: 1px solid #000;
+  border-top: 1px solid var(--void);
 }
 
 .timespace__canvas {
@@ -12,20 +12,30 @@
   height: 100%;
 }
 
+/*
+ * The caption floats on the paper rather than above it: the record is the
+ * chart recorder's output and a chrome bar over it would break the illusion
+ * that this is one continuous roll (DESIGN.md §5.2).
+ */
 .timespace__caption {
   position: absolute;
-  left: var(--s-1);
+  left: var(--s-2);
   top: var(--s-1);
   display: flex;
   gap: var(--s-2);
   align-items: baseline;
+  padding: 2px 8px;
+  background: rgba(238, 239, 235, 0.78);
+  border-radius: var(--r-pill);
   color: var(--ink-mid);
-  font-size: var(--t-micro-size);
-  line-height: var(--t-micro-line);
+  font-size: 10px;
+  line-height: 1.6;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   pointer-events: none;
 }
 
 .timespace__wave {
   color: var(--ink);
+  font-weight: 500;
 }

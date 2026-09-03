@@ -1,39 +1,17 @@
+/* The speed heatmap. Shared chrome lives in ../instrument.css. */
+
 .heatmap {
-  margin: 0;
-  padding: var(--s-2);
-  background: var(--paper);
-  color: var(--ink);
   display: flex;
   flex-direction: column;
   height: 100%;
-}
-
-.heatmap__title {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--s-1);
-  align-items: baseline;
-  font-size: var(--t-h2-size);
-  font-weight: 600;
-  margin-bottom: var(--s-1);
-}
-
-.heatmap__sub {
-  color: var(--ink-mid);
-  font-size: var(--t-small-size);
-  font-weight: 400;
 }
 
 .heatmap__canvas {
   display: block;
   width: 100%;
   flex: 1;
-  min-height: 200px;
-  background: var(--paper-edge);
-}
-
-.heatmap__note {
-  margin: var(--s-1) 0 0;
-  color: var(--ink-mid);
-  font-size: var(--t-small-size);
+  min-height: 220px;
+  background: var(--asphalt-edge);
+  border: 1px solid var(--rule);
+  border-radius: var(--r-panel);
 }
