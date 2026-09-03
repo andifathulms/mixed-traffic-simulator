@@ -251,10 +251,18 @@
   white-space: nowrap;
 }
 
+/*
+ * The unit sits over the ground rather than beside it, and carries that ground
+ * with it: at narrow widths the last tick's label would otherwise run into it,
+ * and there is no width at which that reads as anything but a mistake.
+ */
 .ruler__unit {
   position: absolute;
-  right: var(--s-2);
-  top: 4px;
+  right: 0;
+  top: 0;
+  padding: 4px var(--s-2) 0 var(--s-2);
+  height: 100%;
+  background: var(--asphalt-edge);
   color: var(--on-dark-faint);
 }
 
@@ -729,6 +737,15 @@
 
 @media (max-width: 560px) {
   .transport__keys {
+    display: none;
+  }
+
+  /*
+   * The seed goes. It matters for reproducing a run, which is something you do
+   * from a link (§10), not something you reach for mid-scroll on a phone — and
+   * on a 390 px bar it was costing a whole row.
+   */
+  .transport__group--model .field:first-child {
     display: none;
   }
 

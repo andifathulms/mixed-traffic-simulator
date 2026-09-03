@@ -12,10 +12,13 @@ export interface DischargePlotProps {
 }
 
 const TYPE_MARK: Record<VehicleType, string> = {
-  MC: 'var(--method-headway)',
-  LV: 'var(--method-regression)',
-  HV: 'var(--method-speed)',
-  PU: 'var(--method-occupancy)',
+  // Value, not hue — the estimator palette means estimator method and nothing
+  // else (DESIGN.md §2.4). The same four values the lateral cross-section uses,
+  // so a reader learns one scale for vehicle type and not two.
+  MC: 'var(--ink)',
+  LV: '#5f6664',
+  HV: '#99a09c',
+  PU: '#c3c8c4',
 };
 
 /**
@@ -143,29 +146,32 @@ export function DischargePlot({
       <dl className="figures discharge__stats">
         <div>
           <dt>Without the box</dt>
-          <dd className="mono">
-            {stats.withoutBox
-              ? `${stats.withoutBox.headway.toFixed(2)} s · ${Math.round(
-                  saturationFlow(stats.withoutBox.headway),
-                )} veh/h`
-              : 'not yet measured'}
-          </dd>
+          {stats.withoutBox ? (
+            <dd className="mono">
+              {stats.withoutBox.headway.toFixed(2)} s ·{' '}
+              {Math.round(saturationFlow(stats.withoutBox.headway))} veh/h
+            </dd>
+          ) : (
+            <dd className="figures__empty">not yet measured</dd>
+          )}
         </div>
         <div>
           <dt>With the box (RHK)</dt>
-          <dd className="mono">
-            {stats.withBox
-              ? `${stats.withBox.headway.toFixed(2)} s · ${Math.round(
-                  saturationFlow(stats.withBox.headway),
-                )} veh/h`
-              : 'not yet measured'}
-          </dd>
+          {stats.withBox ? (
+            <dd className="mono">
+              {stats.withBox.headway.toFixed(2)} s ·{' '}
+              {Math.round(saturationFlow(stats.withBox.headway))} veh/h
+            </dd>
+          ) : (
+            <dd className="figures__empty">not yet measured</dd>
+          )}
         </div>
       </dl>
 
       <p className="discharge__note">
         Hollow marks are cycles with the advance motorcycle stop box enabled,
-        solid marks without it. Colour is vehicle type.{' '}
+        solid marks without it. Vehicle type is the mark's value, darkest for
+        motorcycles.{' '}
         {stats.withBox && stats.withoutBox
           ? 'Both conditions are shown as measured; the app draws no conclusion about which is preferable.'
           : `Switch the box ${rhkEnabled ? 'off' : 'on'} and run further cycles to compare the two.`}

@@ -29,3 +29,9 @@
   line-height: 1.5;
   font-family: var(--font-mono);
 }
+
+@media (max-width: 560px) {
+  .road__note-more {
+    display: none;
+  }
+}

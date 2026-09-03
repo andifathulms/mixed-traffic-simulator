@@ -34,7 +34,7 @@ export function Ruler({ from, to, ring }: RulerProps) {
         // stays: it is the axis, and the number is only its annotation.
         return (
           <span key={x} className="ruler__tick" style={{ left: `${at}%` }}>
-            {at < 80 && <span className="ruler__label mono">{formatMetres(x)}</span>}
+            {at < 88 && <span className="ruler__label mono">{formatMetres(x)}</span>}
           </span>
         );
       })}

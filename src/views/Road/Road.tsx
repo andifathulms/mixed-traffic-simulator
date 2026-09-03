@@ -166,8 +166,13 @@ export function Road({
       {(!toScale || exaggeration > 1) && (
         <p className="road__note">
           {exaggeration > 1 && `Across-road scale ×${exaggeration}`}
-          {exaggeration > 1 && !toScale && ' · '}
-          {!toScale && 'marks enlarged to stay visible'}
+          {/* The second clause is the one that goes when there is no room. */}
+          {!toScale && (
+            <span className="road__note-more">
+              {exaggeration > 1 && ' · '}
+              marks enlarged to stay visible
+            </span>
+          )}
         </p>
       )}
     </div>

@@ -170,6 +170,17 @@
   color: var(--ink);
 }
 
+/*
+ * A figure that has no value yet is not a figure. Setting "not yet measured" in
+ * 26 px monospace made the absence of a reading louder than any reading.
+ */
+.figures__empty {
+  margin: 4px 0 0;
+  color: var(--ink-faint);
+  font-size: var(--t-small-size);
+  font-style: italic;
+}
+
 /* ----------------------------------------------------------------- legend */
 
 .legend {
