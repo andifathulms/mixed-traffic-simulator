@@ -60,8 +60,8 @@ export function EquivalenceBench({
   progress,
   onRun,
   onCancel,
-  width = 560,
-  height = 330,
+  width = 780,
+  height = 400,
 }: EquivalenceBenchProps) {
   const bounds = useMemo(() => {
     const values: number[] = [MKJI_MC_EMP, 0, 1];
@@ -148,7 +148,9 @@ export function EquivalenceBench({
         </p>
       ) : (
         <svg
+          className="plot"
           width="100%"
+          style={{ maxWidth: width }}
           viewBox={`0 0 ${width} ${height}`}
           role="img"
           aria-label="Equivalence estimates by method against motorcycle share"

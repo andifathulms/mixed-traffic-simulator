@@ -244,3 +244,17 @@
   font-size: var(--t-micro-size);
   text-align: right;
 }
+
+/*
+ * A plot never draws itself larger than its own coordinate system.
+ *
+ * These SVGs are authored at a fixed viewBox and stretched to the panel with
+ * width: 100%. In a 1300 px bay that scaled an 11 px tick label to 25 px — the
+ * lateral cross-section was rendering its axis in headline type. They fill the
+ * width available up to 1:1 and stop there.
+ */
+.plot {
+  display: block;
+  width: 100%;
+  height: auto;
+}

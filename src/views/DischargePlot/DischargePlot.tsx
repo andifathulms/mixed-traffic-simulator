@@ -29,8 +29,8 @@ const TYPE_MARK: Record<VehicleType, string> = {
 export function DischargePlot({
   records,
   rhkEnabled,
-  width = 520,
-  height = 300,
+  width = 780,
+  height = 360,
 }: DischargePlotProps) {
   const stats = useMemo(
     () => ({
@@ -66,7 +66,9 @@ export function DischargePlot({
         </p>
       ) : (
         <svg
+          className="plot"
           width="100%"
+          style={{ maxWidth: width }}
           viewBox={`0 0 ${width} ${height}`}
           role="img"
           aria-label="Discharge headway against queue position"

@@ -168,6 +168,12 @@ different in kind from the four estimates. That distinction is the chart's argum
 is carried in weight as well as value: ground truth is drawn at 3 px against the estimates'
 2 px.
 
+**Nothing else in the app may use these six colours to mean anything else.** The lateral
+cross-section used to: it stacked motorcycles in the headway orange and light vehicles in
+the regression teal, so a reader who had learned those colours on the bench met them two
+tabs away meaning vehicle type. Type is shape on the road (§2.3) and value in the
+cross-section (§5.5). It is never hue.
+
 ### 2.5 Functional colours
 
 | Token | Value | Use |
@@ -519,6 +525,11 @@ Under strict lanes this shows discrete spikes at lane centres. Under sublane it 
 continuous distribution with motorcycles filling the edges and the interstices. Switching
 the lateral rule and watching the distribution change from spikes to a smear is the
 clearest possible statement of what the rule choice does.
+
+Four stacked types need four separable marks, and they get four *values* — never the
+estimator hues (§2.4). Motorcycles take the strongest value because they are the subject;
+public transport, the lightest and the one nearest the plot ground, carries a hatch as
+well, so the chart survives being printed in one colour.
 
 ### 5.6 Equivalence bench
 

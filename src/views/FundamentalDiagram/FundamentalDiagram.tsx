@@ -30,8 +30,8 @@ export function FundamentalDiagram({
   idm,
   vehicleLength,
   effectiveLanes,
-  width = 380,
-  height = 260,
+  width = 400,
+  height = 300,
 }: FundamentalDiagramProps) {
   const points = useMemo<FdPoint[]>(
     () =>
@@ -76,7 +76,9 @@ export function FundamentalDiagram({
       </figcaption>
 
       <svg
+        className="plot"
         width="100%"
+        style={{ maxWidth: width }}
         viewBox={`0 0 ${width} ${height}`}
         role="img"
         aria-label={`Fundamental diagram. ${points.length} intervals accumulated.`}

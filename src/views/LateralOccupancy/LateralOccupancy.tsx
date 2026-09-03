@@ -12,11 +12,33 @@ export interface LateralOccupancyProps {
   bins?: number;
 }
 
-const TYPE_COLOUR: Record<VehicleType, string> = {
-  MC: 'var(--method-headway)',
-  LV: 'var(--method-regression)',
-  HV: 'var(--method-speed)',
-  PU: 'var(--method-occupancy)',
+/*
+ * Type here is value, not hue (DESIGN.md §2.4, §5.5).
+ *
+ * This chart used to borrow the estimator palette — motorcycles in the headway
+ * orange, light vehicles in the regression teal. A reader who had learned those
+ * colours on the bench two tabs away then met them meaning something else
+ * entirely, which is precisely the category error the palette rule exists to
+ * prevent. Hue in this app means estimator method or signal aspect.
+ *
+ * Four stacked bands need four separable marks, so they get four values, and
+ * public transport — the lightest, and the one that would otherwise sit close
+ * to the plot ground — gets a hatch as well. Motorcycles take the strongest
+ * value because they are the subject.
+ */
+const TYPE_FILL: Record<VehicleType, string> = {
+  MC: 'var(--ink)',
+  LV: '#5f6664',
+  HV: '#99a09c',
+  PU: 'url(#lateral-hatch)',
+};
+
+/** The legend swatch, which cannot reference an SVG pattern. */
+const TYPE_SWATCH: Record<VehicleType, string> = {
+  MC: 'var(--ink)',
+  LV: '#5f6664',
+  HV: '#99a09c',
+  PU: 'repeating-linear-gradient(45deg, #5f6664 0 2px, #e4e6e0 2px 4px)',
 };
 
 /**
@@ -31,8 +53,8 @@ const TYPE_COLOUR: Record<VehicleType, string> = {
 export function LateralOccupancy({
   worldRef,
   ruleName,
-  width = 520,
-  height = 280,
+  width = 780,
+  height = 330,
   bins = 56,
 }: LateralOccupancyProps) {
   const [snapshot, setSnapshot] = useState<{
@@ -98,11 +120,26 @@ export function LateralOccupancy({
       </figcaption>
 
       <svg
+        className="plot"
         width="100%"
+        style={{ maxWidth: width }}
         viewBox={`0 0 ${width} ${height}`}
         role="img"
         aria-label={`Lateral cross-section of the road under ${ruleName}`}
       >
+        <defs>
+          <pattern
+            id="lateral-hatch"
+            width="5"
+            height="5"
+            patternUnits="userSpaceOnUse"
+            patternTransform="rotate(45)"
+          >
+            <rect width="5" height="5" fill="#c9cec9" />
+            <rect width="2" height="5" fill="#5f6664" />
+          </pattern>
+        </defs>
+
         <rect
           className="lateral__road"
           x={pad.left}
@@ -126,7 +163,7 @@ export function LateralOccupancy({
                 y={y}
                 width={Math.max(1, binWidth - 0.5)}
                 height={h}
-                fill={TYPE_COLOUR[t]}
+                fill={TYPE_FILL[t]}
               />
             );
           });
@@ -165,7 +202,7 @@ export function LateralOccupancy({
       <ul className="legend lateral__legend">
         {VEHICLE_TYPES.map((t) => (
           <li key={t}>
-            <span className="lateral__swatch" style={{ background: TYPE_COLOUR[t] }} />
+            <span className="lateral__swatch" style={{ background: TYPE_SWATCH[t] }} />
             {TYPE_LABELS[t]}
           </li>
         ))}

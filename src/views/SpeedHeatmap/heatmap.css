@@ -3,14 +3,19 @@
 .heatmap {
   display: flex;
   flex-direction: column;
-  height: 100%;
 }
 
 .heatmap__canvas {
   display: block;
   width: 100%;
-  flex: 1;
-  min-height: 220px;
+  /*
+   * Bounded, not stretched. Filling the bay made a thousand-pixel plate
+   * carrying twenty seconds of cells at the top and nothing else — the panel
+   * is as tall as the fundamental diagram beside it, which is not a statement
+   * about how much heatmap there is to show.
+   */
+  flex: none;
+  height: clamp(240px, 40vh, 440px);
   background: var(--asphalt-edge);
   border: 1px solid var(--rule);
   border-radius: var(--r-panel);
