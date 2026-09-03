@@ -66,6 +66,15 @@
   --warn: #cf5136;
   --warn-tint: #f7e7e2;
   --warn-ink: #8a3320;
+
+  /*
+   * The brand's orange, which is not the warning orange.
+   *
+   * They sit a few percent apart and could share a token, right up until
+   * someone retunes the warning colour and silently restyles the logo. A mark
+   * is an identity and a warning is a state; a token each.
+   */
+  --brand-accent: #e0512b;
   --select: #e6ebe9;
 
   /*

@@ -81,19 +81,41 @@ export function Header({ scenario, state, onChange, worldRef, tick }: HeaderProp
 }
 
 /**
- * The mark: four lanes of traffic at four different speeds, which is the whole
- * subject of the app in sixteen pixels. Drawn from the speed ramp, so it is
- * literally the same encoding the road uses.
+ * The mark: one fundamental diagram, two answers.
+ *
+ * A solid flow-density curve and a dashed one that peaks lower and later. The
+ * app's subject is that the numbers describing this traffic disagree depending
+ * on the unit they are measured in, so the mark is the disagreement itself
+ * rather than a picture of a vehicle. The two curves must never be equal;
+ * equal curves would say the numbers agree.
+ *
+ * Drawn inline rather than loaded from public/, because it is 300 bytes and a
+ * request for the header's own logo is a request the header should not make.
+ *
+ * This is the small tier. The brand package tiers the mark by size: above
+ * 96 px the second curve is dashed, below 48 px the dashes close up into a
+ * smear and both curves go solid on a thicker stroke. The header renders at
+ * 30 px, so it gets the same art as the favicon, not the art from the 1024 px
+ * icon.
  */
 function Mark() {
   return (
-    <svg className="header__mark" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-      <rect x="0" y="0" width="24" height="24" rx="4" fill="var(--surface-raised)" />
-      <rect x="3" y="5" width="13" height="2.5" rx="1.25" fill="var(--speed-100)" />
-      <rect x="7" y="10" width="9" height="2.5" rx="1.25" fill="var(--speed-75)" />
-      <rect x="3" y="15" width="6" height="2.5" rx="1.25" fill="var(--speed-50)" />
-      <rect x="12" y="15" width="3" height="2.5" rx="1.25" fill="var(--speed-25)" />
-      <rect x="3" y="20" width="18" height="1" fill="var(--border-dark-strong)" />
+    <svg className="header__mark" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+      <rect width="100" height="100" rx="14" fill="var(--paper)" />
+      <path
+        d="M12 82 Q32 12 88 82"
+        fill="none"
+        stroke="var(--asphalt)"
+        strokeWidth="15"
+        strokeLinecap="round"
+      />
+      <path
+        d="M24 84 Q50 56 76 84"
+        fill="none"
+        stroke="var(--brand-accent)"
+        strokeWidth="15"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
