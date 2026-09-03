@@ -59,6 +59,22 @@ npm run build
 - **The shared axis.** The road and the time-space diagram place a given
   position at the same fraction of their width, at any backing store size.
 
+## Reading the interface
+
+The road and the time–space record share one horizontal position axis, pixel
+for pixel, with a ruler between them that states it. A jam visible as a dark
+patch in the road sits directly above the backward-leaning stripe that is the
+same jam in the record.
+
+Speed is luminance and type is shape — never hue. Hue is spent on the one thing
+that needs categorical colour: the five equivalence estimators. Where an
+instrument has to separate vehicle types it uses value, not the estimator
+palette.
+
+A road is two orders of magnitude longer than it is wide, so the road view
+stretches its across-road axis. That stretch is capped and stated in the corner
+of the view rather than applied silently.
+
 ## Known limits
 
 It is not calibrated to any location and does not claim to be. It is one

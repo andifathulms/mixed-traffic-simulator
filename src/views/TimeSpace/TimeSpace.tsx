@@ -63,6 +63,8 @@ export function TimeSpace({
   const recorderRef = useRef<TimeSpaceRecorder | null>(null);
   const [wave, setWave] = useState<number | null>(null);
   const [span, setSpan] = useState<{ top: number; bottom: number }>({ top: 0, bottom: 0 });
+  // Whether the paper is still mostly blank, for the empty state below.
+  const [filling, setFilling] = useState(true);
 
   // A new run gets fresh paper.
   useEffect(() => {
@@ -119,6 +121,8 @@ export function TimeSpace({
           setWave(backwardWaveSpeed(tracker.events, world.geometry, after));
         }
         setSpan({ top: recorder.topTime, bottom: recorder.bottomTime });
+        const started = recorder.rowsWritten > recorder.height / 3;
+        setFilling((prev) => (prev === !started ? prev : !started));
       }
     };
 
@@ -143,6 +147,19 @@ export function TimeSpace({
           </span>
         )}
       </figcaption>
+
+      {/*
+        The empty state. A chart recorder with no paper written on it is a blank
+        white slab three hundred pixels tall, and a reader who arrives at a
+        paused simulation has no way to know it is waiting rather than broken.
+        It says what will happen, and goes when it starts happening.
+      */}
+      {filling && (
+        <p className="timespace__empty">
+          The paper fills downward as the simulation runs. Trajectories lean with
+          speed; a jam is a dark band leaning backward against the flow.
+        </p>
+      )}
 
       <p className="visually-hidden">
         Time-space diagram. Vehicle positions are recorded once every{' '}

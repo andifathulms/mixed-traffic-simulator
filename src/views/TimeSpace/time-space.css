@@ -39,3 +39,23 @@
   color: var(--ink);
   font-weight: 500;
 }
+
+/*
+ * The empty state, centred on the unwritten paper. It sits below the first
+ * rows so it never covers a trajectory, and it leaves as soon as the record
+ * has something to say.
+ */
+.timespace__empty {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 45%;
+  margin: 0 auto;
+  max-width: 46ch;
+  padding: 0 var(--s-2);
+  color: var(--ink-faint);
+  font-size: var(--t-small-size);
+  line-height: 1.6;
+  text-align: center;
+  pointer-events: none;
+}
