@@ -539,6 +539,15 @@ constant as a flat dashed rule.
 **The axis extends below zero**, because a negative estimate is a real result and clamping
 it would hide the app's best finding. Points below zero carry a warning marker.
 
+**The axis is robust, and nothing is dropped.** Two estimates at minus twenty-nine flattened
+every other series into a hairline at zero, so a chart whose entire argument is "these four
+methods disagree, and by how much" showed four coincident lines and two spikes. The window
+is the fifth to ninety-fifth percentile of the finite estimates, always widened to contain
+zero, one and the MKJI constant — the three numbers a reader compares against. An estimate
+outside that window is drawn at the edge it left through, as a triangle pointing that way,
+with its exact value printed beside it and counted in a note below. Reported, at the edge,
+never hidden and never clamped in the data.
+
 The aggregation interval control sits directly on the chart. Changing it re-derives every
 estimate from the same detector record — no re-simulation — and the series visibly move
 while ground truth and the MKJI line stay put. That contrast is the whole argument, and it

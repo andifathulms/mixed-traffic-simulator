@@ -63,16 +63,36 @@ export function EquivalenceBench({
   width = 780,
   height = 400,
 }: EquivalenceBenchProps) {
+  /*
+   * A robust axis.
+   *
+   * Two estimates at minus twenty-nine flattened every other series into a
+   * hairline at zero, so a chart whose entire argument is "these four methods
+   * disagree, and by how much" showed four coincident lines and two spikes.
+   *
+   * The window is the fifth to ninety-fifth percentile of the finite values,
+   * always widened to contain zero, one and the MKJI constant — the three
+   * numbers a reader is comparing against. Nothing is dropped or clamped in the
+   * data: a point outside the window is drawn at the edge it left through,
+   * marked as off-scale, counted in the note and printed exactly in the table.
+   * A negative estimate is reported, never hidden (CLAUDE.md §6).
+   */
   const bounds = useMemo(() => {
-    const values: number[] = [MKJI_MC_EMP, 0, 1];
+    const values: number[] = [];
     for (const p of points) {
       for (const s of SERIES) {
         const v = valueOf(p, s.key);
         if (v !== null && Number.isFinite(v)) values.push(v);
       }
     }
-    const lo = Math.min(...values);
-    const hi = Math.max(...values);
+    values.sort((a, b) => a - b);
+    const quantile = (q: number) =>
+      values.length === 0
+        ? 0
+        : values[Math.min(values.length - 1, Math.round(q * (values.length - 1)))];
+
+    const lo = Math.min(0, MKJI_MC_EMP, quantile(0.05));
+    const hi = Math.max(1, MKJI_MC_EMP, quantile(0.95));
     const padding = Math.max(0.1, (hi - lo) * 0.12);
     return { lo: lo - padding, hi: hi + padding };
   }, [points]);
@@ -84,6 +104,22 @@ export function EquivalenceBench({
   const px = (fraction: number) => pad.left + fraction * plotW;
   const py = (value: number) =>
     pad.top + plotH - ((value - bounds.lo) / (bounds.hi - bounds.lo)) * plotH;
+
+  /** Where a value is drawn, and whether it had to be brought back into view. */
+  const place = (value: number) => {
+    const clamped = Math.max(bounds.lo, Math.min(bounds.hi, value));
+    return { y: py(clamped), offScale: clamped !== value };
+  };
+
+  const offScaleCount = points.reduce(
+    (n, p) =>
+      n +
+      SERIES.filter((s) => {
+        const v = valueOf(p, s.key);
+        return v !== null && (v < bounds.lo || v > bounds.hi);
+      }).length,
+    0,
+  );
 
   const zeroY = py(0);
   const showZero = bounds.lo < 0;
@@ -210,7 +246,11 @@ export function EquivalenceBench({
             x2={pad.left + plotW}
             y2={py(MKJI_MC_EMP)}
           />
-          <text className="bench__mkji-label" x={pad.left + plotW - 4} y={py(MKJI_MC_EMP) - 5} textAnchor="end">
+          <text
+            className="bench__mkji-label"
+            x={pad.left + 6}
+            y={py(MKJI_MC_EMP) - 6}
+          >
             MKJI 1997 constant, {MKJI_MC_EMP}
           </text>
 
@@ -238,7 +278,9 @@ export function EquivalenceBench({
                 open = false;
                 continue;
               }
-              segment.push(`${open ? 'L' : 'M'}${px(p.mcFraction).toFixed(1)},${py(v).toFixed(1)}`);
+              segment.push(
+                `${open ? 'L' : 'M'}${px(p.mcFraction).toFixed(1)},${place(v).y.toFixed(1)}`,
+              );
               open = true;
             }
             return (
@@ -251,17 +293,36 @@ export function EquivalenceBench({
                 {points.map((p, i) => {
                   const v = valueOf(p, s.key);
                   if (v === null) return null;
+                  const { y, offScale } = place(v);
+                  const x = px(p.mcFraction);
                   return (
                     <g key={i}>
-                      <circle cx={px(p.mcFraction)} cy={py(v)} r={2.5} fill={s.colour} />
+                      {offScale ? (
+                        /* Drawn at the edge it left through, pointing that way,
+                           with its value beside it. Not dropped. */
+                        <g className="bench__offscale">
+                          <path
+                            d={
+                              v < bounds.lo
+                                ? `M${x - 4},${y - 5}L${x + 4},${y - 5}L${x},${y}Z`
+                                : `M${x - 4},${y + 5}L${x + 4},${y + 5}L${x},${y}Z`
+                            }
+                            fill={s.colour}
+                          />
+                          <text
+                            className="bench__offscale-label"
+                            x={x + 6}
+                            y={v < bounds.lo ? y - 6 : y + 12}
+                          >
+                            {v.toFixed(1)}
+                          </text>
+                        </g>
+                      ) : (
+                        <circle cx={x} cy={y} r={2.5} fill={s.colour} />
+                      )}
                       {/* A point below zero carries a warning marker. */}
                       {v < 0 && (
-                        <circle
-                          className="bench__warn-marker"
-                          cx={px(p.mcFraction)}
-                          cy={py(v)}
-                          r={6}
-                        />
+                        <circle className="bench__warn-marker" cx={x} cy={y} r={6} />
                       )}
                     </g>
                   );
@@ -292,6 +353,15 @@ export function EquivalenceBench({
           consume negative road space — the estimator has lost its meaning at
           this interval rather than found a new one. The value is plotted where
           it falls.
+        </p>
+      )}
+
+      {offScaleCount > 0 && (
+        <p className="bench__note">
+          {offScaleCount === 1 ? 'One estimate falls' : `${offScaleCount} estimates fall`}{' '}
+          outside the axis and {offScaleCount === 1 ? 'is' : 'are'} drawn at the edge with{' '}
+          {offScaleCount === 1 ? 'its' : 'their'} value. The axis is set to the bulk of the
+          estimates so the methods can be compared; the exact figures are in the table.
         </p>
       )}
 

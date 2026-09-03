@@ -110,3 +110,19 @@
   color: var(--ink-mid);
   padding-left: var(--s-2);
 }
+
+/* An estimate that left the axis, drawn at the edge it left through. */
+.bench__offscale-label {
+  fill: var(--ink-mid);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 10px;
+}
+
+.bench__note {
+  margin: var(--s-2) 0 0;
+  max-width: var(--measure);
+  color: var(--ink-mid);
+  font-size: var(--t-small-size);
+  line-height: 1.55;
+}
