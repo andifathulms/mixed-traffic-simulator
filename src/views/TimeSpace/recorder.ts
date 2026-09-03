@@ -1,6 +1,7 @@
 import type { World } from '../../sim/types';
 import { speedRgb } from '../render/speed-ramp';
 import { positionToPixel } from '../render/axis';
+import { CANVAS } from '../render/palette';
 
 /**
  * The time-space recorder.
@@ -51,7 +52,7 @@ export class TimeSpaceRecorder {
 
   clear(): void {
     // Paper ground, so the record reads as a chart rather than as a second road.
-    this.ctx.fillStyle = '#e9eae6';
+    this.ctx.fillStyle = CANVAS.paper;
     this.ctx.fillRect(0, 0, this.width, this.height);
     this.written = 0;
     this.lastRowTime = -Infinity;

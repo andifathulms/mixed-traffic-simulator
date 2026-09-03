@@ -3,6 +3,7 @@ import type { World } from '../../sim/types';
 import { useCanvas } from '../render/useCanvas';
 import { speedRgb } from '../render/speed-ramp';
 import { positionToPixel } from '../render/axis';
+import { CANVAS } from '../render/palette';
 import './heatmap.css';
 
 export interface SpeedHeatmapProps {
@@ -43,7 +44,7 @@ export function SpeedHeatmap({
     const buffer = bufferRef.current;
     if (buffer) {
       const bctx = buffer.getContext('2d')!;
-      bctx.fillStyle = '#e9eae6';
+      bctx.fillStyle = CANVAS.paper;
       bctx.fillRect(0, 0, buffer.width, buffer.height);
     }
   }, [generation]);
@@ -71,7 +72,7 @@ export function SpeedHeatmap({
         buffer.width = columns;
         buffer.height = rows;
         const bctx = buffer.getContext('2d')!;
-        bctx.fillStyle = '#e9eae6';
+        bctx.fillStyle = CANVAS.paper;
         bctx.fillRect(0, 0, columns, rows);
         bufferRef.current = buffer;
         stateRef.current = { lastRow: -Infinity, written: 0 };
@@ -81,7 +82,7 @@ export function SpeedHeatmap({
       const state = stateRef.current;
       if (world.t >= state.lastRow + secondsPerRow) {
         if (world.t < state.lastRow) {
-          bctx.fillStyle = '#e9eae6';
+          bctx.fillStyle = CANVAS.paper;
           bctx.fillRect(0, 0, columns, rows);
           state.written = 0;
         }

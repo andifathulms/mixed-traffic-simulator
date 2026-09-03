@@ -3,6 +3,7 @@ import { leftEdgeAt, rightEdgeAt } from '../../sim/geometry';
 import { speedColour } from '../render/speed-ramp';
 import { drawVehicleBody, headingOf } from '../render/vehicle-shape';
 import { positionToPixel } from '../render/axis';
+import { CANVAS } from '../render/palette';
 
 export interface RoadViewport {
   /** Metres of road at the left edge of the view. */
@@ -15,10 +16,10 @@ export interface RoadViewport {
   dpr: number;
 }
 
-const ASPHALT = '#191c1e';
-const ASPHALT_EDGE = '#0f1112';
-const MARKING = '#8e9a9c';
-const SELECT = '#e4e9e7';
+const ASPHALT = CANVAS.asphalt;
+const ASPHALT_EDGE = CANVAS.asphaltEdge;
+const MARKING = CANVAS.marking;
+const SELECT = CANVAS.select;
 
 /**
  * Interpolated longitudinal position for smooth drawing.
@@ -193,7 +194,11 @@ function drawSignal(
   // The aspect as a small bar beside the road — not a floating traffic-light
   // icon (DESIGN.md §5.1).
   const colour =
-    s.aspect === 'green' ? '#3e8e5a' : s.aspect === 'amber' ? '#d89a2b' : '#c0392b';
+    s.aspect === 'green'
+      ? CANVAS.signal.green
+      : s.aspect === 'amber'
+        ? CANVAS.signal.amber
+        : CANVAS.signal.red;
   ctx.fillStyle = colour;
   ctx.fillRect(px - 2, roadTop - 7, 4, 5);
 }

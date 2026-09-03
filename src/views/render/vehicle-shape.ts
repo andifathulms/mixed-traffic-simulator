@@ -1,4 +1,5 @@
 import type { Vehicle, VehicleType } from '../../sim/types';
+import { CANVAS } from './palette';
 
 /**
  * Type is shape (DESIGN.md §2.3).
@@ -68,7 +69,7 @@ export function drawVehicleBody(
       if (w > 12) {
         ctx.save();
         ctx.globalAlpha = 0.45;
-        ctx.fillStyle = '#191c1e';
+        ctx.fillStyle = CANVAS.asphalt;
         ctx.fillRect(w / 2 - w * 0.22, -h / 2, Math.max(1, w * 0.02), h);
         ctx.restore();
       }
