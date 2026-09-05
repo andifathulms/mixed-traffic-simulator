@@ -77,6 +77,9 @@ export function InstrumentBay({
   const benchPoints: BenchPoint[] = useMemo(
     () =>
       sweepPoints.map((p) => ({
+        value: p.value,
+        seriesKey: p.seriesKey,
+        seriesLabel: p.seriesLabel,
         mcFraction: p.mcFraction,
         truth: p.truth,
         headway: p.headway,
@@ -131,6 +134,10 @@ export function InstrumentBay({
               onIntervalChange={(interval: AggregationInterval) =>
                 onChange({ aggregationInterval: interval })
               }
+              variable={state.sweepVariable}
+              onVariableChange={(sweepVariable) => onChange({ sweepVariable })}
+              comparison={state.sweepComparison}
+              onComparisonChange={(sweepComparison) => onChange({ sweepComparison })}
               progress={sweepProgress}
               onRun={onRunSweep}
               onCancel={onCancelSweep}

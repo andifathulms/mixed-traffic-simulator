@@ -3,11 +3,23 @@ import type { EmpEstimate } from '../../estimators';
 import { AGGREGATION_INTERVALS, type AggregationInterval } from '../../estimators';
 import { MKJI_MC_EMP, CITATIONS } from '../../sim/defaults';
 import { Citation } from '../../ui/Citation';
+import { runCount, DEFAULT_REPLICATES } from '../../batch/useSweep';
+import {
+  SWEEP_COMPARISONS,
+  SWEEP_VARIABLES,
+  type SweepComparison,
+  type SweepVariable,
+} from '../../batch/protocol';
 import './bench.css';
 
 /** One swept point: a motorcycle fraction and every method's answer at it. */
 export interface BenchPoint {
+  /** The swept variable's value at this point. The chart's x. */
+  value: number;
   mcFraction: number;
+  /** Which comparison arm produced it. Empty when nothing is being compared. */
+  seriesKey?: string;
+  seriesLabel?: string;
   truth: number | null;
   headway: EmpEstimate;
   regression: EmpEstimate;
@@ -19,6 +31,10 @@ export interface EquivalenceBenchProps {
   points: BenchPoint[];
   interval: AggregationInterval;
   onIntervalChange: (interval: AggregationInterval) => void;
+  variable: SweepVariable;
+  onVariableChange: (variable: SweepVariable) => void;
+  comparison: SweepComparison;
+  onComparisonChange: (comparison: SweepComparison) => void;
   /** Progress of a running sweep, 0..1, or null when idle. */
   progress: number | null;
   onRun: () => void;
@@ -26,6 +42,42 @@ export interface EquivalenceBenchProps {
   width?: number;
   height?: number;
 }
+
+const VARIABLE_LABELS: Record<SweepVariable, string> = {
+  mcFraction: 'Motorcycle share',
+  width: 'Road width',
+  inflow: 'Inflow',
+  green: 'Green time',
+};
+
+const VARIABLE_AXIS: Record<SweepVariable, string> = {
+  mcFraction: 'motorcycle share of flow',
+  width: 'road width, m',
+  inflow: 'inflow, veh/h',
+  green: 'green time, s',
+};
+
+/** Each swept variable is a different quantity and prints in its own unit. */
+function formatSweepValue(variable: SweepVariable, value: number): string {
+  switch (variable) {
+    case 'mcFraction':
+      return `${Math.round(value * 100)}%`;
+    case 'width':
+      return `${value.toFixed(1)} m`;
+    case 'inflow':
+      return `${Math.round(value)}`;
+    case 'green':
+      return `${Math.round(value)} s`;
+  }
+}
+
+const COMPARISON_LABELS: Record<SweepComparison, string> = {
+  none: 'nothing',
+  lateralRule: 'lateral rule',
+  seed: 'repeat runs',
+  station: 'detector station',
+  rhk: 'motorcycle stop box',
+};
 
 const SERIES = [
   { key: 'truth', label: 'Ground truth (substitution)', colour: 'var(--method-truth)' },
@@ -138,6 +190,10 @@ export function EquivalenceBench({
   points,
   interval,
   onIntervalChange,
+  variable,
+  onVariableChange,
+  comparison,
+  onComparisonChange,
   progress,
   onRun,
   onCancel,
@@ -178,11 +234,84 @@ export function EquivalenceBench({
     return { lo: lo - padding, hi: hi + padding };
   }, [points]);
 
+  /*
+   * The comparison, collapsed to a band per method.
+   *
+   * PRD §7.1 asks for the spread rather than a single number when an estimate
+   * moves across the lateral rules, and the same argument applies to every
+   * other choice the reader can now hold against the sweep. Drawing one line
+   * per method per arm would be up to fifteen lines; a band between the lowest
+   * and highest arm, with the median drawn through it, says the same thing and
+   * can be read.
+   *
+   * Grouping is by the swept value, so the arms line up at each x.
+   */
+  const comparing = comparison !== 'none';
+
+  const bands = useMemo(() => {
+    const byValue = new Map<number, BenchPoint[]>();
+    for (const p of points) {
+      const list = byValue.get(p.value) ?? [];
+      list.push(p);
+      byValue.set(p.value, list);
+    }
+    const xs = [...byValue.keys()].sort((a, b) => a - b);
+
+    return SERIES.map((series) => {
+      const spans = xs.map((x) => {
+        const arms = byValue.get(x) ?? [];
+        const values = arms
+          .map((p) => valueOf(p, series.key))
+          .filter((v): v is number => v !== null && Number.isFinite(v))
+          .sort((a, b) => a - b);
+        if (values.length === 0) return null;
+        return {
+          x,
+          lo: values[0],
+          hi: values[values.length - 1],
+          mid: values[Math.floor((values.length - 1) / 2)],
+          arms: values.length,
+        };
+      });
+      const present = spans.filter((v): v is NonNullable<typeof v> => v !== null);
+      const widest = present.reduce((w, v) => Math.max(w, v.hi - v.lo), 0);
+      return { series, spans, widest };
+    });
+  }, [points, comparison]);
+
+  /** The arms actually seen, in first-appearance order, for the caption. */
+  const armLabels = useMemo(() => {
+    const seen = new Map<string, string>();
+    for (const p of points) {
+      if (p.seriesKey && !seen.has(p.seriesKey)) {
+        seen.set(p.seriesKey, p.seriesLabel || p.seriesKey);
+      }
+    }
+    return [...seen.values()];
+  }, [points]);
+
   const pad = { left: 52, right: 12, top: 14, bottom: 40 };
   const plotW = width - pad.left - pad.right;
   const plotH = height - pad.top - pad.bottom;
 
-  const px = (fraction: number) => pad.left + fraction * plotW;
+  /*
+   * The x axis spans the swept variable, whatever it is.
+   *
+   * It used to be hardwired to motorcycle share from 0 to 0.9, which was
+   * correct while that was the only thing the bench could sweep and silently
+   * wrong the moment it could sweep road width: every point would have landed
+   * on one x.
+   */
+  const domain = useMemo(() => {
+    const vs = points.map((p) => p.value);
+    if (vs.length === 0) return { lo: 0, hi: 1 };
+    const lo = Math.min(...vs);
+    const hi = Math.max(...vs);
+    return hi > lo ? { lo, hi } : { lo, hi: lo + 1 };
+  }, [points]);
+
+  const px = (value: number) =>
+    pad.left + ((value - domain.lo) / (domain.hi - domain.lo)) * plotW;
   const py = (value: number) =>
     pad.top + plotH - ((value - bounds.lo) / (bounds.hi - bounds.lo)) * plotH;
 
@@ -244,10 +373,58 @@ export function EquivalenceBench({
           </div>
         </fieldset>
 
+        <label className="field bench__field">
+          <span className="label">Sweep</span>
+          <select
+            value={variable}
+            onChange={(e) => onVariableChange(e.target.value as SweepVariable)}
+            disabled={progress !== null}
+          >
+            {SWEEP_VARIABLES.map((v) => (
+              <option key={v} value={v}>
+                {VARIABLE_LABELS[v]}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        {/*
+          The second dimension. Everything in this list is a choice the app
+          used to make silently on the reader's behalf, and each one moves the
+          answer; that they move it is the app's whole argument.
+        */}
+        <label className="field bench__field">
+          <span className="label">Compare across</span>
+          <select
+            value={comparison}
+            onChange={(e) => onComparisonChange(e.target.value as SweepComparison)}
+            disabled={progress !== null}
+          >
+            {SWEEP_COMPARISONS.map((c) => (
+              <option key={c} value={c}>
+                {COMPARISON_LABELS[c]}
+              </option>
+            ))}
+          </select>
+        </label>
+
         {progress === null ? (
-          <button type="button" className="btn btn--primary" onClick={onRun}>
-            {points.length > 0 ? 'Run sweep again' : 'Run sweep'}
-          </button>
+          <>
+            <button type="button" className="btn btn--primary" onClick={onRun}>
+              {points.length > 0 ? 'Run sweep again' : 'Run sweep'}
+            </button>
+            {/*
+              The size of what is about to start, in runs.
+
+              A count and not a duration on purpose: how long a run takes
+              depends on the machine, and a estimate in minutes would be a
+              claim that goes stale on hardware I have never seen. The count
+              is exact, and the progress bar handles the rest.
+            */}
+            <span className="bench__cost">
+              {runCount(variable, comparison, DEFAULT_REPLICATES, true)} runs
+            </span>
+          </>
         ) : (
           <span className="bench__progress">
             <progress value={progress} max={1} />
@@ -260,8 +437,11 @@ export function EquivalenceBench({
 
       {points.length === 0 ? (
         <p className="bench__empty">
-          No sweep yet. Running one simulates the corridor across motorcycle
-          shares from 0 to 90 per cent and applies every method to each run.
+          No sweep yet. Running one simulates the corridor across a range of{' '}
+          {VARIABLE_AXIS[variable]} and applies every method to each run
+          {comparison === 'none'
+            ? '.'
+            : `, once per ${COMPARISON_LABELS[comparison]}, so the spread each method shows across that choice can be read off the chart.`}
         </p>
       ) : (
         <svg
@@ -318,6 +498,33 @@ export function EquivalenceBench({
             y2={pad.top + plotH}
           />
 
+          {/*
+            The spread, drawn behind the lines. Between the lowest and highest
+            arm at each swept value, so a method whose answer barely moves
+            across the comparison shows a hairline and one that swings shows a
+            slab. That difference is the reading.
+          */}
+          {comparing &&
+            bands.map(({ series, spans }) => {
+              const present = spans.filter(
+                (v): v is NonNullable<typeof v> => v !== null,
+              );
+              if (present.length < 2) return null;
+              const top = present.map((v) => `${px(v.x).toFixed(1)},${place(v.hi).y.toFixed(1)}`);
+              const bottom = present
+                .slice()
+                .reverse()
+                .map((v) => `${px(v.x).toFixed(1)},${place(v.lo).y.toFixed(1)}`);
+              return (
+                <polygon
+                  key={`band-${series.key}`}
+                  className="bench__band"
+                  points={[...top, ...bottom].join(' ')}
+                  fill={series.colour}
+                />
+              );
+            })}
+
           {/* MKJI's constant, as a flat dashed rule rather than a series —
               it is different in kind from the four estimates. */}
           <line
@@ -339,11 +546,20 @@ export function EquivalenceBench({
             MKJI 1997 constant, {MKJI_MC_EMP}
           </text>
 
-          {[0, 0.25, 0.5, 0.75, 0.9].map((f) => (
-            <text key={f} className="bench__tick" x={px(f)} y={height - 22} textAnchor="middle">
-              {Math.round(f * 100)}%
-            </text>
-          ))}
+          {/* Five ticks across whatever was swept, formatted in its own unit. */}
+          {Array.from({ length: 5 }, (_, i) => domain.lo + ((domain.hi - domain.lo) * i) / 4).map(
+            (v) => (
+              <text
+                key={v}
+                className="bench__tick"
+                x={px(v)}
+                y={height - 22}
+                textAnchor="middle"
+              >
+                {formatSweepValue(variable, v)}
+              </text>
+            ),
+          )}
           {[bounds.lo, (bounds.lo + bounds.hi) / 2, bounds.hi].map((v, i) => (
             <text key={i} className="bench__tick" x={pad.left - 6} y={py(v) + 4} textAnchor="end">
               {v.toFixed(2)}
@@ -351,20 +567,29 @@ export function EquivalenceBench({
           ))}
 
           <text className="bench__axis-label" x={pad.left + plotW / 2} y={height - 6} textAnchor="middle">
-            motorcycle share of flow
+            {VARIABLE_AXIS[variable]}
           </text>
 
-          {SERIES.map((s) => {
+          {/*
+            One line per method, drawn from the band's median arm.
+            
+            Driving the line off the bands rather than off the raw points is
+            what keeps a comparison legible: with three arms per swept value
+            the raw list holds three entries at each x, and joining them in
+            order draws a zigzag between arms instead of a trend. When nothing
+            is being compared each value has exactly one arm and the median is
+            that value, so this is the same line as before.
+          */}
+          {bands.map(({ series: s, spans }) => {
             const segment: string[] = [];
             let open = false;
-            for (const p of points) {
-              const v = valueOf(p, s.key);
-              if (v === null) {
+            for (const span of spans) {
+              if (span === null) {
                 open = false;
                 continue;
               }
               segment.push(
-                `${open ? 'L' : 'M'}${px(p.mcFraction).toFixed(1)},${place(v).y.toFixed(1)}`,
+                `${open ? 'L' : 'M'}${px(span.x).toFixed(1)},${place(span.mid).y.toFixed(1)}`,
               );
               open = true;
             }
@@ -375,11 +600,11 @@ export function EquivalenceBench({
                   d={segment.join('')}
                   stroke={s.colour}
                 />
-                {points.map((p, i) => {
-                  const v = valueOf(p, s.key);
-                  if (v === null) return null;
+                {spans.map((span, i) => {
+                  if (span === null) return null;
+                  const v = span.mid;
                   const { y, offScale } = place(v);
-                  const x = px(p.mcFraction);
+                  const x = px(span.x);
                   return (
                     <g key={i}>
                       {offScale ? (
@@ -449,6 +674,27 @@ export function EquivalenceBench({
           <Citation marker="source" text={CITATIONS.mkjiEmp.text} />
         </li>
       </ul>
+
+      {/*
+        The spread, stated rather than left to be eyeballed off the bands.
+        PRD §7.1 asks for this in words: when the estimate moves across the
+        comparison, show the spread instead of a single number.
+      */}
+      {comparing && armLabels.length > 1 && (
+        <p className="bench__note">
+          Each band spans {armLabels.length} runs, one per{' '}
+          {COMPARISON_LABELS[comparison]}: {armLabels.join(', ')}. The line is the
+          middle run. Widest spread at any point on the sweep:{' '}
+          {bands
+            .filter((b) => b.widest > 0)
+            .sort((a, b) => b.widest - a.widest)
+            .map((b) => `${b.series.label.toLowerCase()} ${b.widest.toFixed(2)}`)
+            .join(', ') || 'none — every method returned the same value'}
+          . A method whose band is a hairline did not care which{' '}
+          {COMPARISON_LABELS[comparison]} it was given; a method whose band is a
+          slab was reporting that choice as much as it was reporting the traffic.
+        </p>
+      )}
 
       {anyNegative && (
         <p className="bench__warning">

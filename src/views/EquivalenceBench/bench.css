@@ -126,3 +126,30 @@
   font-size: var(--t-small-size);
   line-height: 1.55;
 }
+
+/*
+ * The comparison band: between the lowest and highest arm at each swept value.
+ *
+ * Faint on purpose. Five overlapping bands at any real opacity turn the plot
+ * into mud, and the band is context for the line rather than the reading
+ * itself — the number a reader takes away is still the median line, and the
+ * band says how much that number depended on a choice they did not make.
+ */
+.bench__band {
+  fill-opacity: 0.13;
+  stroke: none;
+}
+
+/* The two sweep selects sit with the interval control, not above it. */
+.bench__field {
+  display: flex;
+  gap: var(--s-05);
+  align-items: center;
+}
+
+.bench__cost {
+  color: var(--ink-faint);
+  font-family: var(--font-mono);
+  font-size: var(--t-micro-size);
+  font-variant-numeric: tabular-nums;
+}

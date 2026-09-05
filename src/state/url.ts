@@ -6,6 +6,7 @@ import type { ScenarioId } from '../scenarios/types';
 import type { ArrivalProcess, LateralRuleId, Params } from '../sim/types';
 import { AGGREGATION_INTERVALS, type AggregationInterval } from '../estimators';
 import { scenarioParams } from '../scenarios/build';
+import { SWEEP_COMPARISONS, SWEEP_VARIABLES } from '../batch/protocol';
 
 /**
  * URL serialisation.
@@ -46,6 +47,9 @@ export function stateToSearch(state: AppState): string {
   if (state.seed !== scenario.seed) p.set('seed', String(state.seed));
   if (state.lateralRule !== defaults.lateralRule) p.set('rule', state.lateralRule);
   if (state.speed !== 1) p.set('x', String(state.speed));
+  // A surprising comparison has to be linkable like anything else (PRD §7.3).
+  if (state.sweepVariable !== 'mcFraction') p.set('sv', state.sweepVariable);
+  if (state.sweepComparison !== 'none') p.set('sc', state.sweepComparison);
   if (state.aggregationInterval !== 300) p.set('agg', String(state.aggregationInterval));
   if (state.tab !== 'bench') p.set('tab', state.tab);
 
@@ -180,7 +184,20 @@ export function searchToState(search: string): AppState {
     selectedVehicle: null,
     aggregationInterval,
     tab: (p.get('tab') as AppState['tab']) ?? 'bench',
+    sweepVariable: pick(p, 'sv', SWEEP_VARIABLES, 'mcFraction'),
+    sweepComparison: pick(p, 'sc', SWEEP_COMPARISONS, 'none'),
   };
+}
+
+/** Reads one of a fixed set from the query, falling back to the default. */
+function pick<T extends string>(
+  p: URLSearchParams,
+  key: string,
+  allowed: readonly T[],
+  fallback: T,
+): T {
+  const raw = p.get(key) as T | null;
+  return raw && allowed.includes(raw) ? raw : fallback;
 }
 
 export { DEFAULT_PARAMS };

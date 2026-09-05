@@ -19,7 +19,12 @@ import { InstrumentBay } from './InstrumentBay';
 import { Parameters } from './Parameters';
 import { Warnings } from './Warnings';
 import { MakerSignature } from './MakerSignature';
-import { useSweep, measureSecondsFor } from '../batch/useSweep';
+import {
+  useSweep,
+  measureSecondsFor,
+  sweepValues,
+  DEFAULT_REPLICATES,
+} from '../batch/useSweep';
 import './app.css';
 
 function useNarrow(): boolean {
@@ -179,9 +184,13 @@ export function App() {
       scenario: 'bench',
       params: { ...state.params, inflow: 4000 },
       seed: state.seed,
-      variable: 'mcFraction',
+      variable: state.sweepVariable,
+      comparison: state.sweepComparison,
+      replicates: DEFAULT_REPLICATES,
       // Zero to ninety per cent, the app's principal independent variable.
-      values: Array.from({ length: 19 }, (_, i) => i * 0.05),
+      // Coarser when a comparison is on, so turning one on costs about what
+      // one sweep costs rather than three (see sweepValues).
+      values: sweepValues(state.sweepVariable, state.sweepComparison, DEFAULT_REPLICATES),
       interval: state.aggregationInterval,
       warmup: 90,
       measure,
@@ -190,7 +199,14 @@ export function App() {
       // disagreeing with nothing to be wrong about.
       includeTruth: true,
     });
-  }, [sweep, state.params, state.seed, state.aggregationInterval]);
+  }, [
+    sweep,
+    state.params,
+    state.seed,
+    state.aggregationInterval,
+    state.sweepVariable,
+    state.sweepComparison,
+  ]);
 
   // Keyboard transport controls (PRD §9.8).
   useEffect(() => {

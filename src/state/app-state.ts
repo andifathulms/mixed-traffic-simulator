@@ -1,5 +1,6 @@
 import type { LateralRuleId, Params } from '../sim/types';
 import type { ScenarioId } from '../scenarios/types';
+import type { SweepComparison, SweepVariable } from '../batch/protocol';
 import type { AggregationInterval } from '../estimators';
 
 export type InstrumentTab =
@@ -58,6 +59,10 @@ export interface AppState {
   aggregationInterval: AggregationInterval;
   tab: InstrumentTab;
   overrides: ScenarioOverrides;
+  /** What the bench sweeps along the x axis (PRD §4.9). */
+  sweepVariable: SweepVariable;
+  /** The dimension the bench holds against it. */
+  sweepComparison: SweepComparison;
 }
 
 export const SPEED_STEPS = [0.25, 0.5, 1, 2, 4, 8, 16] as const;
