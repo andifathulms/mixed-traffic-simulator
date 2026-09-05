@@ -2,7 +2,7 @@
 
 /* The cut-off between the saturated part of green and its tail. */
 .discharge__cut {
-  stroke: var(--ink-faint);
+  stroke: var(--ink-line);
   stroke-width: 1;
   stroke-dasharray: 2 3;
 }

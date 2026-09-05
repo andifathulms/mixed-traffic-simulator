@@ -23,9 +23,13 @@ export interface HeaderProps {
  * the fleet size or the mean speed in words, so a reader could watch a jam
  * form and still not be able to say how fast anything was going.
  *
- * The scenario's own sentence and the non-calibration fact sit below the band
- * on a quieter strip, where they can be read once and then ignored, rather
- * than competing with the controls for the same eye.
+ * What this is gets its own line below the band rather than a caption slot
+ * inside the brand block. Squeezed beside the title it had to be 11 px and
+ * clamped to 44 characters, which made the one sentence that explains the app
+ * the least readable text on the page. It now has the full width, and the
+ * scenario's own sentence and the non-calibration fact sit under it in the
+ * smaller size, so the strip reads top down: what this is, what you are
+ * looking at, and what it does not claim.
  */
 export function Header({ scenario, state, onChange, worldRef, tick }: HeaderProps) {
   return (
@@ -33,13 +37,7 @@ export function Header({ scenario, state, onChange, worldRef, tick }: HeaderProp
       <div className="header__bar">
         <div className="header__brand">
           <Mark />
-          <div className="header__names">
-            <h1 className="header__title">Mixed traffic simulator</h1>
-            <p className="header__descriptor">
-              Motorcycle-dominated traffic, and why the numbers that describe it
-              disagree
-            </p>
-          </div>
+          <h1 className="header__title">Mixed traffic simulator</h1>
         </div>
 
         <div className="header__controls">
@@ -72,9 +70,18 @@ export function Header({ scenario, state, onChange, worldRef, tick }: HeaderProp
       </div>
 
       <div className="header__strip">
-        <p className="header__blurb">{scenario.blurb}</p>
-        {/* PRD §7.4, stated once, as a fact. */}
-        <p className="header__notice">{NON_CALIBRATION_NOTICE}</p>
+        <p className="header__descriptor">
+          Motorcycle-dominated traffic, and why the numbers that describe it
+          disagree.{' '}
+          <a className="header__jump" href="#instruments">
+            Compare the five methods ↓
+          </a>
+        </p>
+        <div className="header__context">
+          <p className="header__blurb">{scenario.blurb}</p>
+          {/* PRD §7.4, stated once, as a fact. */}
+          <p className="header__notice">{NON_CALIBRATION_NOTICE}</p>
+        </div>
       </div>
     </header>
   );

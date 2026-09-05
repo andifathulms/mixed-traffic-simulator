@@ -45,17 +45,31 @@
  * rows so it never covers a trajectory, and it leaves as soon as the record
  * has something to say.
  */
+/*
+ * The empty state carries the explanation of what this panel is, so it is set
+ * at body size rather than as a caption. It is the largest region of the
+ * landing view and, until a reader has seen a trajectory drawn, the only thing
+ * telling them what they are about to look at.
+ */
 .timespace__empty {
   position: absolute;
   left: 0;
   right: 0;
-  top: 45%;
+  top: 30%;
   margin: 0 auto;
-  max-width: 46ch;
+  max-width: 54ch;
   padding: 0 var(--s-2);
-  color: var(--ink-faint);
-  font-size: var(--t-small-size);
-  line-height: 1.6;
+  color: var(--ink-mid);
+  font-size: var(--t-body-size);
+  line-height: 1.55;
   text-align: center;
+  text-wrap: balance;
   pointer-events: none;
+}
+
+.timespace__empty strong {
+  display: block;
+  margin-bottom: var(--s-05);
+  color: var(--ink);
+  font-weight: 600;
 }

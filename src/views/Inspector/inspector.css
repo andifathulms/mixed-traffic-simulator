@@ -104,7 +104,7 @@
   position: absolute;
   top: 3px;
   bottom: 3px;
-  background: var(--ink-faint);
+  background: var(--ink-line);
   border-radius: 2px;
   transition: width var(--d-select) var(--ease-out),
     left var(--d-select) var(--ease-out);

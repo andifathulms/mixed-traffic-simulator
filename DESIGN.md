@@ -85,7 +85,7 @@ ground is now a scale.
 | `--border-dark-strong` | `#414B4D` | The same, hovered, and ruler ticks. |
 | `--on-dark` | `#E8ECE9` | Text and marks on the dark ground. |
 | `--on-dark-mid` | `#A2ACAC` | Labels. |
-| `--on-dark-faint` | `#6E7878` | Ticks, units, keyboard hints. |
+| `--on-dark-faint` | `#7E8888` | Ticks, units, keyboard hints. Clears 4.5:1 on all four dark grounds; the tightest is `--surface` at 4.56. |
 | `--marking` | `#8E9A9C` | Lane markings, stop lines, RHK box outline. Never pure white — thermoplastic is grey in real light. |
 
 **The paper ground** — the record, and everything that reads it.
@@ -99,7 +99,14 @@ ground is now a scale.
 | `--rule-strong` | `#BCC0B8` | Chart axes, which must out-weigh a gridline. |
 | `--ink` | `#171A1A` | Text and marks on paper. |
 | `--ink-mid` | `#54595A` | Labels, axis text. |
-| `--ink-faint` | `#8A908F` | Ticks, disabled. |
+| `--ink-faint` | `#626867` | Ticks, disabled, secondary text. Clears 4.5:1 on both paper grounds; the tightest is `--paper-sunken` at 4.52. |
+| `--ink-line` | `#8A908F` | **Not text.** Dashed reference lines and the inspector's term bar. This is the old `--ink-faint`: when that token was raised to meet AA as text, the lines that had borrowed it would have become heavy, so the line role kept the original value. Contrast minimums do not apply; `tests/tokens.test.ts` fails the build if anything paints `color` or `fill` with it. |
+
+Every colour in these two tables that carries text meets WCAG AA against every ground it
+is used on. That is asserted in `tests/tokens.test.ts` rather than left to inspection: the
+faint tokens were previously below AA on every ground, and because six components read
+their text colour from those two tokens, the failure was invisible six times over and
+fixable once.
 
 Dark road, light instruments, in one view. Do not unify them — the contrast between the
 lit road and the paper record is the app's structure, and flattening it into a single dark
@@ -240,14 +247,20 @@ No third family. The app has almost no running prose and does not need another v
 
 ### 3.1 Scale
 
-Base 15 px, ratio ~1.25, tracking tightened as size rises and opened only at label size.
+Base 16 px, ratio ~1.25, tracking tightened as size rises and opened only at label size.
+
+Body is 16 px, which is the floor for prose a visitor has to read in order to understand
+the app: the descriptor, the scenario blurb, empty-state captions. The smaller steps below
+it are for labelling data — axis ticks, units, vehicle IDs — and stay where they are.
+Setting an axis tick at 16 px would break every chart in the app in order to satisfy a
+rule that was written about paragraphs.
 
 | Token | Size / line-height / tracking | Face | Use |
 |---|---|---|---|
 | `--t-display` | 34 / 1.05 / −0.02em, 600 | Overpass Mono | The headline figure: emp value, capacity |
 | `--t-figure` | 26 / 1.05 / −0.015em, 600 | Overpass Mono | Live readouts, panel values |
 | `--t-h2` | 17 / 1.25 / −0.008em, 600 | Overpass | Panel and instrument headings |
-| `--t-body` | 15 / 1.55, 400 | Overpass | Explanatory copy. Max 68 characters. |
+| `--t-body` | 16 / 1.55, 400 | Overpass | Explanatory copy. Max 68 characters. |
 | `--t-data` | 13 / 1.45, 400 | Overpass Mono | Tables, parameter values, axis numbers |
 | `--t-small` | 12.5 / 1.4, 400 | Overpass | Subtitles, hints, legend |
 | `--t-label` | 11.5 / 1.3 / +0.04em, 500 | Overpass | Field and axis labels |

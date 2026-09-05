@@ -52,13 +52,7 @@
   color: var(--on-dark);
 }
 
-.header__descriptor {
-  margin: 1px 0 0;
-  max-width: 44ch;
-  color: var(--on-dark-faint);
-  font-size: var(--t-micro-size);
-  line-height: var(--t-micro-line);
-}
+
 
 .header__controls {
   display: flex;
@@ -159,11 +153,34 @@
 .header__strip {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--s-1) var(--s-2);
+  gap: var(--s-05) var(--s-2);
   align-items: baseline;
-  padding: var(--s-1) var(--s-3);
+  padding: var(--s-1) var(--s-3) 10px;
   background: var(--asphalt-edge);
   border-top: 1px solid var(--border-dark);
+}
+
+/*
+ * The one sentence that says what this is. Body size, in the mid ink rather
+ * than the faint: it is the first thing a stranger reads and it used to be the
+ * smallest, faintest text on the page.
+ */
+.header__descriptor {
+  margin: 0;
+  flex-basis: 100%;
+  max-width: var(--measure);
+  color: var(--on-dark);
+  font-size: var(--t-body-size);
+  line-height: 1.4;
+}
+
+/* The scenario's sentence and the caveat, under the pitch rather than beside it. */
+.header__context {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-1) var(--s-2);
+  align-items: baseline;
+  flex-basis: 100%;
 }
 
 .header__blurb,
@@ -182,6 +199,36 @@
   padding-left: var(--s-2);
   border-left: 1px solid var(--border-dark);
   color: var(--on-dark-faint);
+}
+
+/*
+ * From the claim to the evidence.
+ *
+ * The charts that show the methods disagreeing are below the fold, and until
+ * now nothing on the first screen pointed at them. Set in the running text
+ * rather than as a button, because it is a cross-reference and not a call to
+ * action.
+ */
+.header__jump {
+  color: var(--on-dark-mid);
+  text-decoration: underline;
+  text-decoration-color: var(--border-dark-strong);
+  text-underline-offset: 3px;
+  white-space: nowrap;
+  transition: color var(--d-control) var(--ease-standard),
+    text-decoration-color var(--d-control) var(--ease-standard);
+}
+
+.header__jump:hover,
+.header__jump:focus-visible {
+  color: var(--on-dark);
+  text-decoration-color: var(--brand-accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .header__jump {
+    transition: none;
+  }
 }
 
 /* ================================================================= stage */
@@ -215,10 +262,15 @@
   color: var(--on-dark);
 }
 
+/*
+ * One step up from micro. These two notes are the only thing in the main view
+ * that explains what the two panels are, so they are read once by every
+ * first-time visitor and were set smaller than the axis ticks.
+ */
 .stage__tag-note {
   color: var(--on-dark-faint);
-  font-size: var(--t-micro-size);
-  line-height: var(--t-micro-line);
+  font-size: var(--t-small-size);
+  line-height: var(--t-small-line);
 }
 
 /*
@@ -325,6 +377,8 @@
 
 /* §4.3 The instrument bay, on paper ground. */
 .bay {
+  /* The skip link and the header's cross-reference both land here. */
+  scroll-margin-top: var(--s-2);
   display: grid;
   grid-template-columns: minmax(320px, 27rem) 1fr;
   gap: 1px;

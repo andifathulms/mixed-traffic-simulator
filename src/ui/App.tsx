@@ -234,12 +234,19 @@ export function App() {
       <div className="app__axis">
         <div className="stage__tag">
           <span className="label">Road</span>
+          {/*
+            Written for a first read rather than for someone who already knows
+            the encoding. "Speed is luminance" is exact and means nothing until
+            you have been told what luminance is doing here.
+          */}
           <span className="stage__tag-note">
-            {scenario.geometry.ring ? 'ring, drawn as a ring' : 'corridor, unrolled'}
+            {scenario.geometry.ring
+              ? `a ${Math.round(scenario.geometry.length)} m loop, drawn as a ring`
+              : 'the road, seen from above'}
             <span className="sep" aria-hidden="true">
               ·
             </span>
-            speed is luminance
+            each mark is a vehicle, brighter means faster
           </span>
         </div>
         <Road
@@ -261,11 +268,11 @@ export function App() {
         <div className="stage__tag">
           <span className="label">Record</span>
           <span className="stage__tag-note">
-            time–space, same position axis
+            every vehicle&apos;s path, on the same left-to-right positions
             <span className="sep" aria-hidden="true">
               ·
             </span>
-            time runs downward
+            a backward-leaning stripe is a jam
           </span>
         </div>
         <TimeSpace
@@ -282,7 +289,12 @@ export function App() {
 
       <Warnings worldRef={worldRef} count={warningCount} />
 
-      <main className="app__main" id="instruments">
+      {/*
+        The instruments anchor lives on the instrument bay itself, not here.
+        On <main> it covered the road and the record too, so "Skip to
+        instruments" landed at the top of the page and skipped nothing.
+      */}
+      <main className="app__main">
         <InstrumentBay
           state={state}
           scenario={scenario}

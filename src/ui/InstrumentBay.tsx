@@ -97,7 +97,7 @@ export function InstrumentBay({
   );
 
   return (
-    <section className="bay on-paper" aria-label="Instruments">
+    <section className="bay on-paper" id="instruments" aria-label="Instruments">
       {!narrow && <div className="bay__fd">{fd}</div>}
 
       <div className="bay__panel">

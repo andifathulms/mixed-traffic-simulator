@@ -7,7 +7,7 @@
  */
 .fd__curve {
   fill: none;
-  stroke: var(--ink-faint);
+  stroke: var(--ink-line);
   stroke-width: 1.25;
   stroke-dasharray: 4 3;
 }

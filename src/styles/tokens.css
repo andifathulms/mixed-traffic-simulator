@@ -25,7 +25,13 @@
   --border-dark-strong: #414b4d;
   --on-dark: #e8ece9;
   --on-dark-mid: #a2acac;
-  --on-dark-faint: #6e7878;
+  /*
+   * Raised from #6e7878, which failed WCAG AA as text on every ground it is
+   * used on (3.61 to 4.31). This value clears 4.5:1 on all four dark grounds,
+   * the tightest being --surface at 4.56. It carries the ramp's hue rather
+   * than going flat grey: R = G - 10, G = B, as --on-dark-mid does.
+   */
+  --on-dark-faint: #7e8888;
   --marking: #8e9a9c;
 
   /* §2.1 The paper ground — the record, and everything that reads it. */
@@ -37,7 +43,23 @@
   --rule-strong: #bcc0b8;
   --ink: #171a1a;
   --ink-mid: #54595a;
-  --ink-faint: #8a908f;
+  /*
+   * Raised from #8a908f, which read at 2.58:1 on --paper-sunken: fine as a
+   * line, far below AA as text. Clears 4.5:1 on both paper grounds, tightest
+   * 4.52 on --paper-sunken.
+   */
+  --ink-faint: #626867;
+
+  /*
+   * The old --ink-faint, kept for the things that were never text.
+   *
+   * Three dashed reference lines and the inspector's term bar used the faint
+   * *text* colour because it happened to be the right weight for a quiet line.
+   * Darkening it to pass a text rule would have made them heavy, so the line
+   * role gets its own token at the original value. Contrast minimums do not
+   * apply to it, and it must not be used for type.
+   */
+  --ink-line: #8a908f;
 
   /*
    * §2.2 The speed ramp — the app's primary encoding.
@@ -99,7 +121,14 @@
   --t-h2-size: 17px;
   --t-h2-line: 1.25;
   --t-h2-track: -0.008em;
-  --t-body-size: 15px;
+  /*
+   * 16 px, up from 15. This is the size for prose a visitor has to read to
+   * understand the app — the descriptor, the scenario blurb, empty-state
+   * captions. The dense instrument type below it is data labelling, not body
+   * text, and stays where it is: pushing an axis tick to 16 px would break
+   * every chart in the app to satisfy a rule written about paragraphs.
+   */
+  --t-body-size: 16px;
   --t-body-line: 1.55;
   --t-data-size: 13px;
   --t-data-line: 1.45;

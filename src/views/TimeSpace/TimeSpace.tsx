@@ -121,10 +121,15 @@ export function TimeSpace({
           setWave(backwardWaveSpeed(tracker.events, world.geometry, after));
         }
         setSpan({ top: recorder.topTime, bottom: recorder.bottomTime });
-        // A visible band of paper, not a third of it: the recorder's height is
-        // in device pixels, so "a third full" is three minutes of simulated
-        // time on a corridor and the hint outstayed its welcome badly.
-        const started = recorder.rowsWritten > 24;
+        // Proportional to the paper, not a flat row count.
+        //
+        // A flat 24 rows was a few seconds of wall clock, after which the
+        // caption left and the largest single region of the landing view — a
+        // third of the viewport — became blank paper with nothing explaining
+        // it. Keeping the caption until the written band is a legible fraction
+        // of the canvas ties it to what a reader can actually see, at any
+        // canvas size or device pixel ratio.
+        const started = recorder.rowsWritten > recorder.height * 0.15;
         setFilling((prev) => (prev === !started ? prev : !started));
       }
     };
@@ -159,8 +164,10 @@ export function TimeSpace({
       */}
       {filling && (
         <p className="timespace__empty">
-          The paper fills downward as the simulation runs. Trajectories lean with
-          speed; a jam is a dark band leaning backward against the flow.
+          <strong>This paper fills downward as the simulation runs.</strong> Each
+          faint line is one vehicle&apos;s path: steep where it is moving freely,
+          flattening where it slows. A dark band leaning backward is a jam
+          travelling against the traffic.
         </p>
       )}
 
