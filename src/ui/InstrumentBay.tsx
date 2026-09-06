@@ -104,7 +104,43 @@ export function InstrumentBay({
       {!narrow && <div className="bay__fd">{fd}</div>}
 
       <div className="bay__panel">
-        <div className="bay__tabs" role="tablist" aria-label="Instrument">
+        {/*
+          A tablist owes the reader arrow keys.
+          
+          The roles were here and the keyboard behaviour they promise was not:
+          every tab sat in the tab sequence and the arrow keys did nothing, so
+          a screen reader announced "tab 2 of 5" and then the keys it had just
+          named were dead. Either the roles go or the behaviour arrives; the
+          roles earn their place here, because "2 of 5" is worth knowing in a
+          bay of instruments, so the behaviour arrives.
+
+          Roving tabindex: one stop for the whole set, arrows to move within
+          it, Home and End to the ends. Selection follows focus, which is the
+          right choice when showing a panel is instant and cheap.
+        */}
+        <div
+          className="bay__tabs"
+          role="tablist"
+          aria-label="Instrument"
+          onKeyDown={(e) => {
+            const order = tabs.map((t) => t.id);
+            const at = order.indexOf(state.tab);
+            const to =
+              e.key === 'ArrowRight' || e.key === 'ArrowDown'
+                ? (at + 1) % order.length
+                : e.key === 'ArrowLeft' || e.key === 'ArrowUp'
+                  ? (at - 1 + order.length) % order.length
+                  : e.key === 'Home'
+                    ? 0
+                    : e.key === 'End'
+                      ? order.length - 1
+                      : -1;
+            if (to === -1) return;
+            e.preventDefault();
+            onChange({ tab: order[to] });
+            document.getElementById(`tab-${order[to]}`)?.focus();
+          }}
+        >
           {tabs.map((t) => (
             <button
               key={t.id}
@@ -113,6 +149,8 @@ export function InstrumentBay({
               id={`tab-${t.id}`}
               aria-selected={state.tab === t.id}
               aria-controls={`panel-${t.id}`}
+              /* Only the selected tab is a tab stop; arrows reach the rest. */
+              tabIndex={state.tab === t.id ? 0 : -1}
               className={`bay__tab${state.tab === t.id ? ' bay__tab--active' : ''}`}
               onClick={() => onChange({ tab: t.id })}
             >
