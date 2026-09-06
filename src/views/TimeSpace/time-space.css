@@ -52,19 +52,40 @@
  * telling them what they are about to look at.
  */
 .timespace__empty {
+  /*
+   * Centred in the paper rather than pinned to a fraction of it.
+   *
+   * At 30% of a short canvas the block started low enough that its last line
+   * fell outside the panel and was cut in half by the instruments below. It is
+   * centred and constrained to the panel now, so it cannot overflow whatever
+   * height the recorder has been given.
+   */
   position: absolute;
-  left: 0;
-  right: 0;
-  top: 30%;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   margin: 0 auto;
   max-width: 54ch;
-  padding: 0 var(--s-2);
+  max-height: 100%;
+  overflow: hidden;
+  padding: var(--s-1) var(--s-2);
   color: var(--ink-mid);
   font-size: var(--t-body-size);
   line-height: 1.55;
   text-align: center;
   text-wrap: balance;
   pointer-events: none;
+}
+
+/*
+ * Short viewports get the caption a step down. The recorder is proportionally
+ * shorter there, and four lines of body text is most of it.
+ */
+@media (max-width: 640px), (max-height: 720px) {
+  .timespace__empty {
+    font-size: var(--t-small-size);
+  }
 }
 
 .timespace__empty strong {
