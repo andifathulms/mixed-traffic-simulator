@@ -73,6 +73,24 @@
   --speed-75: #a3acad;
   --speed-100: #e6ebe9;
 
+  /*
+   * The vehicle-type ramp on paper.
+   *
+   * The counterpart to the speed ramp above, and achromatic for the same
+   * reason: hue in this app means estimator method or signal aspect, and a
+   * reader who learned the bench's colours then met them again meaning
+   * vehicle type would have been taught something false. Four stacked bands
+   * need four separable values, motorcycles take the strongest because they
+   * are the subject, and public transport takes the lightest plus a hatch.
+   *
+   * These lived as bare hex in one component. They are a semantic set, so
+   * they belong beside the ramp they mirror.
+   */
+  --type-mc: #171a1a;
+  --type-lv: #5f6664;
+  --type-hv: #99a09c;
+  --type-pu: #c3c8c4;
+
   /* §2.4 The estimator palette — the only hue in the app. */
   --method-truth: #171a1a;
   --method-headway: #bd5a31;

@@ -100,6 +100,10 @@ ground is now a scale.
 | `--ink` | `#171A1A` | Text and marks on paper. |
 | `--ink-mid` | `#54595A` | Labels, axis text. |
 | `--ink-faint` | `#626867` | Ticks, disabled, secondary text. Clears 4.5:1 on both paper grounds; the tightest is `--paper-sunken` at 4.52. |
+| `--type-mc` | `#171A1A` | Vehicle type on paper: motorcycle, the strongest value because it is the subject. |
+| `--type-lv` | `#5F6664` | Light vehicle. |
+| `--type-hv` | `#99A09C` | Heavy vehicle. |
+| `--type-pu` | `#C3C8C4` | Public transport, the lightest, which also carries a hatch where it sits on a large area. |
 | `--ink-line` | `#8A908F` | **Not text.** Dashed reference lines and the inspector's term bar. This is the old `--ink-faint`: when that token was raised to meet AA as text, the lines that had borrowed it would have become heavy, so the line role kept the original value. Contrast minimums do not apply; `tests/tokens.test.ts` fails the build if anything paints `color` or `fill` with it. |
 
 Every colour in these two tables that carries text meets WCAG AA against every ground it

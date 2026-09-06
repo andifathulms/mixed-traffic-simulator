@@ -13,12 +13,15 @@ export interface DischargePlotProps {
 
 const TYPE_MARK: Record<VehicleType, string> = {
   // Value, not hue — the estimator palette means estimator method and nothing
-  // else (DESIGN.md §2.4). The same four values the lateral cross-section uses,
-  // so a reader learns one scale for vehicle type and not two.
-  MC: 'var(--ink)',
-  LV: '#5f6664',
-  HV: '#99a09c',
-  PU: '#c3c8c4',
+  // else (DESIGN.md §2.4). The same four values the lateral cross-section
+  // uses, so a reader learns one scale for vehicle type and not two. That was
+  // written when both instruments carried their own copy of the ramp and the
+  // two copies disagreed about public transport; they now read one set of
+  // tokens, so the sentence is true.
+  MC: 'var(--type-mc)',
+  LV: 'var(--type-lv)',
+  HV: 'var(--type-hv)',
+  PU: 'var(--type-pu)',
 };
 
 /**

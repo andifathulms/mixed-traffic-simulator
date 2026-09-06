@@ -27,18 +27,18 @@ export interface LateralOccupancyProps {
  * value because they are the subject.
  */
 const TYPE_FILL: Record<VehicleType, string> = {
-  MC: 'var(--ink)',
-  LV: '#5f6664',
-  HV: '#99a09c',
+  MC: 'var(--type-mc)',
+  LV: 'var(--type-lv)',
+  HV: 'var(--type-hv)',
   PU: 'url(#lateral-hatch)',
 };
 
 /** The legend swatch, which cannot reference an SVG pattern. */
 const TYPE_SWATCH: Record<VehicleType, string> = {
-  MC: 'var(--ink)',
-  LV: '#5f6664',
-  HV: '#99a09c',
-  PU: 'repeating-linear-gradient(45deg, #5f6664 0 2px, #e4e6e0 2px 4px)',
+  MC: 'var(--type-mc)',
+  LV: 'var(--type-lv)',
+  HV: 'var(--type-hv)',
+  PU: 'repeating-linear-gradient(45deg, var(--type-lv) 0 2px, var(--paper-sunken) 2px 4px)',
 };
 
 /**
@@ -135,8 +135,8 @@ export function LateralOccupancy({
             patternUnits="userSpaceOnUse"
             patternTransform="rotate(45)"
           >
-            <rect width="5" height="5" fill="#c9cec9" />
-            <rect width="2" height="5" fill="#5f6664" />
+            <rect width="5" height="5" fill="var(--type-pu)" />
+            <rect width="2" height="5" fill="var(--type-lv)" />
           </pattern>
         </defs>
 
