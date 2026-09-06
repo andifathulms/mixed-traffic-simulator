@@ -17,9 +17,21 @@ import type { Scenario } from './types';
 export const phantomJam: Scenario = {
   id: 'phantom-jam',
   name: 'Phantom jam',
+  /*
+   * The blurb carries the bridge from this scene to the app's subject.
+   *
+   * The opening scene demonstrates emergent congestion beautifully and a
+   * first-time reader was left to work out for themselves what that has to do
+   * with a chart about equivalence factors two screens down. The link is the
+   * whole argument in one clause: a jam with no cause means road space is a
+   * property of the stream and not of any vehicle in it, which is exactly the
+   * thing an equivalence factor claims to be able to pin on a vehicle.
+   */
   blurb:
     'Twenty-two vehicles on a 230 m ring. No bottleneck and no incident. The jam ' +
-    'forms from reaction dynamics alone and then travels backward forever.',
+    'forms from reaction dynamics alone and then travels backward forever. If a ' +
+    'jam needs no cause, road space belongs to the stream rather than to any ' +
+    'vehicle in it — which is what an equivalence factor tries to pin on one.',
   citation:
     'Sugiyama et al. (2008), "Traffic jams without bottlenecks — experimental ' +
     'evidence for the physical mechanism of the formation of a jam", New Journal ' +
