@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useLayoutEffect, useMemo, useRef } from 'react';
 import type { EmpEstimate } from '../../estimators';
 import { AGGREGATION_INTERVALS, type AggregationInterval } from '../../estimators';
 import { MKJI_MC_EMP, CITATIONS } from '../../sim/defaults';
@@ -290,6 +290,37 @@ export function EquivalenceBench({
     return [...seen.values()];
   }, [points]);
 
+  /*
+   * Keep focus when the run control swaps for the cancel control.
+   *
+   * Starting a sweep unmounts the button that started it, so focus fell to
+   * <body> and a keyboard user had to tab from the top of the document to
+   * reach anything — including the Cancel they had just created. Focus moves
+   * to the control that replaced the one they were on (WCAG 2.4.3).
+   *
+   * `handedOver` is set by the two click handlers, so a swap the user caused
+   * moves focus and a swap they did not cause does not steal it. The one
+   * exception is a sweep finishing on its own: the cancel button vanishes
+   * under the user, and focus is only restored if it landed on <body>, which
+   * means nothing else had claimed it in the meantime.
+   */
+  const runRef = useRef<HTMLButtonElement>(null);
+  const cancelRef = useRef<HTMLButtonElement>(null);
+  const handedOver = useRef(false);
+  const wasRunning = useRef(progress !== null);
+
+  useLayoutEffect(() => {
+    const running = progress !== null;
+    if (running === wasRunning.current) return;
+    wasRunning.current = running;
+
+    const orphaned = document.activeElement === document.body;
+    if (handedOver.current || orphaned) {
+      handedOver.current = false;
+      (running ? cancelRef : runRef).current?.focus();
+    }
+  }, [progress]);
+
   const pad = { left: 52, right: 12, top: 14, bottom: 40 };
   const plotW = width - pad.left - pad.right;
   const plotH = height - pad.top - pad.bottom;
@@ -415,7 +446,15 @@ export function EquivalenceBench({
 
         {progress === null ? (
           <span className="bench__run">
-            <button type="button" className="btn btn--primary" onClick={onRun}>
+            <button
+              ref={runRef}
+              type="button"
+              className="btn btn--primary"
+              onClick={() => {
+                handedOver.current = true;
+                onRun();
+              }}
+            >
               {points.length > 0 ? 'Run sweep again' : 'Run sweep'}
             </button>
             {/*
@@ -433,7 +472,15 @@ export function EquivalenceBench({
         ) : (
           <span className="bench__progress">
             <progress value={progress} max={1} />
-            <button type="button" className="btn" onClick={onCancel}>
+            <button
+              ref={cancelRef}
+              type="button"
+              className="btn"
+              onClick={() => {
+                handedOver.current = true;
+                onCancel();
+              }}
+            >
               Cancel
             </button>
           </span>
