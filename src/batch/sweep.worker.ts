@@ -199,6 +199,7 @@ function runSweep(request: SweepRequest): void {
 
       let truth: number | null = null;
       let truthWarnings: string[] = [];
+      let truthWorking: SweepPointResult['truthWorking'] = null;
       if (request.includeTruth) {
         // Ground truth costs two further runs per point, which is why it is
         // optional rather than always on.
@@ -208,6 +209,11 @@ function runSweep(request: SweepRequest): void {
         });
         truth = Number.isFinite(result.emp) ? result.emp : null;
         truthWarnings = result.warnings;
+        truthWorking = {
+          mixed: result.mixedThroughput,
+          reference: result.referenceThroughput,
+          mcFraction: result.mcFraction,
+        };
       }
 
       /*
@@ -246,6 +252,7 @@ function runSweep(request: SweepRequest): void {
             mcFraction: params.mcFraction,
             truth,
             truthWarnings,
+            truthWorking,
             headway: estimates.headway,
             regression: estimates.regression,
             speed: estimates.speed,

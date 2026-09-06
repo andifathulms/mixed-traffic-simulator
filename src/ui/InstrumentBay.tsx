@@ -78,6 +78,7 @@ export function InstrumentBay({
     () =>
       sweepPoints.map((p) => ({
         value: p.value,
+        truthWorking: p.truthWorking,
         seriesKey: p.seriesKey,
         seriesLabel: p.seriesLabel,
         mcFraction: p.mcFraction,

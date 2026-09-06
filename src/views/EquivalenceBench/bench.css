@@ -167,3 +167,70 @@
   font-size: var(--t-micro-size);
   font-variant-numeric: tabular-nums;
 }
+
+/*
+ * The definition, and what each method does.
+ *
+ * Both sit next to the chart they explain rather than behind a marker or in a
+ * page of their own: a reader who has to go looking has already decided the
+ * chart is not for them.
+ */
+.bench__define {
+  margin: 0 0 var(--s-2);
+  max-width: var(--measure);
+  color: var(--ink-mid);
+  font-size: var(--t-body-size);
+  line-height: 1.5;
+}
+
+.bench__define strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/*
+ * No longer the shared chip row.
+ *
+ * .legend is a line of swatches and names; this one carries a clause per
+ * method, which makes it a small glossary and a different component. It stops
+ * borrowing .legend rather than fighting it for specificity.
+ */
+.bench__legend {
+  color: var(--ink-mid);
+  font-size: var(--t-small-size);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(22rem, 100%), 1fr));
+  gap: var(--s-1) var(--s-3);
+  margin: var(--s-2) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bench__legend li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0 var(--s-1);
+  align-items: baseline;
+}
+
+.bench__legend-name {
+  color: var(--ink);
+}
+
+/* The clause sits under the name, in the column the swatch does not occupy. */
+.bench__legend-how {
+  grid-column: 2;
+  max-width: 34ch;
+  color: var(--ink-mid);
+  font-size: var(--t-small-size);
+  line-height: var(--t-small-line);
+}
+
+/* The diagnostics sit under the value they qualify, not in columns of their own. */
+.bench__col-note,
+.bench__cell-note {
+  display: block;
+  color: var(--ink-faint);
+  font-size: var(--t-nano-size);
+  font-weight: 400;
+}

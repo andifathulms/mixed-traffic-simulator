@@ -75,6 +75,20 @@ export interface SweepPointResult {
   mcFraction: number;
   truth: number | null;
   truthWarnings: string[];
+  /**
+   * The two throughputs the controlled experiment compared, so the bench can
+   * show its working rather than only its answer. This is the app's one
+   * unique capability (PRD §2) and it used to arrive as a single number with
+   * no way to see where it came from.
+   */
+  truthWorking: {
+    /** Vehicles per hour the mixed stream carried. */
+    mixed: number;
+    /** Vehicles per hour the same road carried with the motorcycles as cars. */
+    reference: number;
+    /** Motorcycle share actually present in the mixed run. */
+    mcFraction: number;
+  } | null;
   headway: EmpEstimate;
   regression: EmpEstimate;
   speed: EmpEstimate;

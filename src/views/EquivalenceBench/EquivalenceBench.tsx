@@ -16,6 +16,12 @@ import './bench.css';
 export interface BenchPoint {
   /** The swept variable's value at this point. The chart's x. */
   value: number;
+  /** The two throughputs the controlled experiment compared, where it ran. */
+  truthWorking?: {
+    mixed: number;
+    reference: number;
+    mcFraction: number;
+  } | null;
   mcFraction: number;
   /** Which comparison arm produced it. Empty when nothing is being compared. */
   seriesKey?: string;
@@ -79,12 +85,43 @@ const COMPARISON_LABELS: Record<SweepComparison, string> = {
   rhk: 'motorcycle stop box',
 };
 
+/*
+ * One clause per method, at the legend.
+ *
+ * The names alone are four arbitrary lines. "The methods disagree" only means
+ * something once a reader knows they are four ways of watching one stream.
+ */
 const SERIES = [
-  { key: 'truth', label: 'Ground truth (substitution)', colour: 'var(--method-truth)' },
-  { key: 'headway', label: 'Time headway', colour: 'var(--method-headway)' },
-  { key: 'regression', label: 'Regression', colour: 'var(--method-regression)' },
-  { key: 'speed', label: 'Speed', colour: 'var(--method-speed)' },
-  { key: 'occupancy', label: 'Occupancy time', colour: 'var(--method-occupancy)' },
+  {
+    key: 'truth',
+    label: 'Ground truth (substitution)',
+    how: 'runs the road twice, once with the motorcycles and once with them replaced by cars, and compares what it carried',
+    colour: 'var(--method-truth)',
+  },
+  {
+    key: 'headway',
+    label: 'Time headway',
+    how: 'compares the time gap left behind a motorcycle with the gap left behind a car',
+    colour: 'var(--method-headway)',
+  },
+  {
+    key: 'regression',
+    label: 'Regression',
+    how: 'fits flow against the count of each vehicle type, and reads the motorcycle coefficient',
+    colour: 'var(--method-regression)',
+  },
+  {
+    key: 'speed',
+    label: 'Speed',
+    how: 'fits the stream\u2019s mean speed against its composition, on the assumption every added vehicle slows it',
+    colour: 'var(--method-speed)',
+  },
+  {
+    key: 'occupancy',
+    label: 'Occupancy time',
+    how: 'compares how long a motorcycle covers the detector with how long a car does',
+    colour: 'var(--method-occupancy)',
+  },
 ] as const;
 
 function valueOf(point: BenchPoint, key: (typeof SERIES)[number]['key']): number | null {
@@ -279,6 +316,30 @@ export function EquivalenceBench({
     });
   }, [points, comparison]);
 
+  /*
+   * The point worked through in full: the median of those that produced a
+   * truth figure.
+   *
+   * Not the extreme. The highest motorcycle share gives the largest gap from
+   * MKJI's constant and would make the most striking paragraph, which is
+   * exactly why it is the wrong one to choose — an example picked for being
+   * the most favourable is an argument, not a demonstration. The median is
+   * representative by construction and cannot be accused of either.
+   */
+  const worked = useMemo(() => {
+    const usable = points
+      .filter((p) => p.truth !== null && p.truthWorking && p.truthWorking.mcFraction > 0)
+      .sort((a, b) => a.truthWorking!.mcFraction - b.truthWorking!.mcFraction);
+    if (usable.length === 0) return null;
+    const p = usable[Math.floor((usable.length - 1) / 2)];
+    return {
+      emp: p.truth as number,
+      mixed: p.truthWorking!.mixed,
+      reference: p.truthWorking!.reference,
+      mcFraction: p.truthWorking!.mcFraction,
+    };
+  }, [points]);
+
   /** The arms actually seen, in first-appearance order, for the caption. */
   const armLabels = useMemo(() => {
     const seen = new Map<string, string>();
@@ -407,6 +468,22 @@ export function EquivalenceBench({
         </span>
       </figcaption>
 
+      {/*
+        What the number is, before the chart complicates it.
+
+        The app argues for three hundred lines about a quantity it named
+        exactly once, in the subtitle above. A reader who cannot say what an
+        equivalence factor is cannot be persuaded that five of them disagree.
+      */}
+      <p className="bench__define">
+        An <strong>equivalence factor</strong> says how much road one vehicle
+        takes compared with a car. Indonesian planning uses a fixed{' '}
+        <span className="mono">{MKJI_MC_EMP}</span> for motorcycles{' '}
+        <Citation marker="MKJI 1997" text={CITATIONS.mkjiEmp.text} />, so four
+        motorcycles are counted as one car. Every line below is an attempt to
+        measure that number from the same traffic.
+      </p>
+
       <div className="bench__controls">
         <fieldset className="bench__intervals">
           <legend>Aggregation interval</legend>
@@ -507,6 +584,60 @@ export function EquivalenceBench({
           </span>
         )}
       </div>
+
+      {/*
+        The controlled experiment, shown rather than asserted.
+
+        This is the one measurement in the app that no field study can make
+        (PRD §2), and it used to arrive as a single number in a legend with no
+        way to see where it came from. The two throughputs it compares are
+        real figures from the reader's own sweep, and the identity underneath
+        is the one the code solves.
+      */}
+      {worked && (
+        <div className="bench__worked">
+          <h4 className="bench__worked-title">
+            How the controlled experiment got {worked.emp.toFixed(2)}
+          </h4>
+          <p className="bench__worked-lead">
+            At {Math.round(worked.mcFraction * 100)}% motorcycles the road was run
+            twice, from the same seed, with everything else held identical.
+          </p>
+          <dl className="bench__worked-steps">
+            <div>
+              <dt>The mixed stream carried</dt>
+              <dd className="mono">{Math.round(worked.mixed)} veh/h</dd>
+            </div>
+            <div>
+              <dt>The same road, motorcycles replaced by cars, carried</dt>
+              <dd className="mono">{Math.round(worked.reference)} veh/h</dd>
+            </div>
+          </dl>
+          <p className="bench__worked-why">
+            Capacity in car units is fixed by the road, so the cars in the mixed
+            stream plus its motorcycles counted at{' '}
+            <span className="mono">emp</span> must equal what the all-car road
+            carried:
+          </p>
+          <p className="bench__worked-identity mono">
+            {Math.round(worked.mixed)} × {(1 - worked.mcFraction).toFixed(2)} +{' '}
+            {Math.round(worked.mixed)} × {worked.mcFraction.toFixed(2)} × emp ={' '}
+            {Math.round(worked.reference)}
+          </p>
+          <p className="bench__worked-why">
+            Solving for emp gives <span className="mono">{worked.emp.toFixed(2)}</span>:
+            one motorcycle took the road space of{' '}
+            <span className="mono">{worked.emp.toFixed(2)}</span> cars in this run.
+            MKJI assigns a fixed {MKJI_MC_EMP}.
+          </p>
+          <p className="bench__worked-caveat">
+            Both runs are driven past capacity on purpose, because equivalence is
+            a statement about a full road: at free flow every type looks alike and
+            the answer drifts meaninglessly toward one. This is one seed and one
+            geometry, not a measurement of any real road.
+          </p>
+        </div>
+      )}
 
       <p className="visually-hidden" role="status">
         {announcement}
@@ -738,17 +869,23 @@ export function EquivalenceBench({
         </svg>
       )}
 
-      <ul className="legend bench__legend">
+      <ul className="bench__legend">
         {SERIES.map((s) => (
           <li key={s.key}>
             <span className="bench__swatch" style={{ background: s.colour }} />
-            {s.label}
+            <span className="bench__legend-name">{s.label}</span>
+            <span className="bench__legend-how">{s.how}</span>
           </li>
         ))}
         <li>
           <span className="bench__swatch bench__swatch--mkji" />
-          MKJI 1997 constant{' '}
-          <Citation marker="source" text={CITATIONS.mkjiEmp.text} />
+          <span className="bench__legend-name">
+            MKJI 1997 constant{' '}
+            <Citation marker="source" text={CITATIONS.mkjiEmp.text} />
+          </span>
+          <span className="bench__legend-how">
+            not a measurement: the fixed value Indonesian practice applies
+          </span>
         </li>
       </ul>
 
@@ -799,12 +936,22 @@ export function EquivalenceBench({
           <caption className="visually-hidden">
             Equivalence by method and motorcycle share
           </caption>
+          {/*
+            PRD §6 asks each estimate to carry the diagnostics needed to judge
+            it. They were computed and dropped: a regression fitted on six
+            intervals with an r-squared of 0.02 read exactly like one fitted on
+            four hundred with 0.9. The value, its fit and its sample size now
+            sit together.
+          */}
           <thead>
             <tr>
               <th scope="col">MC share</th>
               {SERIES.map((s) => (
                 <th key={s.key} scope="col">
                   {s.label}
+                  {s.key !== 'truth' && (
+                    <span className="bench__col-note">value · r² · n</span>
+                  )}
                 </th>
               ))}
             </tr>
@@ -815,7 +962,20 @@ export function EquivalenceBench({
                 <td>{Math.round(p.mcFraction * 100)}%</td>
                 {SERIES.map((s) => {
                   const v = valueOf(p, s.key);
-                  return <td key={s.key}>{v === null ? '—' : v.toFixed(3)}</td>;
+                  // Ground truth is a measurement, not a fit: it has no
+                  // r-squared to report and inventing a blank column for it
+                  // would suggest it does.
+                  const est = s.key === 'truth' ? null : (p[s.key] as EmpEstimate);
+                  return (
+                    <td key={s.key}>
+                      {v === null ? '—' : v.toFixed(3)}
+                      {est && (
+                        <span className="bench__cell-note">
+                          {est.r2 === null ? '—' : est.r2.toFixed(2)} · {est.sampleCount}
+                        </span>
+                      )}
+                    </td>
+                  );
                 })}
               </tr>
             ))}
