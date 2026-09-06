@@ -25,8 +25,7 @@
 .bench__head,
 .discharge__head,
 .lateral__head,
-.fd__title,
-.heatmap__title,
+/* The inspector's heading holds its own id chip, so it is a head as well. */
 .inspector__title {
   display: flex;
   flex-wrap: wrap;
@@ -43,6 +42,14 @@
 .fd__title,
 .heatmap__title,
 .inspector__title {
+  /*
+   * These are h3 elements so the instruments appear in the heading outline —
+   * a screen reader listing headings used to jump from the app's name
+   * straight to Parameters, past every instrument in between. margin: 0 keeps
+   * the swap invisible: the browser's default heading margins would otherwise
+   * move every instrument head.
+   */
+  margin: 0;
   font-size: var(--t-h2-size);
   line-height: var(--t-h2-line);
   letter-spacing: var(--t-h2-track);

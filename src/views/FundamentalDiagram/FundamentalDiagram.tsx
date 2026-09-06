@@ -70,8 +70,8 @@ export function FundamentalDiagram({
 
   return (
     <figure className="fd on-paper">
-      <figcaption className="fd__title">
-        Fundamental diagram
+      <figcaption className="instrument__head">
+        <h3 className="fd__title">Fundamental diagram</h3>
         <span className="fd__sub">flow against density, from detectors</span>
       </figcaption>
 

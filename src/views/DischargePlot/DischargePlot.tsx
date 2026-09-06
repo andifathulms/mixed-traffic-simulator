@@ -59,7 +59,7 @@ export function DischargePlot({
   return (
     <figure className="discharge on-paper">
       <figcaption className="discharge__head">
-        <span className="discharge__title">Discharge at the stop line</span>
+        <h3 className="discharge__title">Discharge at the stop line</h3>
         <span className="discharge__sub">
           time headway against position in the discharging queue
         </span>

@@ -139,8 +139,8 @@ export function SpeedHeatmap({
 
   return (
     <figure className="heatmap on-paper">
-      <figcaption className="heatmap__title">
-        Speed heatmap
+      <figcaption className="instrument__head">
+        <h3 className="heatmap__title">Speed heatmap</h3>
         <span className="heatmap__sub">
           position × time, mean speed per cell, on the same axes as the record
         </span>

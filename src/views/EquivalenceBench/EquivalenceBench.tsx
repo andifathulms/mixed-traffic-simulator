@@ -396,7 +396,7 @@ export function EquivalenceBench({
   return (
     <figure className="bench on-paper">
       <figcaption className="bench__head">
-        <span className="bench__title">Equivalence bench</span>
+        <h3 className="bench__title">Equivalence bench</h3>
         <span className="bench__sub">
           {/*
             Follows the swept variable. It read "against motorcycle share"
