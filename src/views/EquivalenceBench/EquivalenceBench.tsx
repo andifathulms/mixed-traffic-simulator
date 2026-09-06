@@ -1,4 +1,4 @@
-import { useLayoutEffect, useMemo, useRef } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { EmpEstimate } from '../../estimators';
 import { AGGREGATION_INTERVALS, type AggregationInterval } from '../../estimators';
 import { MKJI_MC_EMP, CITATIONS } from '../../sim/defaults';
@@ -309,6 +309,17 @@ export function EquivalenceBench({
   const handedOver = useRef(false);
   const wasRunning = useRef(progress !== null);
 
+  /*
+   * What a sweep is doing, for anyone not watching the progress bar.
+   *
+   * Only the transitions. The bar itself moves several times a second and a
+   * live region tracking it would be unusable; the two moments worth a
+   * sentence are that a long operation has started and that it has finished.
+   */
+  const [announcement, setAnnouncement] = useState('');
+  const pointCountRef = useRef(0);
+  pointCountRef.current = points.length;
+
   useLayoutEffect(() => {
     const running = progress !== null;
     if (running === wasRunning.current) return;
@@ -318,6 +329,16 @@ export function EquivalenceBench({
     if (handedOver.current || orphaned) {
       handedOver.current = false;
       (running ? cancelRef : runRef).current?.focus();
+    }
+  }, [progress]);
+
+  useEffect(() => {
+    if (progress !== null) {
+      setAnnouncement('Sweep running.');
+    } else if (pointCountRef.current > 0) {
+      setAnnouncement(
+        `Sweep finished. ${pointCountRef.current} results across the chart.`,
+      );
     }
   }, [progress]);
 
@@ -486,6 +507,10 @@ export function EquivalenceBench({
           </span>
         )}
       </div>
+
+      <p className="visually-hidden" role="status">
+        {announcement}
+      </p>
 
       {points.length === 0 ? (
         <p className="bench__empty">

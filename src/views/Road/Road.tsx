@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { World } from '../../sim/types';
 import { DT } from '../../sim/types';
 import { useCanvas } from '../render/useCanvas';
+import { TYPE_LABELS } from '../render/vehicle-shape';
 import {
   drawCorridor,
   drawRing,
@@ -131,6 +132,18 @@ export function Road({
     ? height
     : Math.round(Math.max(96, Math.min(height, bandHeight)));
 
+  /*
+   * Named by type and position rather than by id alone: "vehicle 47" tells a
+   * reader nothing they can act on, where "motorcycle at 320 metres" places it
+   * on the same axis the ruler underneath is measuring.
+   */
+  const selectionLabel = (() => {
+    if (selectedVehicle === null) return '';
+    const v = worldRef.current?.vehicles.find((x) => x.id === selectedVehicle);
+    if (!v) return '';
+    return `Selected ${TYPE_LABELS[v.type].toLowerCase()} at ${Math.round(v.x)} metres, ${(v.v * 3.6).toFixed(0)} kilometres per hour.`;
+  })();
+
   return (
     <div className="road" style={{ height: effectiveHeight }}>
       <canvas
@@ -140,6 +153,17 @@ export function Road({
         onClick={(e) => pick(e.clientX, e.clientY)}
         // Fully keyboard operable, including vehicle selection (PRD §9.8).
         tabIndex={0}
+        /*
+         * role="application" so the arrow keys reach this widget at all.
+         *
+         * A screen reader in its normal reading mode consumes the arrow keys
+         * for navigation, which would make the vehicle selection below
+         * unreachable for exactly the users who cannot use the mouse
+         * alternative. It is the heaviest role in ARIA and it is scoped to
+         * this one canvas; the selection it enables is announced through the
+         * status line under it, because nothing else in application mode
+         * would say what just happened.
+         */
         role="application"
         aria-label="Road view. Press left and right arrow keys to select a vehicle."
         onKeyDown={(e) => {
@@ -157,6 +181,15 @@ export function Road({
           onSelect(next.id);
         }}
       />
+      {/*
+        What the arrow keys just did. Inside role="application" the reader is
+        out of browse mode, so a changed selection is silent unless it is
+        announced; the inspector two panels away updates, but nothing says so.
+      */}
+      <p className="visually-hidden" role="status">
+        {selectionLabel}
+      </p>
+
       {/*
         What the view had to do to fit the road on the screen, said out loud.
         A road is two orders of magnitude longer than it is wide and some

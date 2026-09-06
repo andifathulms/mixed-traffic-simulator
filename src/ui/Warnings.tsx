@@ -25,7 +25,9 @@ export function Warnings({ worldRef, count }: WarningsProps) {
   if (warnings.length === 0) return null;
 
   return (
-    <aside className="warnings on-paper" role="status" aria-live="polite">
+      // role="status" already implies aria-live="polite"; saying both is one
+    // instruction repeated, not a stronger one.
+    <aside className="warnings on-paper" role="status">
       <svg
         className="warnings__mark"
         width="14"
