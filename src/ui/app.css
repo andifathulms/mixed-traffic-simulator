@@ -765,7 +765,17 @@
     gap: var(--s-2);
   }
 
-  .telemetry__item:nth-child(n + 4) {
+  /*
+   * Drop readings by how central they are, not by their position in the row.
+   *
+   * This hid everything from the fourth item on, which took density and the
+   * motorcycle share together — and the motorcycle share is the app's
+   * principal independent variable (PRD §4.7), the one number the whole
+   * argument turns on. It was the first thing to go on any screen under
+   * 1100 px, which is most laptops. Density goes first now; the share stays
+   * to the last.
+   */
+  .telemetry__item:nth-child(4) {
     display: none;
   }
 }
@@ -795,6 +805,11 @@
   .telemetry {
     width: 100%;
     justify-content: space-between;
+  }
+
+  /* Then mean speed, leaving the clock, the fleet size and the share. */
+  .telemetry__item:nth-child(3) {
+    display: none;
   }
 
   .header__notice {
@@ -836,7 +851,41 @@
     display: none;
   }
 
+  /*
+   * The tags stay. They were hidden here to buy a row, but they are the only
+   * thing in the main view that says what the two panels are, and a phone is
+   * where a first-time visitor most often arrives from a shared link. They
+   * drop to the smallest step and wrap onto a second line instead.
+   */
+  .stage__tag {
+    flex-wrap: wrap;
+    row-gap: 0;
+  }
+
   .stage__tag-note {
-    display: none;
+    flex-basis: 100%;
+    font-size: var(--t-nano-size);
+    line-height: var(--t-nano-line);
+  }
+
+  /*
+   * The instrument tabs fitted six labels into three rows of chrome above a
+   * panel that had barely any height left. Tighter padding and a smaller gap
+   * puts them in two.
+   */
+  .bay__tabs {
+    gap: 0 var(--s-1);
+  }
+
+  .bay__tab {
+    padding-left: var(--s-1);
+    padding-right: var(--s-1);
+  }
+
+  /* The transport bar was a third of the viewport; the rows sit closer. */
+  .transport {
+    row-gap: var(--s-1);
+    padding-top: var(--s-1);
+    padding-bottom: var(--s-1);
   }
 }
