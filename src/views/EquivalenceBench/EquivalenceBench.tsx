@@ -346,7 +346,12 @@ export function EquivalenceBench({
       <figcaption className="bench__head">
         <span className="bench__title">Equivalence bench</span>
         <span className="bench__sub">
-          motorcycle passenger car equivalent against motorcycle share
+          {/*
+            Follows the swept variable. It read "against motorcycle share"
+            whatever was on the x axis, so sweeping road width produced a
+            chart whose own subtitle named the wrong quantity.
+          */}
+          motorcycle passenger car equivalent against {VARIABLE_AXIS[variable]}
         </span>
       </figcaption>
 
