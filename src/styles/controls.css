@@ -378,7 +378,7 @@ input[type='radio'] {
   border-radius: 3px;
   color: var(--ctl-fg-faint);
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: var(--t-nano-size);
   line-height: 1.4;
   text-align: center;
 }

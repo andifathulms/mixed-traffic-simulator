@@ -122,7 +122,7 @@
   fill: var(--ink-faint);
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 10.5px;
+  font-size: var(--t-nano-size);
 }
 
 .plot__axis-label,

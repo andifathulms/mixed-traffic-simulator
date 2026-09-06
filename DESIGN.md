@@ -249,6 +249,12 @@ No third family. The app has almost no running prose and does not need another v
 
 Base 16 px, ratio ~1.25, tracking tightened as size rises and opened only at label size.
 
+`--t-readout` and `--t-nano` were added when eight component files were found
+setting bare pixel sizes — 15, 17, 10 and 10.5 — outside the scale entirely.
+Declaring them did not add sizes to the app; it admitted to sizes the app was
+already using. The one real change was the chart ticks, which were 10.5 px and
+are now 10 like every other tick.
+
 Body is 16 px, which is the floor for prose a visitor has to read in order to understand
 the app: the descriptor, the scenario blurb, empty-state captions. The smaller steps below
 it are for labelling data — axis ticks, units, vehicle IDs — and stay where they are.
@@ -265,6 +271,8 @@ rule that was written about paragraphs.
 | `--t-small` | 12.5 / 1.4, 400 | Overpass | Subtitles, hints, legend |
 | `--t-label` | 11.5 / 1.3 / +0.04em, 500 | Overpass | Field and axis labels |
 | `--t-micro` | 11 / 1.25, 400 | Overpass Mono | Vehicle IDs at high zoom, tick labels, units |
+| `--t-readout` | 15 / 1.2, 500 | Overpass Mono | The masthead's live figures, between data and a heading |
+| `--t-nano` | 10 / 1.3, 400 | Overpass Mono | The smallest label: ruler and chart ticks, keycap hints, canvas pills |
 
 `font-variant-numeric: tabular-nums` on all Overpass Mono. Non-negotiable — a readout
 updating twenty times a second with proportional figures is unreadable.

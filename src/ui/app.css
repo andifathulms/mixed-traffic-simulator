@@ -93,8 +93,8 @@
 .telemetry__value {
   margin: 1px 0 0;
   color: var(--on-dark);
-  font-size: 15px;
-  line-height: 1.2;
+  font-size: var(--t-readout-size);
+  line-height: var(--t-readout-line);
   font-weight: 500;
 }
 
@@ -114,7 +114,7 @@
 
 .telemetry__clock {
   margin: 0;
-  font-size: 17px;
+  font-size: var(--t-h2-size);
   font-weight: 600;
   line-height: 1.1;
   letter-spacing: -0.01em;
@@ -316,8 +316,8 @@
   left: 4px;
   top: 3px;
   color: var(--on-dark-faint);
-  font-size: 10px;
-  line-height: 1.2;
+  font-size: var(--t-nano-size);
+  line-height: var(--t-nano-line);
   white-space: nowrap;
 }
 

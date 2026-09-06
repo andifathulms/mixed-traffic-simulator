@@ -116,7 +116,7 @@
   fill: var(--ink-mid);
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 10px;
+  font-size: var(--t-nano-size);
 }
 
 .bench__note {

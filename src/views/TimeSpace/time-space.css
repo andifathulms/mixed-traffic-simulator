@@ -28,7 +28,7 @@
   background: rgba(238, 239, 235, 0.78);
   border-radius: var(--r-pill);
   color: var(--ink-mid);
-  font-size: 10px;
+  font-size: var(--t-nano-size);
   line-height: 1.6;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
