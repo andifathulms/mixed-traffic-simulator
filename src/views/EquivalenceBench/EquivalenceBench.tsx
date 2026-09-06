@@ -409,7 +409,7 @@ export function EquivalenceBench({
         </label>
 
         {progress === null ? (
-          <>
+          <span className="bench__run">
             <button type="button" className="btn btn--primary" onClick={onRun}>
               {points.length > 0 ? 'Run sweep again' : 'Run sweep'}
             </button>
@@ -424,7 +424,7 @@ export function EquivalenceBench({
             <span className="bench__cost">
               {runCount(variable, comparison, DEFAULT_REPLICATES, true)} runs
             </span>
-          </>
+          </span>
         ) : (
           <span className="bench__progress">
             <progress value={progress} max={1} />

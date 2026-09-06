@@ -147,7 +147,21 @@
   align-items: center;
 }
 
+/*
+ * Tied to the run button rather than floating in the control row.
+ *
+ * As a bare flex child it wrapped onto a line of its own at desktop and read
+ * as a stray number with nothing to do with the button above it. It is the
+ * button's annotation, so it travels with the button.
+ */
+.bench__run {
+  display: flex;
+  gap: var(--s-1);
+  align-items: baseline;
+}
+
 .bench__cost {
+  white-space: nowrap;
   color: var(--ink-faint);
   font-family: var(--font-mono);
   font-size: var(--t-micro-size);
