@@ -194,7 +194,8 @@ input[type='range'] {
   appearance: none;
   -webkit-appearance: none;
   width: 100%;
-  height: 18px;
+  /* The track stays 4 px; the control is the height a finger needs. */
+  height: var(--target-min);
   margin: 0;
   background: none;
   cursor: pointer;
@@ -263,6 +264,16 @@ input[type='range']:disabled {
 
 /* ------------------------------------------------ checkboxes and radios */
 
+/*
+ * The box stays 14 px and the label carries the target.
+ *
+ * Padding on a native checkbox is ignored by the browser, so the hit area
+ * cannot be grown on the input itself without replacing it with a custom
+ * control. It does not need to be: the box sits inside its <label>, so the
+ * label is the target WCAG 2.5.8 measures, and giving the label the minimum
+ * height makes the whole row clickable at 24 px without the box growing and
+ * shouting in a dense parameter panel.
+ */
 input[type='checkbox'],
 input[type='radio'] {
   accent-color: var(--ctl-thumb);

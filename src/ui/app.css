@@ -581,6 +581,8 @@
   gap: var(--s-1);
   align-items: center;
   cursor: pointer;
+  /* The label is the target, so the label carries the minimum. */
+  min-height: var(--target-min);
 }
 
 .pradios {

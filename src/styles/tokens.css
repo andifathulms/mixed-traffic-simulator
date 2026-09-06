@@ -194,6 +194,15 @@
    * from its neighbour. Controls get 4 px, which is what separates a pressable
    * thing from a painted rectangle.
    */
+  /*
+   * The smallest a pointer target may be, per WCAG 2.5.8. The checkbox drew
+   * itself at 14 px and the sliders were 18 px tall, both of which are a
+   * miss on a trackpad and a real problem on a touch screen. Controls smaller
+   * than this keep their drawn size and take the difference in padding, so
+   * nothing in the layout moves.
+   */
+  --target-min: 24px;
+
   --r-control: 4px;
   --r-panel: 6px;
   --r-pill: 999px;
