@@ -318,26 +318,36 @@ export function Parameters({
               </>
             }
           >
-            <table className="params__table">
-              <thead>
-                <tr>
-                  <th scope="col">Type</th>
-                  <th scope="col">Length, m</th>
-                  <th scope="col">Width, m</th>
-                  <th scope="col">v₀, km/h</th>
-                </tr>
-              </thead>
-              <tbody>
-                {VEHICLE_TYPES.map((t: VehicleType) => (
-                  <tr key={t}>
-                    <th scope="row">{TYPE_LABELS[t]}</th>
-                    <td>{p.types[t].length.toFixed(1)}</td>
-                    <td>{p.types[t].width.toFixed(1)}</td>
-                    <td>{(p.types[t].idm.v0 * 3.6).toFixed(0)}</td>
+            <div className="params__table-scroll">
+              <table className="params__table">
+                {/*
+                  The only table in the app without one. Its card heading is
+                  outside the table, so a screen reader listing tables got an
+                  unnamed entry among four named ones.
+                */}
+                <caption className="visually-hidden">
+                  Vehicle dimensions and free-flow speed by type
+                </caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Type</th>
+                    <th scope="col">Length, m</th>
+                    <th scope="col">Width, m</th>
+                    <th scope="col">v₀, km/h</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {VEHICLE_TYPES.map((t: VehicleType) => (
+                    <tr key={t}>
+                      <th scope="row">{TYPE_LABELS[t]}</th>
+                      <td>{p.types[t].length.toFixed(1)}</td>
+                      <td>{p.types[t].width.toFixed(1)}</td>
+                      <td>{(p.types[t].idm.v0 * 3.6).toFixed(0)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
             <p className="pfield__hint">
               Free-flow speed for the speed ramp on this scenario is{' '}
               <span className="mono">{(scenario.rampSpeed * 3.6).toFixed(0)} km/h</span>.

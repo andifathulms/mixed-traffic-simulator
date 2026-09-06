@@ -504,7 +504,16 @@
  */
 .params__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(21rem, 1fr));
+  /*
+   * min() so the column can fall below its preferred width.
+   *
+   * A bare minmax(21rem, 1fr) is a hard floor: at a 320 px viewport the
+   * content box is 288 px and the track stayed 336 px, pushing 32 px of the
+   * page off the side and forcing horizontal scrolling (WCAG 1.4.10). The
+   * track now shrinks to the container when the container is the smaller of
+   * the two, which is what auto-fill was meant to do all along.
+   */
+  grid-template-columns: repeat(auto-fill, minmax(min(21rem, 100%), 1fr));
   gap: var(--s-2);
   align-items: start;
 }
@@ -582,6 +591,18 @@
 
 .pradios legend {
   padding: 0 0 var(--s-05);
+}
+
+/*
+ * The dimensions table scrolls inside its card rather than widening it.
+ *
+ * Four columns of figures cannot reflow to 288 px, and a data table is
+ * exactly the case WCAG 1.4.10 exempts — provided the scrolling is contained
+ * rather than pushed onto the page. The instrument tables already do this;
+ * this one was missed.
+ */
+.params__table-scroll {
+  overflow-x: auto;
 }
 
 .params__table {
@@ -840,6 +861,16 @@
 @media (max-width: 560px) {
   .transport__keys {
     display: none;
+  }
+
+  /*
+   * The seven speed steps are the widest fixed row in the app: at 320 px they
+   * were the last 7 px of horizontal scrolling on the page (WCAG 1.4.10).
+   * Tighter cells rather than fewer of them — dropping a speed would be a
+   * behaviour change, and every multiplier stays reachable.
+   */
+  .transport__group .segmented__item {
+    padding: 0 6px;
   }
 
   /*
