@@ -1,7 +1,14 @@
+/*
+ * Three sans weights and three mono, latin subset only.
+ *
+ * The 700 face was imported and never used: measured across the whole page,
+ * 302 elements render at 400, 44 at 500, 23 at 600 and none at 700, because
+ * base.css sets the headings that would otherwise default to bold. The
+ * browser never fetched it; it was only ever weight in the deploy.
+ */
 @import '@fontsource/overpass/latin-400.css';
 @import '@fontsource/overpass/latin-500.css';
 @import '@fontsource/overpass/latin-600.css';
-@import '@fontsource/overpass/latin-700.css';
 @import '@fontsource/overpass-mono/latin-400.css';
 @import '@fontsource/overpass-mono/latin-500.css';
 @import '@fontsource/overpass-mono/latin-600.css';

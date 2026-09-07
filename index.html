@@ -4,10 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>Mixed Traffic Simulator</title>
+    <title>%APP_NAME%</title>
     <meta
       name="description"
-      content="Motorcycle-dominated traffic, and why the numbers that describe it disagree."
+      content="%APP_DESCRIPTOR%"
     />
 
     <!--
@@ -20,15 +20,18 @@
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
 
+    <!-- The site is one page; every query string is the same document. -->
+    <link rel="canonical" href="%APP_URL%" />
+
     <!-- Asphalt, so the browser chrome joins the header rather than framing it. -->
     <meta name="theme-color" content="#141516" />
     <meta name="color-scheme" content="light dark" />
 
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="Mixed Traffic Simulator" />
+    <meta property="og:title" content="%APP_NAME%" />
     <meta
       property="og:description"
-      content="Motorcycle-dominated traffic, and why the numbers that describe it disagree."
+      content="%APP_DESCRIPTOR%"
     />
     <meta
       property="og:image"
@@ -38,7 +41,7 @@
     <meta property="og:image:height" content="630" />
     <meta
       property="og:url"
-      content="https://andifathulms.github.io/mixed-traffic-simulator/"
+      content="%APP_URL%"
     />
     <meta name="twitter:card" content="summary_large_image" />
   </head>

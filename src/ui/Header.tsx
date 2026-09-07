@@ -1,3 +1,4 @@
+import { APP_DESCRIPTOR } from '../app-meta';
 import type { AppState } from '../state/app-state';
 import type { Scenario } from '../scenarios/types';
 import type { World } from '../sim/types';
@@ -71,8 +72,7 @@ export function Header({ scenario, state, onChange, worldRef, tick }: HeaderProp
 
       <div className="header__strip">
         <p className="header__descriptor">
-          Motorcycle-dominated traffic, and why the numbers that describe it
-          disagree.{' '}
+          {APP_DESCRIPTOR}{' '}
           <a className="header__jump" href="#instruments">
             Compare the five methods ↓
           </a>
