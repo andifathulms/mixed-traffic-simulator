@@ -35,6 +35,23 @@ import type {
 
 let cancelled = false;
 
+/**
+ * Hand the worker's event loop back for one turn.
+ *
+ * The sweep used to run to completion inside its own onmessage handler, which
+ * meant the worker never returned to its message queue and the cancel message
+ * sat there undelivered. `cancelled` could not become true while a sweep was
+ * running, so Cancel did nothing for the entire two or three minutes of a run
+ * and the only way out was to reload the page.
+ *
+ * A macrotask, not a microtask: awaiting a resolved promise drains the
+ * microtask queue without ever letting a queued message in. setTimeout is what
+ * actually yields.
+ */
+function yieldToMessages(): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, 0));
+}
+
 function post(message: SweepResponse): void {
   (self as unknown as DedicatedWorkerGlobalScope).postMessage(message);
 }
@@ -171,7 +188,7 @@ function observePoint(
   };
 }
 
-function runSweep(request: SweepRequest): void {
+async function runSweep(request: SweepRequest): Promise<void> {
   const started = Date.now();
   const base = SCENARIOS[request.scenario];
   const arms = armsFor(request.comparison, request.replicates, base);
@@ -180,6 +197,11 @@ function runSweep(request: SweepRequest): void {
 
   for (const value of request.values) {
     for (const arm of arms) {
+      // Once per arm, which is the granularity a cancel is answered at: an arm
+      // is a few seconds, and yielding inside the step loop would put a
+      // scheduler round trip in the hot path to save a couple of seconds.
+      await yieldToMessages();
+
       if (cancelled) {
         post({ kind: 'cancelled' });
         return;
@@ -283,12 +305,12 @@ self.onmessage = (event: MessageEvent<SweepMessage>) => {
     return;
   }
   cancelled = false;
-  try {
-    runSweep(message);
-  } catch (error) {
+  // Not awaited: returning immediately is what lets a later cancel message be
+  // delivered at all. Failures come back through the same error channel.
+  void runSweep(message).catch((error: unknown) => {
     post({
       kind: 'error',
       message: error instanceof Error ? error.message : String(error),
     });
-  }
+  });
 };

@@ -1,20 +1,81 @@
 /*
- * Three sans weights and three mono, latin subset only.
+ * @import must precede every other rule in a stylesheet.
  *
- * The 700 face was imported and never used: measured across the whole page,
- * 302 elements render at 400, 44 at 500, 23 at 600 and none at 700, because
- * base.css sets the headings that would otherwise default to bold. The
- * browser never fetched it; it was only ever weight in the deploy.
+ * These sat below the @font-face block for one commit and the browser dropped
+ * all three silently: no tokens meant no --font-sans, and the whole app fell
+ * back to Times. They stay at the very top, above the faces, for that reason.
  */
-@import '@fontsource/overpass/latin-400.css';
-@import '@fontsource/overpass/latin-500.css';
-@import '@fontsource/overpass/latin-600.css';
-@import '@fontsource/overpass-mono/latin-400.css';
-@import '@fontsource/overpass-mono/latin-500.css';
-@import '@fontsource/overpass-mono/latin-600.css';
 @import './tokens.css';
 @import './controls.css';
 @import '../views/instrument.css';
+
+/*
+ * The six faces the app renders, declared here rather than imported.
+ *
+ * Three sans weights and three mono, latin subset. The 700 face is absent
+ * because nothing uses it: measured across the whole page, 302 elements render
+ * at 400, 44 at 500, 23 at 600 and none at 700, since the headings that would
+ * otherwise default to bold are set explicitly.
+ *
+ * woff2 only. @fontsource's own stylesheets list a .woff beside every .woff2,
+ * which put 112 KB of files into the deploy that no browser ever asked for:
+ * every one of the six requests measured was woff2. Anything that cannot read
+ * woff2 also cannot read the ES2022 modules and Web Workers this app is built
+ * from, so the fallback was insurance against a browser that could never have
+ * run the page. Those readers get the system stack, which font-display: swap
+ * shows them anyway while a face is loading.
+ *
+ * The files still come from the package, so this is not a hand-maintained
+ * copy of the fonts — only of the six declarations. A path that changes fails
+ * the build.
+ */
+@font-face {
+  font-family: 'Overpass';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url('@fontsource/overpass/files/overpass-latin-400-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Overpass';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 500;
+  src: url('@fontsource/overpass/files/overpass-latin-500-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Overpass';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 600;
+  src: url('@fontsource/overpass/files/overpass-latin-600-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Overpass Mono';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url('@fontsource/overpass-mono/files/overpass-mono-latin-400-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Overpass Mono';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 500;
+  src: url('@fontsource/overpass-mono/files/overpass-mono-latin-500-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Overpass Mono';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 600;
+  src: url('@fontsource/overpass-mono/files/overpass-mono-latin-600-normal.woff2') format('woff2');
+}
 
 *,
 *::before,
