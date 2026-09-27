@@ -290,7 +290,9 @@ export function drawRing(
   const { geometry } = world;
   const cx = widthPx / 2;
   const cy = heightPx / 2;
-  const radius = Math.min(widthPx, heightPx) * 0.36;
+  // As large as the band allows with a margin for the kerbs. At 0.36 the ring
+  // used about an eighth of the stage and read as a thin grey outline.
+  const radius = Math.min(widthPx, heightPx) * 0.43;
   // Metres per pixel along the ring, so vehicles are drawn to true scale.
   const circumference = 2 * Math.PI * radius;
   const scaleX = circumference / geometry.length;

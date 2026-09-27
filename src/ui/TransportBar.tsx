@@ -4,6 +4,7 @@ import type { Scenario } from '../scenarios/types';
 import type { LateralRuleId } from '../sim/types';
 import { getLateralRule } from '../sim/lateral';
 import { CITATIONS } from '../sim/defaults';
+import { composition } from '../sim/demand';
 import { Citation } from './Citation';
 
 export interface TransportBarProps {
@@ -43,14 +44,19 @@ export function TransportBar({
   return (
     <div className="transport on-dark">
       <div className="transport__group transport__group--run">
+        {/*
+          The one primary action on the bar, and the easiest thing on the
+          screen to find: a filled accent disc with a glyph, no reading
+          required. The name is on the button for anyone who cannot see it.
+        */}
         <button
           type="button"
-          className="btn btn--primary"
+          className="transport__play"
           onClick={() => onChange({ running: !state.running })}
           aria-pressed={state.running}
+          aria-label={state.running ? 'Pause' : 'Play'}
         >
           <PlayPauseGlyph running={state.running} />
-          {state.running ? 'Pause' : 'Play'}
         </button>
         <button type="button" className="btn" onClick={onStep}>
           Step
@@ -109,6 +115,7 @@ export function TransportBar({
           style={{ '--fill': `${(mcPercent / 90) * 100}%` } as React.CSSProperties}
           className="transport__slider"
         />
+        <MixBar params={state.params} />
       </div>
 
       <div className="transport__group transport__group--model">
@@ -164,15 +171,44 @@ export function TransportBar({
 
 function PlayPauseGlyph({ running }: { running: boolean }) {
   return (
-    <svg width="9" height="10" viewBox="0 0 9 10" aria-hidden="true" focusable="false">
+    <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
       {running ? (
         <>
-          <rect x="0.5" y="0" width="3" height="10" fill="currentColor" />
-          <rect x="5.5" y="0" width="3" height="10" fill="currentColor" />
+          <rect x="3" y="2" width="3.5" height="12" rx="1" fill="currentColor" />
+          <rect x="9.5" y="2" width="3.5" height="12" rx="1" fill="currentColor" />
         </>
       ) : (
-        <path d="M0.5 0 L8.5 5 L0.5 10 Z" fill="currentColor" />
+        <path d="M4.5 2.5 L13.5 8 L4.5 13.5 Z" fill="currentColor" />
       )}
     </svg>
+  );
+}
+
+const MIX: Array<{ type: 'MC' | 'LV' | 'HV' | 'PU'; label: string }> = [
+  { type: 'MC', label: 'Motorcycles' },
+  { type: 'LV', label: 'Light vehicles' },
+  { type: 'HV', label: 'Heavy vehicles' },
+  { type: 'PU', label: 'Angkot' },
+];
+
+/**
+ * The fleet the slider produces, as one stacked bar. The slider sets one share
+ * and the other three follow from it; the bar shows what that means for the
+ * whole stream, in the four type values the lateral cross-section uses — not
+ * in hue, which is reserved for the estimators.
+ */
+function MixBar({ params }: { params: TransportBarProps['state']['params'] }) {
+  const shares = composition(params);
+  const title = MIX.map((m) => `${m.label} ${Math.round(shares[m.type] * 100)}%`).join(', ');
+  return (
+    <span className="transport__mix" title={title} aria-label={`Fleet: ${title}`} role="img">
+      {MIX.map((m) => (
+        <i
+          key={m.type}
+          className={`transport__mix-${m.type.toLowerCase()}`}
+          style={{ width: `${shares[m.type] * 100}%` }}
+        />
+      ))}
+    </span>
   );
 }

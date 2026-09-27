@@ -163,12 +163,36 @@ export function TimeSpace({
         It says what will happen, and goes when it starts happening.
       */}
       {filling && (
-        <p className="timespace__empty">
-          <strong>This paper fills downward as the simulation runs.</strong> Each
-          faint line is one vehicle&apos;s path: steep where it is moving freely,
-          flattening where it slows. A dark band leaning backward is a jam
-          travelling against the traffic.
-        </p>
+        <>
+          {/*
+            A sketch of what is coming, drawn in the paper's own furniture: a
+            few dashed free-flow paths and one soft band leaning against them.
+            Text alone told the reader what to expect; the sketch shows it, so
+            the first real stripe is recognised rather than decoded. It fades
+            with the caption as soon as the record has something to say.
+          */}
+          <svg
+            className="timespace__ghost"
+            viewBox="0 0 1000 300"
+            preserveAspectRatio="none"
+            aria-hidden="true"
+          >
+            <g className="timespace__ghost-paths">
+              <path d="M0 60 L200 300" />
+              <path d="M140 0 L390 300" />
+              <path d="M330 0 L580 300" />
+              <path d="M520 0 L770 300" />
+              <path d="M710 0 L960 300" />
+            </g>
+            <path className="timespace__ghost-band" d="M860 20 L700 280" />
+          </svg>
+          <p className="timespace__empty">
+            <strong>This paper fills downward as the simulation runs.</strong> Each
+            faint line is one vehicle&apos;s path: steep where it is moving freely,
+            flattening where it slows. A dark band leaning backward is a jam
+            travelling against the traffic.
+          </p>
+        </>
       )}
 
       <p className="visually-hidden">

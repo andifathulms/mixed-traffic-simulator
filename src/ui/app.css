@@ -25,192 +25,154 @@
   flex-wrap: wrap;
   gap: var(--s-2) var(--s-3);
   align-items: center;
-  padding: var(--s-2) var(--s-3);
+  padding: 12px var(--s-3);
+  border-bottom: 1px solid var(--border-dark);
 }
 
 .header__brand {
   display: flex;
-  gap: var(--s-1);
+  gap: 10px;
   align-items: center;
   min-width: 0;
 }
 
 .header__mark {
   flex: none;
-  width: 30px;
-  height: 30px;
-}
-
-.header__names {
-  min-width: 0;
+  width: 28px;
+  height: 28px;
 }
 
 .header__title {
-  font-size: var(--t-h2-size);
-  line-height: var(--t-h2-line);
-  font-weight: 600;
+  font-size: 16px;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: -0.01em;
   color: var(--on-dark);
 }
 
-
-
-.header__controls {
-  display: flex;
-  gap: var(--s-1);
-  align-items: center;
-  /* Sits between the brand and the readings, and takes the slack. */
-  margin-left: auto;
-}
-
-.header__scenario select {
-  min-width: 13rem;
-}
-
 /*
- * §5.0 The live readings. Right-hand end of the masthead, monospaced, on a
- * plate of their own so they read as one instrument rather than four labels
- * that happen to be adjacent.
+ * The scenario rail. Six cards in one row on a wide screen, each a picture of
+ * its road and one line on what makes it different. The checked card carries
+ * the accent: it is the one thing in this band that is selected.
  */
-.telemetry {
+.rail {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: var(--s-1);
+  padding: 10px var(--s-3);
+  background: var(--void);
+  border-bottom: 1px solid var(--border-dark);
+}
+
+.rail__card {
   display: flex;
-  gap: var(--s-3);
+  gap: 10px;
   align-items: center;
-  margin: 0;
-  padding: var(--s-1) var(--s-2);
+  min-width: 0;
+  padding: 7px 8px;
   background: var(--surface);
   border: 1px solid var(--border-dark);
   border-radius: var(--r-panel);
+  color: var(--on-dark);
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--d-control) var(--ease-standard),
+    border-color var(--d-control) var(--ease-standard);
 }
 
-.telemetry__item {
+.rail__card:hover {
+  background: var(--surface-raised);
+  border-color: var(--border-dark-strong);
+}
+
+.rail__card--active,
+.rail__card--active:hover {
+  background: linear-gradient(0deg, var(--accent-soft), var(--accent-soft)), var(--surface);
+  border-color: var(--accent);
+}
+
+.rail__thumb {
+  flex: none;
+  width: 48px;
+  height: 34px;
+  border-radius: 4px;
+  background: var(--asphalt);
+}
+
+.rail__text {
+  display: grid;
   min-width: 0;
 }
 
-.telemetry__label {
-  color: var(--on-dark-faint);
+.rail__name {
+  overflow: hidden;
+  font-size: var(--t-small-size);
+  font-weight: 600;
+  line-height: 1.3;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
-.telemetry__value {
-  margin: 1px 0 0;
-  color: var(--on-dark);
-  font-size: var(--t-readout-size);
-  line-height: var(--t-readout-line);
-  font-weight: 500;
-}
-
-.telemetry__unit {
+.rail__line {
+  overflow: hidden;
   color: var(--on-dark-faint);
   font-size: var(--t-micro-size);
-  font-weight: 400;
+  line-height: 1.35;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
-.telemetry__state {
-  display: flex;
-  gap: 7px;
+/*
+ * The thesis strip: the argument as a picture, on the first screen. The two
+ * figures in the headline take the top of the speed ramp, the one warm value
+ * on the dark ground, so the eye lands on the spread before the words.
+ */
+.thesis {
+  display: grid;
+  grid-template-columns: minmax(16rem, 22rem) 1fr;
+  gap: var(--s-3);
   align-items: center;
-  padding-right: var(--s-2);
-  border-right: 1px solid var(--border-dark);
+  padding: 12px var(--s-3) 8px;
+  background: linear-gradient(180deg, var(--asphalt), var(--asphalt-edge));
 }
 
-.telemetry__clock {
-  margin: 0;
-  font-size: var(--t-h2-size);
-  font-weight: 600;
-  line-height: 1.1;
-  letter-spacing: -0.01em;
-}
-
-.telemetry__dot {
-  width: 7px;
-  height: 7px;
-  border-radius: var(--r-pill);
-  background: var(--on-dark-faint);
-  transition: background var(--d-control) var(--ease-standard);
-}
-
-/*
- * Running is stated by a mark that is *doing* something, because the alternative
- * — reading the clock to see whether it is advancing — takes a second and a
- * half. It is a slow pulse, not a blink; §6.6 rules out anything that would
- * compete with the road for attention.
- */
-.telemetry__state--running .telemetry__dot {
-  background: var(--signal-green);
-  animation: pulse 2s var(--ease-standard) infinite;
-}
-
-@keyframes pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.35;
-  }
-}
-
-/* The scenario's own sentence, and the fact stated once (PRD §7.4). */
-.header__strip {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--s-05) var(--s-2);
-  align-items: baseline;
-  padding: var(--s-1) var(--s-3) 10px;
-  background: var(--asphalt-edge);
-  border-top: 1px solid var(--border-dark);
-}
-
-/*
- * The one sentence that says what this is. Body size, in the mid ink rather
- * than the faint: it is the first thing a stranger reads and it used to be the
- * smallest, faintest text on the page.
- */
-.header__descriptor {
-  margin: 0;
-  flex-basis: 100%;
-  max-width: var(--measure);
-  color: var(--on-dark);
-  font-size: var(--t-body-size);
-  line-height: 1.4;
-}
-
-/* The scenario's sentence and the caveat, under the pitch rather than beside it. */
-.header__context {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--s-1) var(--s-2);
-  align-items: baseline;
-  flex-basis: 100%;
-}
-
-.header__blurb,
-.header__notice {
-  margin: 0;
-  max-width: var(--measure);
+.thesis__descriptor {
+  margin: 0 0 4px;
+  color: var(--on-dark-mid);
   font-size: var(--t-small-size);
   line-height: var(--t-small-line);
 }
 
-.header__blurb {
-  color: var(--on-dark-mid);
+.thesis__title {
+  font-size: 19px;
+  line-height: 1.22;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+  color: var(--on-dark);
 }
 
-.header__notice {
-  padding-left: var(--s-2);
-  border-left: 1px solid var(--border-dark);
-  color: var(--on-dark-faint);
+.thesis__figure {
+  color: var(--speed-100);
+  font-family: var(--font-mono);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+.thesis__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-1) var(--s-2);
+  align-items: center;
+  margin: 8px 0 0;
 }
 
 /*
- * From the claim to the evidence.
- *
- * The charts that show the methods disagreeing are below the fold, and until
- * now nothing on the first screen pointed at them. Set in the running text
- * rather than as a button, because it is a cross-reference and not a call to
- * action.
+ * From the claim to the evidence. Set as a cross-reference rather than a
+ * button, because it is one.
  */
-.header__jump {
+.thesis__jump {
   color: var(--on-dark-mid);
+  font-size: var(--t-small-size);
   text-decoration: underline;
   text-decoration-color: var(--border-dark-strong);
   text-underline-offset: 3px;
@@ -219,16 +181,87 @@
     text-decoration-color var(--d-control) var(--ease-standard);
 }
 
-.header__jump:hover,
-.header__jump:focus-visible {
+.thesis__jump:hover,
+.thesis__jump:focus-visible {
   color: var(--on-dark);
-  text-decoration-color: var(--brand-accent);
+  text-decoration-color: var(--accent);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .header__jump {
-    transition: none;
-  }
+.thesis__plot {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 140px;
+  overflow: visible;
+}
+
+.thesis__negative {
+  fill: var(--warn);
+  opacity: 0.1;
+}
+
+.thesis__axis {
+  stroke: var(--border-dark-strong);
+  stroke-width: 2;
+}
+
+.thesis__zero {
+  stroke: var(--on-dark-faint);
+}
+
+.thesis__mkji {
+  stroke: var(--method-mkji);
+  stroke-width: 1.4;
+  stroke-dasharray: 3 3;
+}
+
+.thesis__tick {
+  fill: var(--on-dark-faint);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.thesis__leader {
+  stroke: var(--border-dark-strong);
+}
+
+.thesis__label {
+  fill: var(--on-dark-mid);
+  font-size: 13px;
+}
+
+.thesis__val {
+  fill: var(--on-dark);
+  font-family: var(--font-mono);
+}
+
+.thesis__val--neg {
+  fill: var(--warn);
+  font-weight: 600;
+}
+
+.thesis__point {
+  fill: var(--speed-100);
+}
+
+.thesis__point--range {
+  fill: var(--speed-75);
+}
+
+.thesis__point--neg {
+  fill: var(--warn);
+}
+
+.thesis__halo {
+  fill: none;
+  stroke: var(--warn);
+  stroke-opacity: 0.4;
+}
+
+.thesis__open {
+  fill: none;
+  stroke: var(--speed-100);
+  stroke-width: 1.4;
 }
 
 /* ================================================================= stage */
@@ -247,6 +280,242 @@
   flex-direction: column;
   width: 100%;
   background: var(--asphalt-edge);
+}
+
+/*
+ * The stage: the axis column and the live panel beside it. The panel spans the
+ * road, the ruler and the record together, so all three narrow as one and the
+ * shared axis is untouched.
+ */
+.stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 19rem;
+  background: var(--asphalt-edge);
+}
+
+.app__axis {
+  min-width: 0;
+}
+
+/* A small key for the one encoding the road depends on. */
+.stage__ramp {
+  display: inline-block;
+  width: 64px;
+  height: 7px;
+  margin-left: var(--s-1);
+  border: 1px solid var(--border-dark);
+  border-radius: var(--r-pill);
+  background: linear-gradient(
+    90deg,
+    var(--speed-0),
+    var(--speed-25),
+    var(--speed-50),
+    var(--speed-75),
+    var(--speed-100)
+  );
+  vertical-align: 1px;
+}
+
+/* ============================================================ live panel */
+
+.live {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: var(--asphalt);
+  border-left: 1px solid var(--border-dark);
+  color: var(--on-dark);
+}
+
+.live__scenario {
+  padding: 14px var(--s-2) 12px;
+  border-bottom: 1px solid var(--border-dark);
+}
+
+.live__name {
+  font-size: var(--t-h2-size);
+  line-height: var(--t-h2-line);
+  font-weight: 800;
+  letter-spacing: -0.015em;
+}
+
+.live__blurb {
+  margin: 6px 0 0;
+  color: var(--on-dark-mid);
+  font-size: var(--t-small-size);
+  line-height: 1.5;
+}
+
+.live__notice {
+  margin: 8px 0 0;
+  color: var(--on-dark-faint);
+  font-size: var(--t-micro-size);
+  line-height: 1.5;
+}
+
+.live__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0;
+}
+
+.live__cell {
+  min-width: 0;
+  padding: 10px var(--s-2);
+  border-bottom: 1px solid var(--border-dark);
+}
+
+.live__cell--wide,
+.live__clock {
+  grid-column: 1 / -1;
+}
+
+.live__cell dt {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--s-1);
+}
+
+.live__cell dd {
+  margin: 3px 0 0;
+}
+
+.live__count {
+  color: var(--on-dark-faint);
+  font-size: var(--t-nano-size);
+}
+
+.live__figure {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  font-size: var(--t-figure-size);
+  font-weight: 600;
+  line-height: var(--t-figure-line);
+  letter-spacing: var(--t-figure-track);
+  color: var(--on-dark);
+}
+
+.live__small {
+  font-size: var(--t-readout-size);
+  font-weight: 500;
+  color: var(--on-dark);
+}
+
+.live__unit {
+  color: var(--on-dark-faint);
+  font-size: var(--t-micro-size);
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.live__rate {
+  margin-left: 2px;
+  padding: 1px 6px;
+  border: 1px solid var(--border-dark-strong);
+  border-radius: var(--r-pill);
+  color: var(--on-dark-mid);
+  font-size: var(--t-nano-size);
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+/*
+ * Running is stated by a mark that is doing something: a slow two-second
+ * pulse, not a blink, so it never competes with the road (DESIGN.md §6.6).
+ */
+.live__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--r-pill);
+  background: var(--on-dark-faint);
+}
+
+.live__clock--running .live__dot {
+  background: var(--signal-green);
+  animation: pulse 2s var(--ease-standard) infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.live__trend {
+  display: flex;
+  gap: var(--s-2);
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.live__spark {
+  flex: 1;
+  max-width: 150px;
+  height: 36px;
+}
+
+.live__spark-area {
+  fill: var(--speed-100);
+  opacity: 0.08;
+}
+
+.live__spark-line {
+  fill: none;
+  stroke: var(--speed-75);
+  stroke-width: 1.6;
+}
+
+.live__spark-end {
+  fill: var(--speed-100);
+}
+
+.live__dots {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 4px;
+  margin-top: 6px;
+}
+
+/* Each vehicle in its own speed colour; a stopped one also gets an outline. */
+.live__stopdot {
+  aspect-ratio: 1;
+  border-radius: 2px;
+}
+
+.live__stopdot--stopped {
+  box-shadow: inset 0 0 0 1px var(--border-dark-strong);
+}
+
+.live__bar {
+  display: block;
+  height: 8px;
+  margin-top: 8px;
+  overflow: hidden;
+  background: var(--speed-75);
+  border-radius: var(--r-pill);
+}
+
+.live__bar i {
+  display: block;
+  height: 100%;
+  background: var(--speed-0);
+  box-shadow: 1px 0 0 var(--border-dark-strong);
+}
+
+.live__profile {
+  display: block;
+  width: 100%;
+  height: 54px;
+  margin-top: 6px;
+}
+
+.live__profile-base {
+  stroke: var(--border-dark);
 }
 
 .stage__tag {
@@ -678,6 +947,70 @@
   margin-left: auto;
 }
 
+.transport__play {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin-right: 4px;
+  padding: 0;
+  background: var(--accent);
+  border: 0;
+  border-radius: var(--r-pill);
+  box-shadow: 0 0 0 5px var(--accent-soft);
+  color: var(--accent-fg);
+  cursor: pointer;
+  transition: transform var(--d-control) var(--ease-standard),
+    filter var(--d-control) var(--ease-standard);
+}
+
+.transport__play:hover {
+  filter: brightness(1.08);
+  transform: scale(1.05);
+}
+
+.transport__play:active {
+  transform: scale(0.97);
+}
+
+/*
+ * The fleet mix under the motorcycle slider. Motorcycles take the brightest
+ * value, because they are the subject; the others step down in the order the
+ * cross-section uses. Brightness here is not speed — the bar sits on the
+ * transport, not on the road.
+ */
+.transport__mix {
+  display: flex;
+  flex: 0 1 9rem;
+  height: 10px;
+  overflow: hidden;
+  background: var(--void);
+  border: 1px solid var(--border-dark);
+  border-radius: var(--r-pill);
+}
+
+.transport__mix i {
+  display: block;
+  height: 100%;
+}
+
+.transport__mix-mc {
+  background: var(--on-dark);
+}
+
+.transport__mix-lv {
+  background: var(--on-dark-mid);
+}
+
+.transport__mix-hv {
+  background: var(--on-dark-faint);
+}
+
+.transport__mix-pu {
+  background: var(--border-dark-strong);
+}
+
 .transport__keys {
   display: flex;
   gap: 3px;
@@ -783,61 +1116,66 @@
 /* ============================================================ responsive */
 
 /* §4.6 Below 860 px the road and record stay stacked and keep their axis. */
-@media (max-width: 1100px) {
-  .telemetry {
-    gap: var(--s-2);
+@media (max-width: 1240px) {
+  .rail {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
+  .stage {
+    grid-template-columns: minmax(0, 1fr) 16.5rem;
+  }
+}
+
+@media (max-width: 980px) {
   /*
-   * Drop readings by how central they are, not by their position in the row.
-   *
-   * This hid everything from the fourth item on, which took density and the
-   * motorcycle share together — and the motorcycle share is the app's
-   * principal independent variable (PRD §4.7), the one number the whole
-   * argument turns on. It was the first thing to go on any screen under
-   * 1100 px, which is most laptops. Density goes first now; the share stays
-   * to the last.
+   * The live panel moves under the record rather than beside it. The axis
+   * column takes the full width again, and nothing about the alignment
+   * changes, because the panel was never inside it.
    */
-  .telemetry__item:nth-child(4) {
-    display: none;
+  .stage {
+    grid-template-columns: 1fr;
+  }
+
+  .live {
+    border-left: 0;
+    border-top: 1px solid var(--border-dark);
+  }
+
+  .live__grid {
+    grid-template-columns: repeat(auto-fill, minmax(min(15rem, 100%), 1fr));
+  }
+
+  .thesis {
+    grid-template-columns: 1fr;
+    gap: var(--s-1);
   }
 }
 
 @media (max-width: 860px) {
   .header__bar,
-  .header__strip,
+  .thesis,
+  .rail,
   .transport {
     padding-left: var(--s-2);
     padding-right: var(--s-2);
   }
 
-  .header__controls {
-    margin-left: 0;
-    width: 100%;
-  }
-
-  .header__scenario {
-    flex: 1;
-  }
-
-  .header__scenario select {
-    width: 100%;
-    min-width: 0;
-  }
-
-  .telemetry {
-    width: 100%;
-    justify-content: space-between;
-  }
-
-  /* Then mean speed, leaving the clock, the fleet size and the share. */
-  .telemetry__item:nth-child(3) {
+  /* Only the extremes are labelled; the dots and the MKJI lines all stay. */
+  .thesis__m:not(.thesis__m--major) .thesis__label {
     display: none;
   }
 
-  .header__notice {
-    padding-left: 0;
-    border-left: 0;
+  .thesis__label,
+  .thesis__tick {
+    font-size: 30px;
+  }
+
+  .thesis__tick-long {
+    display: none;
+  }
+
+  .thesis__descriptor {
+    display: none;
   }
 
   .bay {
@@ -863,6 +1201,22 @@
 @media (max-width: 560px) {
   .transport__keys {
     display: none;
+  }
+
+  /*
+   * One scrolling row on a phone. Three rows of cards pushed the road below
+   * the first screen, and the road is what a shared link should open on.
+   */
+  .rail {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+
+  .rail__card {
+    flex: 0 0 12.5rem;
+    scroll-snap-align: start;
   }
 
   /*

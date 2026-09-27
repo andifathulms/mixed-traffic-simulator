@@ -83,7 +83,7 @@ ground is now a scale.
 | `--void` | `#06080B` | The page behind everything, and the inside of a slider track. |
 | `--asphalt-edge` | `#0A0F13` | Beyond the road edge; the ground the stage sits on. |
 | `--asphalt` | `#111820` | The road surface. Cool near-black, a night sky's blue in it. |
-| `--surface` | `#151D25` | A plate raised off the ground: the telemetry cluster. |
+| `--surface` | `#151D25` | A plate raised off the ground: a scenario card, a live reading. |
 | `--surface-raised` | `#1C2630` | A control at rest. |
 | `--surface-hover` | `#24303B` | A control under the pointer. |
 | `--surface-active` | `#2C3945` | A control being pressed. |
@@ -334,33 +334,34 @@ here and nothing else. Any third typeface.
 
 ```
 ┌───────────────────────────────────────────────────────────────────────┐
-│ ▤ Mixed traffic simulator      Scenario [ Phantom jam ▾ ] ·source·     │
-│   Motorcycle-dominated traffic…    ┌──────────────────────────────┐   │
-│                                    │ ● 2:14 │ Vehicles │ Mean… │  │   │
-│                                    └──────────────────────────────┘   │
+│ ▤ Mixed traffic simulator                                              │
 ├───────────────────────────────────────────────────────────────────────┤
-│ A ring of traffic with no obstruction…  │ Not calibrated to any…      │
+│ [◯ Phantom jam] [═ Corridor] [⋈ Bottleneck] [┃ Signal] [▭ Angkot] [╱ Bench] │
+├───────────────────────────────────────────────────────────────────────┤
+│ The number everyone quotes   ●──·──●●──●─┆─●▭●→─┆──────────●         │
+│ has been measured from       −0.11        0.25    0.5        0.84      │
+│ −0.11 to 0.84.  ·source· Compare the five methods ↓                    │
 └───────────────────────────────────────────────────────────────────────┘
 ```
 
-Three things in one band: what this is, which scenario is loaded, and what the simulation is
-doing right now.
+Three bands: what this is, which scenes it can play, and why it exists.
 
-The last of those was missing entirely from the first version. The app animated a phenomenon
-at length without ever stating the clock, the fleet size or the mean speed in words — a
-reader could watch a jam form and still not be able to say how fast anything was going. The
-telemetry plate carries clock, vehicles, mean speed, density and motorcycle share, refreshed
-four times a second: fast enough to feel live, slow enough to be *read*, which a 60 Hz number
-is not.
+**The scenario rail.** The scenario used to be a dropdown, which hid the six scenes
+behind one name. Each is now a card with a drawing of its road, in the road's own
+palette, and one line on what makes it different. It is a radio group: one is loaded,
+arrow keys move, and the checked card carries the accent. On a phone it is one row that
+scrolls sideways, because three rows of cards pushed the road off the first screen.
 
-Whether the simulation is running is stated by a mark that is itself doing something — a slow
-two-second pulse on the clock dot. The alternative is watching the clock to see whether it
-advances, which takes a second and a half. It pulses rather than blinks, because §6.6 rules
-out anything that competes with the road for attention.
+**The thesis strip.** The app's argument was reachable only by scrolling to the bench
+and running a sweep. The published measurements that make the argument worth having are
+static, so they are on screen from the first frame: eight field values of one
+"constant", from −0.11 to 0.84, against the two MKJI values. They are literature values,
+not simulation output, and a citation marker says so. The two figures in the headline
+take the top of the speed ramp, the one warm value on the dark ground.
 
-The scenario's own sentence and the non-calibration fact (PRD §7.4) sit below the band on a
-quieter strip, where they can be read once and then ignored rather than competing with the
-controls for the same eye.
+The live readings, the scenario's own sentence and the non-calibration fact moved out
+of the masthead and into the live panel beside the road (§4.1), because they describe
+the scene on screen rather than the app.
 
 ### 4.1 The shared axis
 
@@ -407,12 +408,21 @@ luminance" is the app's central encoding and it was nowhere on screen.
 Nothing in this column may take horizontal padding, a border, or a scrollbar that its
 neighbours do not.
 
+**The live panel.** Beside the axis column sits a 19 rem panel with the scenario's name,
+its sentence, the non-calibration fact, and the live readings — each with a picture:
+mean speed as a two-minute trend, stopped vehicles as a dot per vehicle in its own speed
+colour (a bar when there are too many for dots), and speed along the road as a binned
+profile whose dip is the jam. The panel spans the road, the ruler and the record
+together, so all three narrow as one and the shared axis is untouched. Below 980 px it
+moves under the record.
+
 ### 4.2 The road view
 
 Full width, roughly 220 px tall for a corridor. Metres per pixel adjustable; default fits
 the scenario length.
 
-For the ring scenario the road is drawn as a ring rather than unrolled, because the ring is
+For the ring scenario the road is drawn as a ring — radius 43% of the band, where it
+used to be 36% and read as a thin outline — rather than unrolled, because the ring is
 the point — the jam travelling backward forever around a closed loop is the demonstration.
 The time–space diagram unrolls it, and having both simultaneously is precisely the
 pedagogy.
@@ -442,13 +452,14 @@ sitting above the page rather than being the end of it.
 
 Four groups, in the order they are reached for:
 
-1. **Run it.** Play as the one primary button on the bar, with a glyph, so the eye finds it
-   without reading. Step and reset beside it, and the keyboard shortcuts — `space`, `.`,
+1. **Run it.** Play as the one primary button on the bar: a 40 px accent disc with a
+   glyph and a soft halo, so the eye finds it without reading. Step and reset beside it, and the keyboard shortcuts — `space`, `.`,
    `r` — stated as key caps rather than left to be discovered.
 2. **Set its rate.** The speed multiplier as a segmented control, not a dropdown: seven
    fixed steps where seeing the whole range at once tells the reader what the range *is*.
 3. **The variable.** The motorcycle fraction takes every pixel the other three groups do
-   not, with a filled track and a 15 px readout. It is the app's principal independent
+   not, with a filled track, a readout, and a stacked bar showing the whole fleet the
+   slider produces — four type values, never estimator hues. It is the app's principal independent
    variable and a two-centimetre slider for it would have been a lie about what matters.
 4. **Declare the model.** Seed and lateral rule.
 
@@ -469,13 +480,13 @@ border. Prose is capped at 68 characters — `--measure`, so it is set in one pl
 Below 860 px the road and time–space diagram stay stacked and keep their shared axis — they
 are the app and they do not collapse. Both shrink in height; the road to 120 px, the record
 to 200 px. The fundamental diagram moves into the instrument bay as another tab. The
-scenario picker and the telemetry plate each take a full row, the motorcycle fraction moves
-to the top of the transport bar where it gets the whole width, and the parameter grid
-becomes one column.
+live panel moves under the record (below 980 px), the thesis strip keeps its points but
+labels only the two extremes, the motorcycle fraction moves to the top of the transport
+bar where it gets the whole width, and the parameter grid becomes one column.
 
-Below 1100 px the telemetry drops density and motorcycle share, keeping clock, vehicles and
-mean speed. Below 560 px the key caps and the canvas tag notes go, because at that width
-they are the difference between a bar that fits and one that wraps twice.
+Below 560 px the scenario rail becomes one sideways-scrolling row and the key caps go,
+because at that width they are the difference between a bar that fits and one that
+wraps twice.
 
 ### 4.7 The parameters panel
 

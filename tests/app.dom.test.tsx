@@ -18,13 +18,32 @@ beforeAll(() => {
 
 afterEach(cleanup);
 
+/** A scenario card, found inside the scenario radio group by its name. */
+function scenarioCard(name: RegExp): HTMLElement {
+  const group = screen.getByRole('radiogroup', { name: /^scenario$/i });
+  return within(group).getByRole('radio', { name });
+}
+
 describe('the app mounts and renders', () => {
   it('renders without throwing', () => {
     render(<App />);
     expect(screen.getByRole('heading', { name: /mixed traffic simulator/i })).toBeTruthy();
   });
 
-  it('states the non-calibration fact once, with the scenario chooser', () => {
+  it('offers every scenario as a card, with exactly one checked', () => {
+    render(<App />);
+    const group = screen.getByRole('radiogroup', { name: /^scenario$/i });
+    const cards = within(group).getAllByRole('radio');
+    expect(cards).toHaveLength(6);
+    expect(cards.filter((c) => c.getAttribute('aria-checked') === 'true')).toHaveLength(1);
+  });
+
+  it('shows the published spread of the equivalence factor on the first screen', () => {
+    render(<App />);
+    expect(screen.getByRole('img', { name: /published motorcycle equivalence values/i })).toBeTruthy();
+  });
+
+  it('states the non-calibration fact once, with the scenario description', () => {
     render(<App />);
     const notices = screen.getAllByText(/not calibrated to any specific location/i);
     expect(notices).toHaveLength(1);
@@ -116,7 +135,7 @@ describe('the app mounts and renders', () => {
   it('shows the RHK toggle on the signalised scenario only', () => {
     render(<App />);
     expect(screen.queryByLabelText(/ruang henti khusus/i)).toBeNull();
-    fireEvent.change(screen.getByLabelText(/^scenario$/i), { target: { value: 'signal' } });
+    fireEvent.click(scenarioCard(/signalised approach/i));
     expect(screen.getByLabelText(/ruang henti khusus/i)).toBeTruthy();
   });
 
@@ -139,9 +158,7 @@ describe('the app mounts and renders', () => {
     expect(inflow().value).toBe('0');
     expect(motorcycles().value).toBe('0');
 
-    fireEvent.change(screen.getByLabelText(/^scenario$/i), {
-      target: { value: 'corridor' },
-    });
+    fireEvent.click(scenarioCard(/^corridor/i));
 
     // The corridor's, not the ring's.
     expect(inflow().value).toBe('2400');

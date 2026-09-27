@@ -14,6 +14,7 @@ import { Road } from '../views/Road/Road';
 import { TimeSpace } from '../views/TimeSpace/TimeSpace';
 import { TransportBar } from './TransportBar';
 import { Header } from './Header';
+import { LivePanel } from './LivePanel';
 import { Ruler } from './Ruler';
 import { InstrumentBay } from './InstrumentBay';
 import { Parameters } from './Parameters';
@@ -77,7 +78,7 @@ export function App() {
   // The ring is drawn as a ring, and a ring in a 220 px band is a 79 px circle
   // with twenty-two vehicles on it — too small to read the composition that is
   // the whole point. It gets a taller stage (DESIGN.md §4.2).
-  const roadHeight = narrow ? (scenario.geometry.ring ? 220 : 120) : scenario.geometry.ring ? 380 : 220;
+  const roadHeight = narrow ? (scenario.geometry.ring ? 240 : 120) : scenario.geometry.ring ? 340 : 220;
   const recordHeight = narrow ? 200 : 280;
   const secondsPerRow = scenario.geometry.ring ? 0.4 : 1;
 
@@ -233,13 +234,7 @@ export function App() {
         Skip to instruments
       </a>
 
-      <Header
-        scenario={scenario}
-        state={state}
-        onChange={update}
-        worldRef={worldRef}
-        tick={tick}
-      />
+      <Header state={state} onChange={update} />
 
       {/*
         The road and the time-space diagram are locked to one horizontal
@@ -247,59 +242,75 @@ export function App() {
         container, with no padding between them and nothing that could offset
         one relative to the other. Nothing may break this (DESIGN.md §4.1).
       */}
-      <div className="app__axis">
-        <div className="stage__tag">
-          <span className="label">Road</span>
-          {/*
-            Written for a first read rather than for someone who already knows
-            the encoding. "Speed is luminance" is exact and means nothing until
-            you have been told what luminance is doing here.
-          */}
-          <span className="stage__tag-note">
-            {scenario.geometry.ring
-              ? `a ${Math.round(scenario.geometry.length)} m loop, drawn as a ring`
-              : 'the road, seen from above'}
-            <span className="sep" aria-hidden="true">
-              ·
+      {/*
+        The stage: the axis column and the live readings beside it. The panel
+        sits beside the whole column rather than beside the road alone, so the
+        road, the ruler and the record all narrow together and the shared
+        axis survives it.
+      */}
+      <div className="stage">
+        <div className="app__axis">
+          <div className="stage__tag">
+            <span className="label">Road</span>
+            {/*
+              Written for a first read rather than for someone who already knows
+              the encoding. "Speed is luminance" is exact and means nothing until
+              you have been told what luminance is doing here.
+            */}
+            <span className="stage__tag-note">
+              {scenario.geometry.ring
+                ? `a ${Math.round(scenario.geometry.length)} m loop, drawn as a ring`
+                : 'the road, seen from above'}
+              <span className="sep" aria-hidden="true">
+                ·
+              </span>
+              each mark is a vehicle, brighter means faster
+              <span className="stage__ramp" aria-hidden="true" />
             </span>
-            each mark is a vehicle, brighter means faster
-          </span>
-        </div>
-        <Road
-          worldRef={worldRef}
-          alphaRef={alphaRef}
-          freeSpeed={scenario.rampSpeed}
-          selectedVehicle={state.selectedVehicle}
-          onSelect={(id) =>
-            update({ selectedVehicle: id, tab: id === null ? state.tab : 'inspector' })
-          }
-          viewFrom={viewFrom}
-          viewTo={viewTo}
-          generation={generation}
-          height={roadHeight}
-          roadWidth={scenario.geometry.width}
-          ring={scenario.geometry.ring}
-        />
-        <Ruler from={viewFrom} to={viewTo} ring={scenario.geometry.ring} />
-        <div className="stage__tag">
-          <span className="label">Record</span>
-          <span className="stage__tag-note">
-            every vehicle&apos;s path, on the same left-to-right positions
-            <span className="sep" aria-hidden="true">
-              ·
+          </div>
+          <Road
+            worldRef={worldRef}
+            alphaRef={alphaRef}
+            freeSpeed={scenario.rampSpeed}
+            selectedVehicle={state.selectedVehicle}
+            onSelect={(id) =>
+              update({ selectedVehicle: id, tab: id === null ? state.tab : 'inspector' })
+            }
+            viewFrom={viewFrom}
+            viewTo={viewTo}
+            generation={generation}
+            height={roadHeight}
+            roadWidth={scenario.geometry.width}
+            ring={scenario.geometry.ring}
+          />
+          <Ruler from={viewFrom} to={viewTo} ring={scenario.geometry.ring} />
+          <div className="stage__tag">
+            <span className="label">Record</span>
+            <span className="stage__tag-note">
+              every vehicle&apos;s path, on the same left-to-right positions
+              <span className="sep" aria-hidden="true">
+                ·
+              </span>
+              a backward-leaning stripe is a jam
             </span>
-            a backward-leaning stripe is a jam
-          </span>
+          </div>
+          <TimeSpace
+            worldRef={worldRef}
+            trackerRef={trackerRef}
+            freeSpeed={scenario.rampSpeed}
+            viewFrom={viewFrom}
+            viewTo={viewTo}
+            generation={generation}
+            height={recordHeight}
+            secondsPerRow={secondsPerRow}
+          />
         </div>
-        <TimeSpace
+        <LivePanel
           worldRef={worldRef}
-          trackerRef={trackerRef}
-          freeSpeed={scenario.rampSpeed}
-          viewFrom={viewFrom}
-          viewTo={viewTo}
+          scenario={scenario}
+          state={state}
+          tick={tick}
           generation={generation}
-          height={recordHeight}
-          secondsPerRow={secondsPerRow}
         />
       </div>
 
