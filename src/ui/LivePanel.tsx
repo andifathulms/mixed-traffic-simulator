@@ -131,7 +131,7 @@ export function LivePanel({ worldRef, scenario, state, tick, generation }: LiveP
               {r ? (r.mean * 3.6).toFixed(1) : '—'}
               <span className="live__unit"> km/h</span>
             </span>
-            <Sparkline values={history.current.map((s) => s.v)} max={free * 1.1} />
+            <Sparkline values={history.current.map((s) => s.v)} free={free} />
           </dd>
         </div>
 
@@ -196,22 +196,39 @@ export function LivePanel({ worldRef, scenario, state, tick, generation }: LiveP
   );
 }
 
-/** Mean speed over the last two simulated minutes. Area, line, emphasised end. */
-function Sparkline({ values, max }: { values: number[]; max: number }) {
-  const W = 120;
-  const H = 36;
-  if (values.length < 2 || max <= 0) {
-    return <svg className="live__spark" viewBox={`0 0 ${W} ${H}`} aria-hidden="true" />;
+/**
+ * Mean speed over the last two simulated minutes: area, line, emphasised end.
+ *
+ * The newest sample is pinned to the right edge and history grows leftward,
+ * so the line reads as a recorder from the first second rather than a stub in
+ * one corner. The vertical scale runs from stopped to the scenario's
+ * free-flow speed, the same normalisation as the speed ramp, with free flow
+ * marked — so a steady stream sits near the rule and a jam is a fall away
+ * from it.
+ */
+function Sparkline({ values, free }: { values: number[]; free: number }) {
+  const W = 240;
+  const H = 40;
+  const y = (v: number) => H - 2 - Math.min(1.1, Math.max(0, v / (free || 1))) / 1.1 * (H - 4);
+  if (values.length < 2 || free <= 0) {
+    return (
+      <svg className="live__spark" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" aria-hidden="true">
+        <line className="live__spark-free" x1={0} x2={W} y1={y(free)} y2={y(free)} />
+      </svg>
+    );
   }
   const step = W / (HISTORY - 1);
-  const pts = values.map((v, i) => [i * step, H - 3 - Math.min(1, v / max) * (H - 6)] as const);
+  const n = values.length;
+  const pts = values.map((v, i) => [W - (n - 1 - i) * step, y(v)] as const);
   const line = pts.map(([px, py], i) => `${i ? 'L' : 'M'}${px.toFixed(1)} ${py.toFixed(1)}`).join(' ');
-  const [ex, ey] = pts[pts.length - 1];
+  const [sx] = pts[0];
+  const [ex, ey] = pts[n - 1];
   return (
     <svg className="live__spark" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" aria-hidden="true">
-      <path className="live__spark-area" d={`${line} L${ex.toFixed(1)} ${H} L0 ${H} Z`} />
+      <line className="live__spark-free" x1={0} x2={W} y1={y(free)} y2={y(free)} />
+      <path className="live__spark-area" d={`${line} L${ex.toFixed(1)} ${H} L${sx.toFixed(1)} ${H} Z`} />
       <path className="live__spark-line" d={line} vectorEffect="non-scaling-stroke" />
-      <circle className="live__spark-end" cx={ex} cy={ey} r={2.6} />
+      <circle className="live__spark-end" cx={ex} cy={ey} r={2.4} />
     </svg>
   );
 }

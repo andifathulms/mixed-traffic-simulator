@@ -34,17 +34,18 @@ const STOPS: Array<[number, number, number]> = [
  * #EEEFEB sheet and was invisible (and the headlight cream would be worse). The record showed its jams and nothing else,
  * while DESIGN.md §5.2 promised "near-parallel bright diagonals".
  *
- * So the paper ramp runs from ink to a light grey that is still clearly darker
- * than the paper. The polarity is preserved — a jam is the dark mark on both
+ * So the paper ramp runs from ink to a grey that is still clearly darker than
+ * the paper — about 2:1 against it. It was first set lighter, and on a
+ * free-flowing corridor the record read as blank paper with a faint grain. The polarity is preserved — a jam is the dark mark on both
  * grounds, which is what makes the road and the record read as one image — and
  * free flow becomes a legible pale diagonal rather than a blank sheet.
  */
 const PAPER_STOPS: Array<[number, number, number]> = [
   [0x11, 0x17, 0x19],
-  [0x3c, 0x44, 0x47],
-  [0x6b, 0x74, 0x75],
-  [0x98, 0xa1, 0xa0],
-  [0xc0, 0xc8, 0xc6],
+  [0x35, 0x3d, 0x40],
+  [0x5d, 0x66, 0x68],
+  [0x81, 0x8b, 0x8b],
+  [0x9d, 0xa7, 0xa6],
 ];
 
 /** Precomputed ramp, so the road view never mixes colours per vehicle per frame. */

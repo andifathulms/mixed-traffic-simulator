@@ -30,12 +30,13 @@ interface Measurement {
 }
 
 const MEASUREMENTS: Measurement[] = [
-  { value: -0.11, label: 'Denpasar, 1 h aggregation', row: -2, anchor: 'start', major: true },
+  { value: -0.11, label: 'Denpasar, 1 h', row: -2, anchor: 'start', major: true },
   { value: 0.1, label: 'Denpasar, 15 min', row: 1, anchor: 'end' },
   { value: 0.11, label: 'Denpasar, 3 min', row: -3, anchor: 'start' },
   { value: 0.198, label: 'intercity four-lane', row: 2, anchor: 'start' },
   { value: 0.32, label: 'roundabout, occupancy time', row: 1, anchor: 'start' },
-  { value: 0.35, to: 0.36, label: 'Solo–Sragen', row: -1, anchor: 'start' },
+  // Anchored left of its point, clear of the Semarang leader rising past it.
+  { value: 0.35, to: 0.36, label: 'Solo–Sragen', row: -1, anchor: 'end' },
   { value: 0.4, label: 'Semarang', row: -3, anchor: 'start', open: true },
   { value: 0.84, label: 'rural road, time headway', row: 1, anchor: 'end', major: true },
 ];
