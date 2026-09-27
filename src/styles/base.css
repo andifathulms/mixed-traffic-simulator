@@ -10,12 +10,12 @@
 @import '../views/instrument.css';
 
 /*
- * The six faces the app renders, declared here rather than imported.
+ * The eight faces the app renders, declared here rather than imported.
  *
- * Three sans weights and three mono, latin subset. The 700 face is absent
- * because nothing uses it: measured across the whole page, 302 elements render
- * at 400, 44 at 500, 23 at 600 and none at 700, since the headings that would
- * otherwise default to bold are set explicitly.
+ * Five sans weights and three mono, latin subset. 700 and 800 arrived with
+ * the night-corridor rework: view titles and headings are set heavy so an
+ * instrument's name and its answer can be found without reading around them
+ * (DESIGN.md §3.1). Still one superfamily; no third face.
  *
  * woff2 only. @fontsource's own stylesheets list a .woff beside every .woff2,
  * which put 112 KB of files into the deploy that no browser ever asked for:
@@ -51,6 +51,22 @@
   font-display: swap;
   font-weight: 600;
   src: url('@fontsource/overpass/files/overpass-latin-600-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Overpass';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url('@fontsource/overpass/files/overpass-latin-700-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Overpass';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 800;
+  src: url('@fontsource/overpass/files/overpass-latin-800-normal.woff2') format('woff2');
 }
 
 @font-face {
@@ -118,7 +134,7 @@ h1,
 h2,
 h3 {
   margin: 0;
-  font-weight: 600;
+  font-weight: 700;
   /* §3.2 No all-caps labels, no tracked-out eyebrows, sentence case throughout. */
   text-transform: none;
   letter-spacing: var(--t-h2-track);

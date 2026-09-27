@@ -9,19 +9,21 @@
  * a dark patch where the road has swallowed its traffic — you find congestion
  * by looking for absence, which is how it looks from the air.
  *
- * Achromatic by design. It is colourblind-safe without effort, it survives
- * being drawn at 3 px, and it leaves hue free for the estimator palette. A
+ * Luminance carries the encoding and rises monotonically, so it is
+ * colourblind-safe and survives being drawn at 3 px. The top end warms toward
+ * headlight cream — free flow glows against the night ground instead of
+ * matching the grey road markings — but there is no hue category in it. A
  * red-yellow-green ramp would be the most predictable choice available, fails
  * for a tenth of male users, and would spend hue on what luminance carries.
  */
 
 /** Mirrors --speed-0 through --speed-100 in tokens.css. */
 const STOPS: Array<[number, number, number]> = [
-  [0x20, 0x24, 0x26],
-  [0x3f, 0x46, 0x49],
-  [0x6d, 0x76, 0x78],
-  [0xa3, 0xac, 0xad],
-  [0xe6, 0xeb, 0xe9],
+  [0x1b, 0x23, 0x2b],
+  [0x34, 0x40, 0x4b],
+  [0x6f, 0x6e, 0x68],
+  [0xc2, 0xb4, 0x8c],
+  [0xff, 0xef, 0xc4],
 ];
 
 /**
@@ -29,7 +31,7 @@ const STOPS: Array<[number, number, number]> = [
  *
  * The dark ramp runs from the asphalt's own value up to near-white, which is
  * exactly wrong on paper: a free-flowing vehicle came out at #E6EBE9 on a
- * #EEEFEB sheet and was invisible. The record showed its jams and nothing else,
+ * #EEEFEB sheet and was invisible (and the headlight cream would be worse). The record showed its jams and nothing else,
  * while DESIGN.md §5.2 promised "near-parallel bright diagonals".
  *
  * So the paper ramp runs from ink to a light grey that is still clearly darker
@@ -38,11 +40,11 @@ const STOPS: Array<[number, number, number]> = [
  * free flow becomes a legible pale diagonal rather than a blank sheet.
  */
 const PAPER_STOPS: Array<[number, number, number]> = [
-  [0x17, 0x1a, 0x1a],
-  [0x3d, 0x43, 0x43],
-  [0x6c, 0x73, 0x72],
-  [0x99, 0x9f, 0x9d],
-  [0xc2, 0xc7, 0xc3],
+  [0x11, 0x17, 0x19],
+  [0x3c, 0x44, 0x47],
+  [0x6b, 0x74, 0x75],
+  [0x98, 0xa1, 0xa0],
+  [0xc0, 0xc8, 0xc6],
 ];
 
 /** Precomputed ramp, so the road view never mixes colours per vehicle per frame. */

@@ -65,6 +65,48 @@ describe('text tokens meet WCAG AA on every ground they are used on', () => {
   }
 });
 
+describe('the interface accent is legible wherever it carries text', () => {
+  /*
+   * The accent fills the primary button on both grounds and is the focus ring
+   * on both. A filled accent with unreadable text on it, or an accent-ink
+   * link that fails on paper, would be the same bug the faint tokens were.
+   */
+  it('--accent-fg on --accent (the primary button on dark)', () => {
+    expect(contrast(token('accent-fg'), token('accent'))).toBeGreaterThanOrEqual(AA);
+  });
+
+  it('white on --accent-ink (the primary button on paper)', () => {
+    expect(contrast('#ffffff', token('accent-ink'))).toBeGreaterThanOrEqual(AA);
+  });
+
+  for (const ground of ['paper-sunken', 'paper']) {
+    it(`--accent-ink on --${ground}`, () => {
+      expect(contrast(token('accent-ink'), token(ground))).toBeGreaterThanOrEqual(AA);
+    });
+  }
+
+  for (const ground of ['void', 'asphalt', 'surface']) {
+    it(`--accent on --${ground}`, () => {
+      expect(contrast(token('accent'), token(ground))).toBeGreaterThanOrEqual(AA);
+    });
+  }
+});
+
+describe('the speed ramp still encodes speed as luminance', () => {
+  it('rises monotonically from stopped to free flow', () => {
+    const stops = ['speed-0', 'speed-25', 'speed-50', 'speed-75', 'speed-100'].map((n) =>
+      luminance(token(n)),
+    );
+    for (let i = 1; i < stops.length; i++) {
+      expect(stops[i]).toBeGreaterThan(stops[i - 1]);
+    }
+  });
+
+  it('keeps a stopped vehicle close to the asphalt, so a jam is a void', () => {
+    expect(contrast(token('speed-0'), token('asphalt'))).toBeLessThan(1.3);
+  });
+});
+
 describe('the token scale itself', () => {
   it('keeps body prose at 16 px or larger', () => {
     const m = css.match(/--t-body-size:\s*(\d+(?:\.\d+)?)px/);

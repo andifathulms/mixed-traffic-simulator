@@ -13,42 +13,52 @@
  */
 
 :root {
-  /* §2.1 The dark ground — the road, and everything that commands it. */
-  --void: #0a0c0d;
-  --asphalt-edge: #101314;
-  --asphalt: #171a1c;
-  --surface: #1b1f21;
-  --surface-raised: #232a2c;
-  --surface-hover: #2c3437;
-  --surface-active: #353e41;
-  --border-dark: #2c3335;
-  --border-dark-strong: #414b4d;
-  --on-dark: #e8ece9;
-  --on-dark-mid: #a2acac;
+  /*
+   * §2.1 The dark ground — the road, and everything that commands it.
+   *
+   * Night corridor: the scale carries a slight cool bias (B > G > R), so the
+   * dark reads as asphalt under a night sky rather than as a black panel, and
+   * the warm top of the speed ramp has something to glow against.
+   */
+  --void: #06080b;
+  --asphalt-edge: #0a0f13;
+  --asphalt: #111820;
+  --surface: #151d25;
+  --surface-raised: #1c2630;
+  --surface-hover: #24303b;
+  --surface-active: #2c3945;
+  --border-dark: #25313b;
+  --border-dark-strong: #384753;
+  --on-dark: #ecf1f4;
+  --on-dark-mid: #a3b0ba;
   /*
    * Raised from #6e7878, which failed WCAG AA as text on every ground it is
    * used on (3.61 to 4.31). This value clears 4.5:1 on all four dark grounds,
-   * the tightest being --surface at 4.56. It carries the ramp's hue rather
-   * than going flat grey: R = G - 10, G = B, as --on-dark-mid does.
+   * the tightest being --surface. It carries the ground's cool bias rather
+   * than going flat grey, as --on-dark-mid does.
    */
-  --on-dark-faint: #7e8888;
-  --marking: #8e9a9c;
+  --on-dark-faint: #7b8a96;
+  --marking: #8a99a4;
 
-  /* §2.1 The paper ground — the record, and everything that reads it. */
-  --paper: #eeefeb;
-  --paper-raised: #f7f8f4;
-  --paper-sunken: #e4e6e0;
-  --paper-edge: #e4e6e0;
-  --rule: #d5d8d1;
-  --rule-strong: #bcc0b8;
-  --ink: #171a1a;
-  --ink-mid: #54595a;
+  /*
+   * §2.1 The paper ground — the record, and everything that reads it.
+   * Drafting film rather than cream: the same faint cool bias as the night
+   * ground, so the two grounds read as one family.
+   */
+  --paper: #eef1f0;
+  --paper-raised: #f8faf9;
+  --paper-sunken: #e3e8e7;
+  --paper-edge: #e3e8e7;
+  --rule: #d2d9d8;
+  --rule-strong: #b6c0bf;
+  --ink: #111719;
+  --ink-mid: #4c585c;
   /*
    * Raised from #8a908f, which read at 2.58:1 on --paper-sunken: fine as a
    * line, far below AA as text. Clears 4.5:1 on both paper grounds, tightest
-   * 4.52 on --paper-sunken.
+   * on --paper-sunken. tests/tokens.test.ts holds it there.
    */
-  --ink-faint: #626867;
+  --ink-faint: #5e6a6e;
 
   /*
    * The old --ink-faint, kept for the things that were never text.
@@ -59,19 +69,24 @@
    * role gets its own token at the original value. Contrast minimums do not
    * apply to it, and it must not be used for type.
    */
-  --ink-line: #8a908f;
+  --ink-line: #8a9494;
 
   /*
-   * §2.2 The speed ramp — the app's primary encoding.
-   * Achromatic by design: colourblind-safe without effort, survives being drawn
-   * at 3 px, and leaves hue free for the estimator palette. A stopped vehicle
-   * sits nearly at the asphalt's own value, so jams read as voids.
+   * §2.2 The speed ramp — the app's primary encoding. The headlight ramp.
+   *
+   * Luminance still carries the whole encoding and rises monotonically from
+   * stopped to free, so it stays colourblind-safe and survives being drawn at
+   * 3 px. A stopped vehicle sits nearly at the asphalt's own value, so jams
+   * still read as voids. What changed is the top: free flow warms toward
+   * sodium-lamp cream instead of paint white, which separates it from the
+   * cool grey markings it used to be confused with. It is not a hue scale —
+   * there is no red, no green, and no category in it.
    */
-  --speed-0: #202426;
-  --speed-25: #3f4649;
-  --speed-50: #6d7678;
-  --speed-75: #a3acad;
-  --speed-100: #e6ebe9;
+  --speed-0: #1b232b;
+  --speed-25: #34404b;
+  --speed-50: #6f6e68;
+  --speed-75: #c2b48c;
+  --speed-100: #ffefc4;
 
   /*
    * The vehicle-type ramp on paper.
@@ -86,26 +101,31 @@
    * These lived as bare hex in one component. They are a semantic set, so
    * they belong beside the ramp they mirror.
    */
-  --type-mc: #171a1a;
-  --type-lv: #5f6664;
-  --type-hv: #99a09c;
-  --type-pu: #c3c8c4;
+  --type-mc: #111719;
+  --type-lv: #4c585c;
+  --type-hv: #929c9d;
+  --type-pu: #c1c9c8;
 
-  /* §2.4 The estimator palette — the only hue in the app. */
-  --method-truth: #171a1a;
-  --method-headway: #bd5a31;
-  --method-regression: #2c6d7d;
-  --method-speed: #79539b;
-  --method-occupancy: #527f3c;
-  --method-mkji: #9aa0a0;
+  /*
+   * §2.4 The estimator palette — the only categorical hue in the app.
+   * Same four families as before, raised in chroma and spaced more evenly so
+   * four 2 px lines stay separable. Regression moved from teal to blue so it
+   * does not sit beside the interface accent.
+   */
+  --method-truth: #111719;
+  --method-headway: #d4572a;
+  --method-regression: #2f62d6;
+  --method-speed: #8a4fd0;
+  --method-occupancy: #3b9446;
+  --method-mkji: #8e999b;
 
   /* §2.5 Functional colours. The traffic-light ramp appears nowhere else. */
-  --signal-red: #c0392b;
-  --signal-amber: #d89a2b;
-  --signal-green: #3e8e5a;
-  --warn: #cf5136;
-  --warn-tint: #f7e7e2;
-  --warn-ink: #8a3320;
+  --signal-red: #d8453a;
+  --signal-amber: #e6a93a;
+  --signal-green: #3fa66a;
+  --warn: #e05a3a;
+  --warn-tint: #fbe9e3;
+  --warn-ink: #9a3820;
 
   /*
    * The brand's orange, which is not the warning orange.
@@ -115,30 +135,60 @@
    * is an identity and a warning is a state; a token each.
    */
   --brand-accent: #e0512b;
-  --select: #e6ebe9;
 
   /*
-   * §2.6 Interaction is achromatic on both grounds. Hue in this app means
-   * "estimator" or "signal aspect" and nothing else, so a hover state that
-   * borrowed a hue would be lying about its category. Controls signal state
-   * through value and border weight instead.
+   * The interface accent: reflector cyan (DESIGN.md §2.6, amended).
+   *
+   * Interaction used to be entirely achromatic, and the app read as inert
+   * because of it: the play button, the active view and the selected vehicle
+   * all spoke in the same grey as the chrome around them. One cool hue now
+   * marks what you can press and what you have selected, and nothing else.
+   * It sits well clear of every estimator hue (§2.4) — regression moved from
+   * teal to blue for exactly that reason — and of the warm speed ramp, so a
+   * selected vehicle's ring can never be mistaken for a fast vehicle.
+   *
+   * --accent is for the dark ground; --accent-ink is the same hue darkened to
+   * clear 4.5:1 on paper. --accent-fg is the text that sits on a filled
+   * accent. --accent-soft is a halo, never text.
    */
-  --focus-dark: #e6ebe9;
-  --focus-paper: #171a1a;
+  --accent: #38d1c4;
+  --accent-ink: #086a63;
+  --accent-fg: #04201d;
+  --accent-soft: rgba(56, 209, 196, 0.14);
+  --select: #38d1c4;
 
-  /* §3.1 Type scale. Base 15 px, ratio ~1.25, tracking tightened as size rises. */
+  /*
+   * §2.6 Focus is the accent, on both grounds. Hover and press still work
+   * through value and border weight; only focus, selection and the primary
+   * action carry the hue.
+   */
+  --focus-dark: #38d1c4;
+  --focus-paper: #086a63;
+
+  /* §3.1 Type scale. Base 16 px, ratio ~1.25, tracking tightened as size rises. */
   --font-sans: 'Overpass', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: 'Overpass Mono', ui-monospace, 'SF Mono', Menlo, monospace;
 
-  --t-display-size: 34px;
-  --t-display-line: 1.05;
-  --t-display-track: -0.02em;
+  /*
+   * The display step went from 34 px at 600 to 40 px at 800. The app used only
+   * weights 400 to 600 between 10 and 34 px, so nothing on screen commanded
+   * the eye; the heavy weights are Overpass's own and add no family.
+   */
+  --t-display-size: 40px;
+  --t-display-line: 1.02;
+  --t-display-track: -0.035em;
+  --t-display-weight: 800;
+  /* The one figure an instrument exists to produce: an emp, a spread. */
+  --t-figure-xl-size: 44px;
+  --t-figure-xl-line: 1.02;
+  --t-figure-xl-track: -0.03em;
   --t-figure-size: 26px;
   --t-figure-line: 1.05;
   --t-figure-track: -0.015em;
-  --t-h2-size: 17px;
-  --t-h2-line: 1.25;
-  --t-h2-track: -0.008em;
+  --t-h2-size: 20px;
+  --t-h2-line: 1.2;
+  --t-h2-track: -0.012em;
+  --t-h2-weight: 700;
   /*
    * 16 px, up from 15. This is the size for prose a visitor has to read to
    * understand the app — the descriptor, the scenario blurb, empty-state

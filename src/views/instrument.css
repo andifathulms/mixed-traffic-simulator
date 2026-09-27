@@ -53,7 +53,7 @@
   font-size: var(--t-h2-size);
   line-height: var(--t-h2-line);
   letter-spacing: var(--t-h2-track);
-  font-weight: 600;
+  font-weight: var(--t-h2-weight);
   color: var(--ink);
 }
 

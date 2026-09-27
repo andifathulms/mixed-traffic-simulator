@@ -38,7 +38,8 @@ page. Here speed is rendered as light on asphalt. Related instinct, opposite pol
 different ground — the inversion is intentional and should be preserved.
 
 Hue is then entirely free, and is spent on the one thing that genuinely needs categorical
-colour: the five equivalence estimators.
+colour: the five equivalence estimators. One further hue, the interface accent, marks what
+can be pressed or has been selected, and means nothing else (§2.6).
 
 ---
 
@@ -65,6 +66,11 @@ app and nothing may break it — not a legend, not a margin, not a responsive br
 
 ### 2.1 Two grounds, each a scale
 
+**Night corridor.** The 3.0 rework gave both grounds a slight cool bias — the dark
+reads as asphalt under a night sky rather than as a black panel, and the paper as
+drafting film rather than cream — so the warm top of the speed ramp has something
+to glow against and the two grounds read as one family.
+
 The first version gave each ground a single value. That was the mistake the 2.0 rework
 fixed: with one flat value per ground, nothing could be raised above it, so every control
 looked painted on rather than pressable and a popover had no surface to float over. Each
@@ -74,37 +80,37 @@ ground is now a scale.
 
 | Token | Value | Use |
 |---|---|---|
-| `--void` | `#0A0C0D` | The page behind everything, and the inside of a slider track. |
-| `--asphalt-edge` | `#101314` | Beyond the road edge; the ground the stage sits on. |
-| `--asphalt` | `#171A1C` | The road surface. Cool near-black. |
-| `--surface` | `#1B1F21` | A plate raised off the ground: the telemetry cluster. |
-| `--surface-raised` | `#232A2C` | A control at rest. |
-| `--surface-hover` | `#2C3437` | A control under the pointer. |
-| `--surface-active` | `#353E41` | A control being pressed. |
-| `--border-dark` | `#2C3335` | Hairlines, control borders. |
-| `--border-dark-strong` | `#414B4D` | The same, hovered, and ruler ticks. |
-| `--on-dark` | `#E8ECE9` | Text and marks on the dark ground. |
-| `--on-dark-mid` | `#A2ACAC` | Labels. |
-| `--on-dark-faint` | `#7E8888` | Ticks, units, keyboard hints. Clears 4.5:1 on all four dark grounds; the tightest is `--surface` at 4.56. |
-| `--marking` | `#8E9A9C` | Lane markings, stop lines, RHK box outline. Never pure white — thermoplastic is grey in real light. |
+| `--void` | `#06080B` | The page behind everything, and the inside of a slider track. |
+| `--asphalt-edge` | `#0A0F13` | Beyond the road edge; the ground the stage sits on. |
+| `--asphalt` | `#111820` | The road surface. Cool near-black, a night sky's blue in it. |
+| `--surface` | `#151D25` | A plate raised off the ground: the telemetry cluster. |
+| `--surface-raised` | `#1C2630` | A control at rest. |
+| `--surface-hover` | `#24303B` | A control under the pointer. |
+| `--surface-active` | `#2C3945` | A control being pressed. |
+| `--border-dark` | `#25313B` | Hairlines, control borders. |
+| `--border-dark-strong` | `#384753` | The same, hovered, and ruler ticks. |
+| `--on-dark` | `#ECF1F4` | Text and marks on the dark ground. |
+| `--on-dark-mid` | `#A3B0BA` | Labels. |
+| `--on-dark-faint` | `#7B8A96` | Ticks, units, keyboard hints. Clears 4.5:1 on all four dark grounds; the tightest is `--surface`. |
+| `--marking` | `#8A99A4` | Lane markings, stop lines, RHK box outline. Never pure white — thermoplastic is grey in real light. |
 
 **The paper ground** — the record, and everything that reads it.
 
 | Token | Value | Use |
 |---|---|---|
-| `--paper-raised` | `#F7F8F4` | A plate lifted off the panel: a parameter card, a popover. |
-| `--paper` | `#EEEFEB` | Instrument panel grounds. |
-| `--paper-sunken` | `#E4E6E0` | Recessed areas: tab strips, slider tracks, figure blocks. |
-| `--rule` | `#D5D8D1` | Hairlines on paper. |
-| `--rule-strong` | `#BCC0B8` | Chart axes, which must out-weigh a gridline. |
-| `--ink` | `#171A1A` | Text and marks on paper. |
-| `--ink-mid` | `#54595A` | Labels, axis text. |
-| `--ink-faint` | `#626867` | Ticks, disabled, secondary text. Clears 4.5:1 on both paper grounds; the tightest is `--paper-sunken` at 4.52. |
-| `--type-mc` | `#171A1A` | Vehicle type on paper: motorcycle, the strongest value because it is the subject. |
-| `--type-lv` | `#5F6664` | Light vehicle. |
-| `--type-hv` | `#99A09C` | Heavy vehicle. |
-| `--type-pu` | `#C3C8C4` | Public transport, the lightest, which also carries a hatch where it sits on a large area. |
-| `--ink-line` | `#8A908F` | **Not text.** Dashed reference lines and the inspector's term bar. This is the old `--ink-faint`: when that token was raised to meet AA as text, the lines that had borrowed it would have become heavy, so the line role kept the original value. Contrast minimums do not apply; `tests/tokens.test.ts` fails the build if anything paints `color` or `fill` with it. |
+| `--paper-raised` | `#F8FAF9` | A plate lifted off the panel: a parameter card, a popover. |
+| `--paper` | `#EEF1F0` | Instrument panel grounds. |
+| `--paper-sunken` | `#E3E8E7` | Recessed areas: tab strips, slider tracks, figure blocks. |
+| `--rule` | `#D2D9D8` | Hairlines on paper. |
+| `--rule-strong` | `#B6C0BF` | Chart axes, which must out-weigh a gridline. |
+| `--ink` | `#111719` | Text and marks on paper. |
+| `--ink-mid` | `#4C585C` | Labels, axis text. |
+| `--ink-faint` | `#5E6A6E` | Ticks, disabled, secondary text. Clears 4.5:1 on both paper grounds; the tightest is `--paper-sunken`. |
+| `--type-mc` | `#111719` | Vehicle type on paper: motorcycle, the strongest value because it is the subject. |
+| `--type-lv` | `#4C585C` | Light vehicle. |
+| `--type-hv` | `#929C9D` | Heavy vehicle. |
+| `--type-pu` | `#C1C9C8` | Public transport, the lightest, which also carries a hatch where it sits on a large area. |
+| `--ink-line` | `#8A9494` | **Not text.** Dashed reference lines and the inspector's term bar. This is the old `--ink-faint`: when that token was raised to meet AA as text, the lines that had borrowed it would have become heavy, so the line role kept the original value. Contrast minimums do not apply; `tests/tokens.test.ts` fails the build if anything paints `color` or `fill` with it. |
 
 Every colour in these two tables that carries text meets WCAG AA against every ground it
 is used on. That is asserted in `tests/tokens.test.ts` rather than left to inspection: the
@@ -118,18 +124,23 @@ theme would lose it.
 
 ### 2.2 The speed ramp
 
-The app's primary encoding. From the asphalt's own value to full brightness.
+The app's primary encoding. From the asphalt's own value to headlight brightness.
 
 | Speed | Colour | Reading |
 |---|---|---|
-| 0 | `#202426` | barely above the road; a stopped vehicle is nearly a hole |
-| 25% of free | `#3F4649` | present but dim |
-| 50% | `#6D7678` | mid |
-| 75% | `#A3ACAD` | bright |
-| 100%+ | `#E6EBE9` | full, near the marking value |
+| 0 | `#1B232B` | barely above the road; a stopped vehicle is nearly a hole |
+| 25% of free | `#34404B` | present but dim |
+| 50% | `#6F6E68` | mid |
+| 75% | `#C2B48C` | bright, warming |
+| 100%+ | `#FFEFC4` | full: headlight cream |
 
-Achromatic by design. It is colourblind-safe without effort, it survives being drawn at
-3 px, and it leaves hue free for §2.4.
+Luminance carries the whole encoding and rises monotonically, which
+`tests/tokens.test.ts` asserts. It is colourblind-safe and survives being drawn at
+3 px. The top end warms toward sodium-lamp cream: in the first version free flow was
+near-white, the same value as the road markings, and a free-flowing ring read as a pale
+outline. Warm free flow separates from the cool markings without adding a category —
+there is no red and no green in it, and the low end is untouched, so jams are still
+voids.
 
 The ramp is normalised to the scenario's free-flow speed and the normalisation is stated,
 because a 30 km/h scenario and a 60 km/h scenario would otherwise look identical.
@@ -167,12 +178,12 @@ The only hue in the app, spent where categorical distinction is genuinely needed
 
 | Method | Colour |
 |---|---|
-| Ground truth (substitution) | `#171A1A` — ink, because it is not one method among five |
-| Time headway | `#BD5A31` |
-| Regression | `#2C6D7D` |
-| Speed | `#79539B` |
-| Occupancy time | `#527F3C` |
-| MKJI 1997 constant | `#9AA0A0` — drawn as a flat dashed rule, not a series |
+| Ground truth (substitution) | `#111719` — ink, because it is not one method among five |
+| Time headway | `#D4572A` |
+| Regression | `#2F62D6` |
+| Speed | `#8A4FD0` |
+| Occupancy time | `#3B9446` |
+| MKJI 1997 constant | `#8E999B` — drawn as a flat dashed rule, not a series |
 
 Ground truth is black and the MKJI constant is grey, so the two reference lines read as
 different in kind from the four estimates. That distinction is the chart's argument, and it
@@ -189,29 +200,41 @@ cross-section (§5.5). It is never hue.
 
 | Token | Value | Use |
 |---|---|---|
-| `--signal-red` | `#C0392B` | Signal aspect only |
-| `--signal-amber` | `#D89A2B` | Signal aspect only |
-| `--signal-green` | `#3E8E5A` | Signal aspect, and the running indicator |
-| `--warn` | `#CF5136` | Numerical warnings, negative estimates, collision alerts |
-| `--warn-tint` | `#F7E7E2` | The ground a warning sits on |
-| `--select` | `#E6EBE9` | Selected vehicle ring |
+| `--signal-red` | `#D8453A` | Signal aspect only |
+| `--signal-amber` | `#E6A93A` | Signal aspect only |
+| `--signal-green` | `#3FA66A` | Signal aspect, and the running indicator |
+| `--warn` | `#E05A3A` | Numerical warnings, negative estimates, collision alerts |
+| `--warn-tint` | `#FBE9E3` | The ground a warning sits on |
+| `--select` | `#38D1C4` | Selected vehicle ring — the accent (§2.6) |
 
 The signal colours are the one place a traffic-light palette is correct, because it is a
 traffic light. They appear nowhere else — not on vehicles, not on charts. The single
 exception is the running dot in the masthead, which is green because it means *going*, in
 the same sense the signal does.
 
-### 2.6 Interaction is achromatic
+### 2.6 One interface accent
 
-Hue in this app means "estimator method" or "signal aspect" and nothing else. A hover state
-that borrowed a hue would be making a category error, so controls signal their state
-through value and border weight instead: a control lifts through `--surface-raised` →
-`hover` → `active`, and its border strengthens with it. Focus is a 2 px ring in the
-ground's own foreground — near-white on the road, near-black on paper.
+The first two versions kept interaction entirely achromatic, on the reasoning that hue
+means "estimator method" or "signal aspect" and nothing else. It was principled and it
+was the main reason the app read as inert: the play button, the active view, focus and
+the selected vehicle all spoke in the grey of the chrome around them.
 
-The one exception is `--btn--primary`, which inverts: the ground's foreground becomes its
-background. There is at most one of these per control group, and it is the thing the eye
-should land on first.
+The 3.0 rework adds one hue with one meaning — **this is something you can press, or
+something you have selected** — and nothing else:
+
+| Token | Value | Use |
+|---|---|---|
+| `--accent` | `#38D1C4` | Reflector cyan on the dark ground: the primary button, the active view, focus, the selected vehicle, slider fill |
+| `--accent-ink` | `#086A63` | The same hue darkened to clear 4.5:1 on paper |
+| `--accent-fg` | `#04201D` | Text on a filled accent |
+| `--accent-soft` | 14% accent | A halo. Never text |
+
+It sits clear of every estimator hue — regression moved from teal to blue for exactly
+that reason — and of the warm speed ramp, so a selected vehicle's ring cannot be
+mistaken for a fast vehicle. Hover and press still work through value and border weight
+(`--surface-raised` → `hover` → `active`); only focus, selection and the primary action
+carry the hue. `btn--primary` fills with the accent, and there is still at most one per
+control group.
 
 ### 2.7 Radius and elevation
 
@@ -237,7 +260,10 @@ that has left the plane entirely — a citation popover. The dark ground gets it
 
 ## 3. Typography
 
-**Overpass** and **Overpass Mono**. One superfamily.
+**Overpass** and **Overpass Mono**. One superfamily, now used across its whole weight
+range: headings at 700, view titles and the thesis line at 800. The first versions used
+only 400 to 600 between 10 and 34 px, so nothing on screen commanded the eye; the fix
+was the family's own heavy weights, not a new face.
 
 Overpass descends from the Highway Gothic lineage used on road signage. That is not a
 decorative allusion — the app is about road engineering, its readers are people who read
@@ -267,9 +293,10 @@ rule that was written about paragraphs.
 
 | Token | Size / line-height / tracking | Face | Use |
 |---|---|---|---|
-| `--t-display` | 34 / 1.05 / −0.02em, 600 | Overpass Mono | The headline figure: emp value, capacity |
+| `--t-display` | 40 / 1.02 / −0.035em, 800 | Overpass | View titles and the thesis line |
+| `--t-figure-xl` | 44 / 1.02 / −0.03em, 600 | Overpass Mono | The one figure an instrument exists to produce: the bench's spread, an emp |
 | `--t-figure` | 26 / 1.05 / −0.015em, 600 | Overpass Mono | Live readouts, panel values |
-| `--t-h2` | 17 / 1.25 / −0.008em, 600 | Overpass | Panel and instrument headings |
+| `--t-h2` | 20 / 1.2 / −0.012em, 700 | Overpass | Panel and instrument headings |
 | `--t-body` | 16 / 1.55, 400 | Overpass | Explanatory copy. Max 68 characters. |
 | `--t-data` | 13 / 1.45, 400 | Overpass Mono | Tables, parameter values, axis numbers |
 | `--t-small` | 12.5 / 1.4, 400 | Overpass | Subtitles, hints, legend |

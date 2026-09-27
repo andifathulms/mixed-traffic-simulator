@@ -20,9 +20,11 @@
   --ctl-fg-mid: var(--on-dark-mid);
   --ctl-fg-faint: var(--on-dark-faint);
   --ctl-track: var(--void);
-  --ctl-fill: var(--on-dark-mid);
+  --ctl-fill: var(--accent);
   --ctl-thumb: var(--on-dark);
   --ctl-focus: var(--focus-dark);
+  --ctl-accent: var(--accent);
+  --ctl-accent-fg: var(--accent-fg);
   --ctl-pop-bg: var(--surface-raised);
   --ctl-pop-shadow: var(--shadow-pop-dark);
   color: var(--on-dark);
@@ -38,9 +40,11 @@
   --ctl-fg-mid: var(--ink-mid);
   --ctl-fg-faint: var(--ink-faint);
   --ctl-track: var(--paper-sunken);
-  --ctl-fill: var(--ink-mid);
+  --ctl-fill: var(--accent-ink);
   --ctl-thumb: var(--ink);
   --ctl-focus: var(--focus-paper);
+  --ctl-accent: var(--accent-ink);
+  --ctl-accent-fg: #ffffff;
   --ctl-pop-bg: var(--paper-raised);
   --ctl-pop-shadow: var(--shadow-pop);
   color: var(--ink);
@@ -102,20 +106,24 @@
   cursor: default;
 }
 
-/* The one control the eye should land on first in its group. */
+/*
+ * The one control the eye should land on first in its group. It is the accent
+ * filled, which is the hue's whole job (DESIGN.md §2.6): at most one of these
+ * per group.
+ */
 .btn--primary {
-  background: var(--ctl-fg);
-  border-color: var(--ctl-fg);
-  color: var(--ctl-bg);
+  background: var(--ctl-accent);
+  border-color: var(--ctl-accent);
+  color: var(--ctl-accent-fg);
   font-weight: 600;
   min-width: 5.5rem;
   justify-content: center;
 }
 
 .btn--primary:hover:not(:disabled) {
-  background: var(--ctl-fg);
-  border-color: var(--ctl-fg);
-  opacity: 0.88;
+  background: var(--ctl-accent);
+  border-color: var(--ctl-accent);
+  filter: brightness(1.08);
 }
 
 .btn--icon {
@@ -276,7 +284,7 @@ input[type='range']:disabled {
  */
 input[type='checkbox'],
 input[type='radio'] {
-  accent-color: var(--ctl-thumb);
+  accent-color: var(--ctl-accent);
   width: 14px;
   height: 14px;
   margin: 0;
@@ -326,7 +334,7 @@ input[type='radio'] {
   background: var(--ctl-bg);
   border: 0;
   color: var(--ctl-fg);
-  box-shadow: var(--shadow-1);
+  box-shadow: var(--shadow-1), inset 0 -2px 0 var(--ctl-accent);
 }
 
 /* The radio itself stays in the DOM, labelled; only its box is hidden. */
@@ -344,7 +352,7 @@ input[type='radio'] {
 .segmented label.segmented__item:has(input:checked) {
   background: var(--ctl-bg);
   color: var(--ctl-fg);
-  box-shadow: var(--shadow-1);
+  box-shadow: var(--shadow-1), inset 0 -2px 0 var(--ctl-accent);
 }
 
 .segmented label.segmented__item:has(input:focus-visible) {

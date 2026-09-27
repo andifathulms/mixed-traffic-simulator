@@ -12,22 +12,22 @@
 
 export const CANVAS = {
   /** --asphalt: the carriageway surface. */
-  asphalt: '#171a1c',
+  asphalt: '#111820',
   /** --asphalt-edge: everything beside it. */
-  asphaltEdge: '#101314',
+  asphaltEdge: '#0a0f13',
   /** --border-dark-strong: the kerb, drawn as a hairline at the road edge. */
-  kerb: '#414b4d',
+  kerb: '#384753',
   /** --marking: paint on the road, and the detector lines. */
-  marking: '#8e9a9c',
-  /** --select: the selection ring around an inspected vehicle. */
-  select: '#e6ebe9',
+  marking: '#8a99a4',
+  /** --select: the selection ring around an inspected vehicle. The accent. */
+  select: '#38d1c4',
   /** --paper: the ground the record and the heatmap are drawn on. */
-  paper: '#eeefeb',
+  paper: '#eef1f0',
   /** --signal-green / --signal-amber / --signal-red. The only traffic-light
    *  ramp in the app, used for the one thing it actually means. */
   signal: {
-    green: '#3e8e5a',
-    amber: '#d89a2b',
-    red: '#c0392b',
+    green: '#3fa66a',
+    amber: '#e6a93a',
+    red: '#d8453a',
   },
 } as const;
