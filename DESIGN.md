@@ -493,7 +493,10 @@ bar where it gets the whole width, and the parameter grid becomes one column.
 
 Below 560 px the scenario rail becomes one sideways-scrolling row and the key caps go,
 because at that width they are the difference between a bar that fits and one that
-wraps twice.
+wraps twice. The transport bar's "Speed" and "Lateral rule" labels go to assistive
+technology only, since the controls already show what they are; the rule stays named
+on the bar with its citation marker. The Compare chart is drawn at 520 units rather
+than 1100, because a desktop chart scaled to a phone sets its ticks at six pixels.
 
 ### 4.7 The tune drawer
 

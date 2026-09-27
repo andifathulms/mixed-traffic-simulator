@@ -77,6 +77,7 @@ npm test           # engine, estimators, scenarios, interface
 npm run lint       # includes the estimator import restriction
 npm run typecheck
 npm run build
+npm run bake       # re-run the sweep the bench opens with (several minutes)
 ```
 
 ## What is checked
@@ -88,6 +89,7 @@ npm run build
 | Determinism | The same seed produces a bit-identical trajectory |
 | Frame-rate independence | Step N is identical however the frames were cut |
 | Conservation and non-overlap | Every scenario, every step |
+| Precomputed bench is current | One point of the baked sweep is re-run from its stored seed and must match |
 | The shared axis | Road and record place a given position at the same fraction of their width, at any backing store size |
 | The estimator boundary | A lint rule, run in CI |
 

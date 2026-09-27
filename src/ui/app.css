@@ -1381,9 +1381,6 @@
     right: var(--s-2);
   }
 
-  .live__grid {
-    grid-template-columns: repeat(auto-fill, minmax(min(15rem, 100%), 1fr));
-  }
 
   .thesis {
     grid-template-columns: 1fr;
@@ -1456,6 +1453,30 @@
 
 @media (max-width: 560px) {
   .transport__keys {
+    display: none;
+  }
+
+  /*
+   * The bar was four rows on a phone, a quarter of the screen. The two labels
+   * that name what their controls already show go to assistive technology
+   * only, which lets speed and the lateral rule share a row.
+   */
+  .transport__group > .label,
+  .transport__group--model .field > .label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .transport__group--model select {
+    max-width: 11rem;
+  }
+
+  /* Docked, the road's tag keeps its name and drops its note for the pill. */
+  .stage--docked .stage__tag-note {
     display: none;
   }
 

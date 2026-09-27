@@ -30,6 +30,8 @@ export interface InstrumentBayProps {
   onChange: (patch: Partial<AppState>) => void;
   /** Recomputed on a timer, not every frame — see App. */
   aggregationTick: number;
+  /** Below 860 px. The bench chart is drawn at a size a phone can read. */
+  narrow: boolean;
 }
 
 /**
@@ -58,6 +60,7 @@ export function InstrumentBay({
   onCancelSweep,
   onChange,
   aggregationTick,
+  narrow,
 }: InstrumentBayProps) {
   // aggregationTick is in the dependency list on purpose: the detector log is
   // a ref that mutates without notifying React, so the timer tick is what
@@ -144,9 +147,10 @@ export function InstrumentBay({
           onRun={onRunSweep}
           onCancel={onCancelSweep}
           provenance={provenance}
-          // The whole view is the bench's, so the chart takes the width.
-          width={1100}
-          height={440}
+          // The whole view is the bench's, so the chart takes the width — but
+          // on a phone a 1100-unit chart scales its ticks down to six pixels.
+          width={narrow ? 520 : 1100}
+          height={narrow ? 400 : 440}
         />
       </section>
     );

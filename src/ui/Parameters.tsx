@@ -59,10 +59,22 @@ export function Parameters({
   const ref = useRef<HTMLElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
 
+  const wasOpen = useRef(open);
+
   // React 18 does not know `inert`, so it is set on the element directly.
   useEffect(() => {
     ref.current?.toggleAttribute('inert', !open);
-    if (open) closeRef.current?.focus();
+    if (open) {
+      closeRef.current?.focus();
+    } else if (wasOpen.current) {
+      /*
+       * Closing makes the drawer inert, and focus inside an inert subtree
+       * falls to <body>: a keyboard user would start again from the top of
+       * the document. It goes back to the control that opened the drawer.
+       */
+      document.querySelector<HTMLElement>('[aria-controls="tune"]')?.focus();
+    }
+    wasOpen.current = open;
   }, [open]);
 
   const p = state.params;

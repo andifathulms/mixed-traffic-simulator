@@ -381,6 +381,7 @@ export function App() {
             onCancelSweep={sweep.cancel}
             onChange={update}
             aggregationTick={tick}
+            narrow={narrow}
           />
         )}
 
