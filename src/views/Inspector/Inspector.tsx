@@ -8,6 +8,8 @@ import './inspector.css';
 export interface InspectorProps {
   worldRef: React.MutableRefObject<World | null>;
   selectedVehicle: number | null;
+  /** Clears the selection, when the inspector is shown as a card that can close. */
+  onClose?: () => void;
 }
 
 interface Snapshot {
@@ -26,7 +28,20 @@ interface Snapshot {
  * Someone who does not believe the simulation must be able to watch one
  * vehicle's arithmetic.
  */
-export function Inspector({ worldRef, selectedVehicle }: InspectorProps) {
+export function Inspector({ worldRef, selectedVehicle, onClose }: InspectorProps) {
+  const close = onClose && (
+    <button
+      type="button"
+      className="btn btn--icon inspector__close"
+      aria-label="Close inspector and clear the selection"
+      onClick={onClose}
+    >
+      <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true" focusable="false">
+        <path d="M2 2l8 8M10 2l-8 8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      </svg>
+    </button>
+  );
+
   const [snap, setSnap] = useState<Snapshot | null>(null);
 
   useEffect(() => {
@@ -67,6 +82,7 @@ export function Inspector({ worldRef, selectedVehicle }: InspectorProps) {
             the IDM arithmetic behind one vehicle's acceleration
           </span>
         </h3>
+        {close}
         <p className="inspector__empty">
           Select a vehicle on the road to watch its arithmetic. Click one, or
           focus the road view and use the left and right arrow keys.
@@ -84,6 +100,7 @@ export function Inspector({ worldRef, selectedVehicle }: InspectorProps) {
             the IDM arithmetic behind one vehicle's acceleration
           </span>
         </h3>
+        {close}
         <p className="inspector__empty">
           That vehicle has left the corridor. Select another.
         </p>
@@ -102,6 +119,7 @@ export function Inspector({ worldRef, selectedVehicle }: InspectorProps) {
           #{v.id} · {TYPE_LABELS[v.type]}
         </span>
       </h3>
+      {close}
 
       <dl className="inspector__grid">
         <div>

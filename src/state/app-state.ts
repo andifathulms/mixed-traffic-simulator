@@ -3,13 +3,13 @@ import type { ScenarioId } from '../scenarios/types';
 import type { SweepComparison, SweepVariable } from '../batch/protocol';
 import type { AggregationInterval } from '../estimators';
 
-export type InstrumentTab =
-  | 'bench'
-  | 'heatmap'
-  | 'lateral'
-  | 'discharge'
-  | 'inspector'
-  | 'fundamental';
+/**
+ * The three places the app has, grouped by the question a reader is asking:
+ * see the phenomenon, read what the detectors saw, see the methods disagree.
+ */
+export type AppView = 'watch' | 'measure' | 'compare';
+
+export const APP_VIEWS: readonly AppView[] = ['watch', 'measure', 'compare'];
 
 /**
  * Scenario overrides the user can set.
@@ -57,7 +57,7 @@ export interface AppState {
   running: boolean;
   selectedVehicle: number | null;
   aggregationInterval: AggregationInterval;
-  tab: InstrumentTab;
+  view: AppView;
   overrides: ScenarioOverrides;
   /** What the bench sweeps along the x axis (PRD §4.9). */
   sweepVariable: SweepVariable;

@@ -1,5 +1,5 @@
 import type { AppState, ScenarioOverrides } from './app-state';
-import { NO_OVERRIDES } from './app-state';
+import { NO_OVERRIDES, APP_VIEWS } from './app-state';
 import { DEFAULT_PARAMS, cloneParams } from '../sim/defaults';
 import { SCENARIOS } from '../scenarios';
 import type { ScenarioId } from '../scenarios/types';
@@ -51,7 +51,7 @@ export function stateToSearch(state: AppState): string {
   if (state.sweepVariable !== 'mcFraction') p.set('sv', state.sweepVariable);
   if (state.sweepComparison !== 'none') p.set('sc', state.sweepComparison);
   if (state.aggregationInterval !== 300) p.set('agg', String(state.aggregationInterval));
-  if (state.tab !== 'bench') p.set('tab', state.tab);
+  if (state.view !== 'watch') p.set('v', state.view);
 
   for (const [key, short, digits] of NUMERIC) {
     const value = state.params[key] as number;
@@ -183,7 +183,7 @@ export function searchToState(search: string): AppState {
     running: false,
     selectedVehicle: null,
     aggregationInterval,
-    tab: (p.get('tab') as AppState['tab']) ?? 'bench',
+    view: readView(p),
     sweepVariable: pick(p, 'sv', SWEEP_VARIABLES, 'mcFraction'),
     sweepComparison: pick(p, 'sc', SWEEP_COMPARISONS, 'none'),
   };
@@ -201,3 +201,19 @@ function pick<T extends string>(
 }
 
 export { DEFAULT_PARAMS };
+
+/**
+ * Which view a link opens on.
+ *
+ * Links written before the views existed carry `tab` instead. They keep
+ * working: the bench was the Compare view's only instrument, and every other
+ * tab now lives in Measure.
+ */
+function readView(p: URLSearchParams): AppState['view'] {
+  const v = pick(p, 'v', APP_VIEWS, 'watch');
+  if (p.has('v')) return v;
+  const legacy = p.get('tab');
+  if (legacy === 'bench') return 'compare';
+  if (legacy) return 'measure';
+  return 'watch';
+}

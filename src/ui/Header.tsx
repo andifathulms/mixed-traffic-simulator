@@ -1,10 +1,13 @@
 import type { AppState } from '../state/app-state';
 import { ScenarioRail } from './ScenarioRail';
 import { ThesisStrip } from './ThesisStrip';
+import { ShareButton, ViewNav } from './ViewNav';
 
 export interface HeaderProps {
   state: AppState;
   onChange: (patch: Partial<AppState>) => void;
+  tuneOpen: boolean;
+  onTune: () => void;
 }
 
 /**
@@ -20,7 +23,7 @@ export interface HeaderProps {
  * which scenes it can play, and — as a picture rather than a sentence — why it
  * exists.
  */
-export function Header({ state, onChange }: HeaderProps) {
+export function Header({ state, onChange, tuneOpen, onTune }: HeaderProps) {
   return (
     <header className="header on-dark">
       <div className="header__bar">
@@ -28,6 +31,13 @@ export function Header({ state, onChange }: HeaderProps) {
           <Mark />
           <h1 className="header__title">Mixed traffic simulator</h1>
         </div>
+        <ViewNav
+          view={state.view}
+          onView={(view) => onChange({ view })}
+          tuneOpen={tuneOpen}
+          onTune={onTune}
+        />
+        <ShareButton />
       </div>
 
       <ScenarioRail
@@ -35,7 +45,11 @@ export function Header({ state, onChange }: HeaderProps) {
         onChange={(scenario) => onChange({ scenario, selectedVehicle: null })}
       />
 
-      <ThesisStrip />
+      {/*
+        The thesis belongs to the first screen. In Measure and Compare the
+        reader has already met it, and the space goes to the instruments.
+      */}
+      {state.view === 'watch' && <ThesisStrip onCompare={() => onChange({ view: 'compare' })} />}
     </header>
   );
 }

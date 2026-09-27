@@ -68,7 +68,7 @@ const fmt = (v: number) => {
   return v < 0 ? `−${s}` : s;
 };
 
-export function ThesisStrip() {
+export function ThesisStrip({ onCompare }: { onCompare: () => void }) {
   return (
     <section className="thesis on-dark" aria-labelledby="thesis-title">
       <div className="thesis__text">
@@ -80,9 +80,9 @@ export function ThesisStrip() {
         </h2>
         <p className="thesis__links">
           <Citation dark marker="source" text={SOURCE} />
-          <a className="thesis__jump" href="#instruments">
-            Compare the five methods ↓
-          </a>
+          <button type="button" className="thesis__jump" onClick={onCompare}>
+            Compare the five methods →
+          </button>
         </p>
       </div>
 

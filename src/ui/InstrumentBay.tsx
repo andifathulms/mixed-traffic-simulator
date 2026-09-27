@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import type { AppState, InstrumentTab } from '../state/app-state';
+import type { AppState } from '../state/app-state';
 import type { Scenario } from '../scenarios/types';
 import type { World } from '../sim/types';
 import type { DetectorLog } from '../sim/detectors';
@@ -9,7 +9,6 @@ import { EquivalenceBench, type BenchPoint } from '../views/EquivalenceBench/Equ
 import { SpeedHeatmap } from '../views/SpeedHeatmap/SpeedHeatmap';
 import { LateralOccupancy } from '../views/LateralOccupancy/LateralOccupancy';
 import { DischargePlot } from '../views/DischargePlot/DischargePlot';
-import { Inspector } from '../views/Inspector/Inspector';
 import { FundamentalDiagram } from '../views/FundamentalDiagram/FundamentalDiagram';
 import { getLateralRule } from '../sim/lateral';
 import type { SweepPointResult } from '../batch/protocol';
@@ -31,17 +30,19 @@ export interface InstrumentBayProps {
   onChange: (patch: Partial<AppState>) => void;
   /** Recomputed on a timer, not every frame — see App. */
   aggregationTick: number;
-  narrow: boolean;
 }
 
-const TABS: Array<{ id: InstrumentTab; label: string }> = [
-  { id: 'bench', label: 'Equivalence bench' },
-  { id: 'heatmap', label: 'Speed heatmap' },
-  { id: 'lateral', label: 'Lateral occupancy' },
-  { id: 'discharge', label: 'Discharge' },
-  { id: 'inspector', label: 'Inspector' },
-];
-
+/**
+ * The instruments, laid out for the view that is open.
+ *
+ * They used to share one tab strip, so only one could be seen at a time and
+ * the bench — the argument — was a tab among five, two screens below the
+ * road. Measure now shows the four detector instruments together, because
+ * they are four readings of one stream and are read against each other;
+ * Compare gives the bench the whole width. The fundamental diagram is always
+ * visible in Measure, which is what §4.3 asked of it: it accumulates, and
+ * hiding it behind a tab lost the accumulation.
+ */
 export function InstrumentBay({
   state,
   scenario,
@@ -57,14 +58,7 @@ export function InstrumentBay({
   onCancelSweep,
   onChange,
   aggregationTick,
-  narrow,
 }: InstrumentBayProps) {
-  // The fundamental diagram sits outside the bay on wide screens, permanently
-  // visible, because it accumulates continuously and hiding it behind a tab
-  // would lose the accumulation (DESIGN.md §4.3). On narrow screens it moves
-  // into the bay as another tab.
-  const tabs = narrow ? [...TABS, { id: 'fundamental' as const, label: 'Fundamental diagram' }] : TABS;
-
   // aggregationTick is in the dependency list on purpose: the detector log is
   // a ref that mutates without notifying React, so the timer tick is what
   // makes this recompute. Four times a second, not sixty.
@@ -128,120 +122,58 @@ export function InstrumentBay({
     />
   );
 
+  if (state.view === 'compare') {
+    return (
+      <section
+        className="bay bay--compare on-paper"
+        id="instruments"
+        role="tabpanel"
+        aria-labelledby="view-compare"
+      >
+        <EquivalenceBench
+          points={benchPoints}
+          interval={state.aggregationInterval}
+          onIntervalChange={(interval: AggregationInterval) =>
+            onChange({ aggregationInterval: interval })
+          }
+          variable={state.sweepVariable}
+          onVariableChange={(sweepVariable) => onChange({ sweepVariable })}
+          comparison={state.sweepComparison}
+          onComparisonChange={(sweepComparison) => onChange({ sweepComparison })}
+          progress={sweepProgress}
+          onRun={onRunSweep}
+          onCancel={onCancelSweep}
+          provenance={provenance}
+          // The whole view is the bench's, so the chart takes the width.
+          width={1100}
+          height={440}
+        />
+      </section>
+    );
+  }
+
   return (
-    <section className="bay on-paper" id="instruments" aria-label="Instruments">
-      {!narrow && <div className="bay__fd">{fd}</div>}
-
-      <div className="bay__panel">
-        {/*
-          A tablist owes the reader arrow keys.
-          
-          The roles were here and the keyboard behaviour they promise was not:
-          every tab sat in the tab sequence and the arrow keys did nothing, so
-          a screen reader announced "tab 2 of 5" and then the keys it had just
-          named were dead. Either the roles go or the behaviour arrives; the
-          roles earn their place here, because "2 of 5" is worth knowing in a
-          bay of instruments, so the behaviour arrives.
-
-          Roving tabindex: one stop for the whole set, arrows to move within
-          it, Home and End to the ends. Selection follows focus, which is the
-          right choice when showing a panel is instant and cheap.
-        */}
-        <div
-          className="bay__tabs"
-          role="tablist"
-          aria-label="Instrument"
-          onKeyDown={(e) => {
-            const order = tabs.map((t) => t.id);
-            const at = order.indexOf(state.tab);
-            const to =
-              e.key === 'ArrowRight' || e.key === 'ArrowDown'
-                ? (at + 1) % order.length
-                : e.key === 'ArrowLeft' || e.key === 'ArrowUp'
-                  ? (at - 1 + order.length) % order.length
-                  : e.key === 'Home'
-                    ? 0
-                    : e.key === 'End'
-                      ? order.length - 1
-                      : -1;
-            if (to === -1) return;
-            e.preventDefault();
-            onChange({ tab: order[to] });
-            document.getElementById(`tab-${order[to]}`)?.focus();
-          }}
-        >
-          {tabs.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              role="tab"
-              id={`tab-${t.id}`}
-              aria-selected={state.tab === t.id}
-              aria-controls={`panel-${t.id}`}
-              /* Only the selected tab is a tab stop; arrows reach the rest. */
-              tabIndex={state.tab === t.id ? 0 : -1}
-              className={`bay__tab${state.tab === t.id ? ' bay__tab--active' : ''}`}
-              onClick={() => onChange({ tab: t.id })}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
-
-        <div
-          className="bay__content"
-          role="tabpanel"
-          id={`panel-${state.tab}`}
-          aria-labelledby={`tab-${state.tab}`}
-        >
-          {state.tab === 'bench' && (
-            <EquivalenceBench
-              points={benchPoints}
-              interval={state.aggregationInterval}
-              onIntervalChange={(interval: AggregationInterval) =>
-                onChange({ aggregationInterval: interval })
-              }
-              variable={state.sweepVariable}
-              onVariableChange={(sweepVariable) => onChange({ sweepVariable })}
-              comparison={state.sweepComparison}
-              onComparisonChange={(sweepComparison) => onChange({ sweepComparison })}
-              progress={sweepProgress}
-              onRun={onRunSweep}
-              onCancel={onCancelSweep}
-              provenance={provenance}
-            />
-          )}
-
-          {state.tab === 'heatmap' && (
-            <SpeedHeatmap
-              worldRef={worldRef}
-              freeSpeed={scenario.rampSpeed}
-              viewFrom={viewFrom}
-              viewTo={viewTo}
-              generation={generation}
-            />
-          )}
-
-          {state.tab === 'lateral' && (
-            <LateralOccupancy
-              worldRef={worldRef}
-              ruleName={getLateralRule(state.lateralRule).name}
-            />
-          )}
-
-          {state.tab === 'discharge' && (
-            <DischargePlot
-              records={dischargeRecords}
-              rhkEnabled={scenario.signal?.rhk ?? false}
-            />
-          )}
-
-          {state.tab === 'inspector' && (
-            <Inspector worldRef={worldRef} selectedVehicle={state.selectedVehicle} />
-          )}
-
-          {state.tab === 'fundamental' && fd}
-        </div>
+    <section
+      className="bay bay--measure on-paper"
+      id="instruments"
+      role="tabpanel"
+      aria-labelledby="view-measure"
+    >
+      <div className="bay__cell">{fd}</div>
+      <div className="bay__cell">
+        <SpeedHeatmap
+          worldRef={worldRef}
+          freeSpeed={scenario.rampSpeed}
+          viewFrom={viewFrom}
+          viewTo={viewTo}
+          generation={generation}
+        />
+      </div>
+      <div className="bay__cell">
+        <LateralOccupancy worldRef={worldRef} ruleName={getLateralRule(state.lateralRule).name} />
+      </div>
+      <div className="bay__cell">
+        <DischargePlot records={dischargeRecords} rhkEnabled={scenario.signal?.rhk ?? false} />
       </div>
     </section>
   );

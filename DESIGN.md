@@ -366,25 +366,16 @@ the scene on screen rather than the app.
 ### 4.1 The shared axis
 
 ```
-┌───────────────────────────────────────────────────────────────────┐
-│ Road · corridor, unrolled · speed is luminance                    │
-│ ░░░░░░░░░░░░░░░░░░░░░░░░ THE ROAD ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ │  dark
-│ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ │
-│ ░░░░░░░ ▪▪  ▫ ▪ ░░░░░░ ▪▪▪▪▫▪▪ ░░░░░░░░░░░░ ▪ ▫  ▪ ░░░░░░░░░░░░░░ │
-│ │0      │200     │400     │600     │800        position, m       │  ruler
-│ Record · time–space, same position axis · time runs downward      │
-│  t ↓  ╲╲╲╲╲     ╲╲╲╲╲╲╲╲        ╲╲╲╲                              │  paper
-│       ╲╲╲╲╲╲      ╲╲╲╲╲╲╲╲        ╲╲╲╲                            │
-│         ╲╲╲╲╲╲      ╲╲╲╲╲╲╲╲        ╲╲╲╲                          │
-├──────────────────────────────┬────────────────────────────────────┤
-│ FUNDAMENTAL DIAGRAM          │ INSTRUMENT BAY                     │
-│  q ↑    ▁▂▄▆█▆▄▂             │ [bench|heatmap|lateral|discharge|  │
-│         ░░░░░░░░             │  inspector]                        │
-│         k →                  │                                    │
-├──────────────────────────────┴────────────────────────────────────┤
-│ PARAMETERS  ▸ geometry · signal · demand · lateral · friction     │
-├───────────────────────────────────────────────────────────────────┤
-│ ▶Play Step Reset  1× ░ MC 60% ░░░░  seed 4471  sublane ▾ ·source· │
+┌──────────────────────────────────────────────────────┬────────────┐
+│ Road · the road, seen from above · brighter = faster │ Corridor   │
+│ ░░░░░░░░░░░░░░░░░ THE ROAD ░░░░░░░░░░░░░░░░░░░░░░░░░░ │ blurb …    │  dark
+│ ░░░░ ▪▪  ▫ ▪ ░░░░ ▪▪▪▪▫▪▪ ░░░░░░░░░░ ▪ ▫  ▪ ░░░░░░░░░ ├────────────┤
+│ │0     │500     │1k     │1.5k        position, m      │ 0:42  4×   │  ruler
+│ Record · every vehicle's path · leaning stripe = jam │ 38.1 km/h ╱╲│
+│  t ↓  ╲╲╲╲╲     ╲╲╲╲╲╲╲╲        ╲╲╲╲                  │ stopped ▪▪▫ │  paper
+│       ╲╲╲╲╲╲      ╲╲╲╲╲╲╲╲        ╲╲╲╲                │ along ▇▅▂▇ │
+├──────────────────────────────────────────────────────┴────────────┤
+│ ◉ Step Reset  speed 1× │ Motorcycles 60% ━━━●── ▮▮▯ │ seed · rule │
 └───────────────────────────────────────────────────────────────────┘
 ```
 
@@ -431,18 +422,34 @@ Road edges are hard lines against `--asphalt-edge`. Markings, where enabled, are
 `--marking`. When markings are off, the absence should be visible — a bare surface with no
 lane structure, which is what much of the road network actually looks like.
 
-### 4.3 The instrument bay
+### 4.3 Three views and a drawer
 
-Tabbed: equivalence bench, speed heatmap, lateral occupancy, discharge plot, vehicle
-inspector. One at a time, on paper ground.
+The app used to be one long scroll, with the five instruments sharing a single tab strip
+so only one could be seen at a time, and the bench — the argument — a tab among five, two
+screens below the road. It is now three views, grouped by the question a reader is
+asking, switched from the masthead or with the keys `1`, `2` and `3`, and carried in the
+URL as `v` (older links carrying `tab` still open the right view):
 
-The fundamental diagram sits outside the bay, permanently visible beside it, because it
-accumulates continuously and hiding it behind a tab would lose the accumulation.
+- **Watch** — see the phenomenon. The thesis strip, the road, the record and the live
+  panel. The first screen.
+- **Measure** — read what the detectors saw. The fundamental diagram, speed heatmap,
+  lateral occupancy and discharge plot, all four at once in a two-by-two grid, because
+  they are four readings of one stream and are read against each other. The fundamental
+  diagram is always visible here, which is what this section always asked of it.
+- **Compare** — see the methods disagree. The equivalence bench, at full width.
 
-Tabs sit on `--paper-sunken` and the active one is lifted onto `--paper` with a 2 px rule
-that scales in from the centre. The strip is a recessed groove and the selected tab is the
-plate at the front of it — the same physical idea the segmented control uses, at a larger
-size.
+Outside Watch the stage **docks** to a strip: tag, road and ruler, with a pill back to
+the full view, so a reader never loses the simulation behind the chart they are reading.
+It docks by clipping, not by unmounting. The record is a chart recorder whose history is
+never redrawn (§5.2), and unmounting or resizing its canvas would throw that history
+away every time the reader glanced at another view, so it keeps its size and keeps
+drawing below the clip.
+
+**Tune** is not a view but a drawer (§4.7), opened from the masthead or with `t`, over
+whichever view is open. **Share this run** copies the reproducing link (§10) and sits in
+the masthead, where a reader who has just seen something surprising is looking.
+
+The view switch is a tablist with roving focus; the active view carries the accent.
 
 ### 4.4 The transport bar
 
@@ -479,7 +486,7 @@ border. Prose is capped at 68 characters — `--measure`, so it is set in one pl
 
 Below 860 px the road and time–space diagram stay stacked and keep their shared axis — they
 are the app and they do not collapse. Both shrink in height; the road to 120 px, the record
-to 200 px. The fundamental diagram moves into the instrument bay as another tab. The
+to 200 px. The Measure grid becomes one column and the view switch takes a row of its own. The
 live panel moves under the record (below 980 px), the thesis strip keeps its points but
 labels only the two extremes, the motorcycle fraction moves to the top of the transport
 bar where it gets the whole width, and the parameter grid becomes one column.
@@ -488,26 +495,22 @@ Below 560 px the scenario rail becomes one sideways-scrolling row and the key ca
 because at that width they are the difference between a bar that fits and one that
 wraps twice.
 
-### 4.7 The parameters panel
+### 4.7 The tune drawer
 
-It used to be one column, twenty-two controls tall, which meant the only way to reach the
-gradient was to scroll past the signal.
+It began as one column, twenty-two controls tall, then became a grid of grouped plates
+at the foot of the page. Both shared a flaw: continuous controls take effect on the frame
+they change (§6.1), and that promise only lands if the reader can see the road while
+dragging. Below the fold, they could not.
 
-It is now a grid of grouped plates — geometry, signal, demand, lateral model, side friction,
-dimensions, export — reflowing at a 21 rem minimum, so the number of columns follows the
-window and nothing is pinned to a position. The signal card exists only where there is a
-signal, and the grid closes around its absence.
+The plates now live in a drawer fixed to the right edge, 27 rem wide, that slides over
+the live panel and leaves the road and the record in view. It opens from the masthead or
+with `t`, closes with its own button or `Escape`, and is `inert` while closed so its
+controls leave the tab order with it. Whether it is open is not in the URL: like
+`running`, it is where the reader is looking, not what is being simulated.
 
-The header states how many settings differ from the scenario's own and offers one button to
-put them back. Without it, a reader who has moved six sliders has no way to get back to a
-known state short of reloading, and the scenario's meaning quietly decays as they explore.
-
-The whole panel collapses. The instruments are the point of the app; the knobs are how you
-interrogate them, and a reader who is done adjusting should be able to put them away.
-
-Every field is one shape — label, current value with units, control, and where the value
-needs defending, a sentence saying why it exists. That shape lives in `ui/Field.tsx`. Before,
-each of the twenty-odd sliders spelled it out by hand, which is how they drifted apart.
+The header states how many settings differ from the scenario's own and offers one button
+to put them back. Every field is one shape — label, current value with units, control,
+and where the value needs defending, a sentence saying why it exists — in `ui/Field.tsx`.
 
 ---
 
@@ -662,6 +665,11 @@ The "show your work" view. For the selected vehicle, live:
   resulting acceleration
 - the leader's identity and type
 - lateral: current offset, lateral speed, the offsets being considered and their scores
+
+It appears as a card over the road's top-right corner as soon as a vehicle is selected,
+next to the accent ring that marks the vehicle it describes, and closes to clear the
+selection. It used to be a tab in the instrument strip, which meant a click on the road
+changed a panel two screens below it.
 
 The two-bar acceleration decomposition is the important part. Watching the interaction term
 grow and overwhelm the free-flow term as a gap closes is car-following made visible, and it

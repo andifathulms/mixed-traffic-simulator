@@ -171,6 +171,10 @@
  * button, because it is one.
  */
 .thesis__jump {
+  padding: 0;
+  background: none;
+  border: 0;
+  cursor: pointer;
   color: var(--on-dark-mid);
   font-size: var(--t-small-size);
   text-decoration: underline;
@@ -644,147 +648,232 @@
 
 /* ======================================================== instrument bay */
 
-/* §4.3 The instrument bay, on paper ground. */
+/*
+ * The instruments, per view. Measure is a two-by-two grid of the four
+ * detector instruments, read against one another; Compare gives the bench
+ * the width. Cells are separated by the rule showing through a 1 px gap.
+ */
 .bay {
-  /* The skip link and the header's cross-reference both land here. */
+  /* The skip link and the thesis cross-reference both land here. */
   scroll-margin-top: var(--s-2);
-  display: grid;
-  grid-template-columns: minmax(320px, 27rem) 1fr;
-  gap: 1px;
   background: var(--rule);
   border-top: 1px solid var(--void);
 }
 
-.bay__fd {
-  background: var(--paper);
+.bay--measure {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
 }
 
-.bay__panel {
-  display: flex;
-  flex-direction: column;
-  background: var(--paper);
+.bay__cell {
   min-width: 0;
+  background: var(--paper);
 }
 
-.bay__tabs {
+.bay--compare {
+  background: var(--paper);
+}
+
+.bay--compare .bench {
+  max-width: 76rem;
+  margin: 0 auto;
+}
+
+/* ============================================================== view nav */
+
+.viewnav {
   display: flex;
-  flex-wrap: wrap;
-  gap: 2px;
-  padding: 0 var(--s-2);
-  background: var(--paper-sunken);
-  border-bottom: 1px solid var(--rule);
+  gap: var(--s-1);
+  align-items: center;
+  margin-left: auto;
 }
 
-.bay__tab {
-  position: relative;
+.viewnav__tabs {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  background: var(--void);
+  border: 1px solid var(--border-dark);
+  border-radius: var(--r-panel);
+}
+
+.viewnav__tab,
+.viewnav__tune {
+  display: inline-flex;
+  gap: 7px;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 14px;
   background: none;
   border: 0;
-  padding: 10px 12px 9px;
-  color: var(--ink-mid);
+  border-radius: var(--r-control);
+  color: var(--on-dark-mid);
   font-size: var(--t-small-size);
-  cursor: pointer;
-  /* §6.3 Discrete control: a timed transition. */
-  transition: color var(--d-tab) var(--ease-standard),
-    background var(--d-tab) var(--ease-standard);
-}
-
-.bay__tab::after {
-  content: '';
-  position: absolute;
-  left: 8px;
-  right: 8px;
-  bottom: 0;
-  height: 2px;
-  background: var(--ink);
-  transform: scaleX(0);
-  transition: transform var(--d-tab) var(--ease-out);
-}
-
-.bay__tab:hover {
-  color: var(--ink);
-  background: var(--paper);
-}
-
-.bay__tab--active {
-  color: var(--ink);
   font-weight: 600;
-  background: var(--paper);
+  cursor: pointer;
+  transition: background var(--d-tab) var(--ease-standard),
+    color var(--d-tab) var(--ease-standard);
 }
 
-.bay__tab--active::after {
-  transform: scaleX(1);
+.viewnav__tab:hover,
+.viewnav__tune:hover {
+  color: var(--on-dark);
 }
 
-.bay__content {
-  flex: 1;
-  min-width: 0;
+.viewnav__tab--active {
+  background: var(--surface-raised);
+  color: var(--on-dark);
+  box-shadow: inset 0 -2px 0 var(--accent);
+}
+
+.viewnav__tune {
+  border: 1px solid var(--border-dark);
+  min-height: 38px;
+}
+
+.viewnav__tune--open {
+  border-color: var(--accent);
+  color: var(--on-dark);
+}
+
+.header__share {
+  min-height: 38px;
+}
+
+/* ========================================================== docked stage */
+
+/*
+ * Outside Watch the stage is clipped to its road strip. The record keeps its
+ * size and keeps drawing below the clip, so its history survives the visit.
+ */
+.stage {
+  position: relative;
+}
+
+.stage--docked {
+  overflow: hidden;
+  border-bottom: 1px solid var(--void);
+}
+
+.stage__undock {
+  position: absolute;
+  right: calc(19rem + var(--s-2));
+  top: 4px;
+  z-index: 3;
+  padding: 3px 10px;
+  background: rgba(6, 8, 11, 0.82);
+  border: 1px solid var(--border-dark-strong);
+  border-radius: var(--r-pill);
+  color: var(--on-dark-mid);
+  font-size: var(--t-micro-size);
+  cursor: pointer;
+}
+
+.stage__undock:hover {
+  border-color: var(--accent);
+  color: var(--on-dark);
+}
+
+/* ======================================================== inspector card */
+
+/*
+ * The inspector, over the road's top-right corner, next to the ring that
+ * marks the vehicle it describes. A paper plate lifted clear of the road.
+ */
+.app__axis {
+  position: relative;
+}
+
+.inspector-card {
+  position: absolute;
+  top: 36px;
+  right: var(--s-2);
+  z-index: 4;
+  width: min(24rem, calc(100% - 2 * var(--s-2)));
+  max-height: calc(100% - 48px);
   overflow: auto;
+  border: 1px solid var(--accent);
+  border-radius: var(--r-panel);
+  box-shadow: var(--shadow-pop-dark);
+  animation: warn-in var(--d-select) var(--ease-standard);
+}
+
+.inspector-card .inspector {
+  position: relative;
+  padding: var(--s-2);
+}
+
+.inspector__close {
+  position: absolute;
+  top: var(--s-1);
+  right: var(--s-1);
+}
+
+.stage--docked .inspector-card {
+  display: none;
 }
 
 /* ============================================================ parameters */
 
+/*
+ * The tune drawer. Fixed to the right edge over the live panel, so the road
+ * and the record stay visible while a slider moves. Slides; under reduced
+ * motion it simply appears (§6.7).
+ */
 .params {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  width: min(27rem, 100vw);
   background: var(--paper-sunken);
-  border-top: 1px solid var(--rule-strong);
-  padding: var(--s-2) var(--s-3) var(--s-4);
+  border-left: 1px solid var(--rule-strong);
+  box-shadow: var(--shadow-pop);
   color: var(--ink);
+  transform: translateX(105%);
+  visibility: hidden;
+  transition: transform var(--d-scenario) var(--ease-out),
+    visibility 0s linear var(--d-scenario);
+}
+
+.tune--open {
+  transform: none;
+  visibility: visible;
+  transition: transform var(--d-scenario) var(--ease-out), visibility 0s;
 }
 
 .params__head {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--s-2);
+  gap: var(--s-1) var(--s-2);
   align-items: center;
-  margin-bottom: var(--s-2);
+  padding: var(--s-2);
+  background: var(--paper-raised);
+  border-bottom: 1px solid var(--rule);
 }
 
-.params__disclosure {
-  display: flex;
-  gap: var(--s-1);
-  align-items: center;
-  background: none;
-  border: 0;
-  padding: 0;
-  cursor: pointer;
+.tune__close {
+  margin-left: auto;
+  order: 1;
 }
 
 .params__title {
   font-size: var(--t-h2-size);
+  font-weight: 800;
   color: var(--ink);
 }
 
-.params__chevron {
-  width: 0;
-  height: 0;
-  border-left: 5px solid var(--ink-mid);
-  border-top: 4px solid transparent;
-  border-bottom: 4px solid transparent;
-  transition: transform var(--d-tab) var(--ease-out);
-}
-
-.params__chevron--open {
-  transform: rotate(90deg) translateX(1px);
-}
-
-/*
- * §4.7 The grid. Plates reflow to whatever width there is; nothing is pinned
- * to a column, because the number of groups changes with the scenario — the
- * signal card exists only where there is a signal.
- */
 .params__grid {
   display: grid;
-  /*
-   * min() so the column can fall below its preferred width.
-   *
-   * A bare minmax(21rem, 1fr) is a hard floor: at a 320 px viewport the
-   * content box is 288 px and the track stayed 336 px, pushing 32 px of the
-   * page off the side and forcing horizontal scrolling (WCAG 1.4.10). The
-   * track now shrinks to the container when the container is the smaller of
-   * the two, which is what auto-fill was meant to do all along.
-   */
-  grid-template-columns: repeat(auto-fill, minmax(min(21rem, 100%), 1fr));
+  grid-template-columns: 1fr;
   gap: var(--s-2);
-  align-items: start;
+  padding: var(--s-2) var(--s-2) var(--s-4);
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .pcard {
@@ -1141,6 +1230,10 @@
     border-top: 1px solid var(--border-dark);
   }
 
+  .stage__undock {
+    right: var(--s-2);
+  }
+
   .live__grid {
     grid-template-columns: repeat(auto-fill, minmax(min(15rem, 100%), 1fr));
   }
@@ -1182,8 +1275,24 @@
     grid-template-columns: 1fr;
   }
 
-  .params {
-    padding: var(--s-2) var(--s-2) var(--s-3);
+  .bay--measure {
+    grid-template-columns: 1fr;
+  }
+
+  /* The switch takes a row of its own, its three views sharing it evenly. */
+  .viewnav {
+    order: 3;
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .viewnav__tabs {
+    flex: 1;
+  }
+
+  .viewnav__tab {
+    flex: 1;
+    justify-content: center;
   }
 
   .transport__group--model {
@@ -1255,18 +1364,24 @@
     line-height: var(--t-nano-line);
   }
 
-  /*
-   * The instrument tabs fitted six labels into three rows of chrome above a
-   * panel that had barely any height left. Tighter padding and a smaller gap
-   * puts them in two.
-   */
-  .bay__tabs {
-    gap: 0 var(--s-1);
+  /* The keys are for keyboards; on a phone they are width the labels need. */
+  .viewnav .kbd {
+    display: none;
   }
 
-  .bay__tab {
-    padding-left: var(--s-1);
-    padding-right: var(--s-1);
+  .viewnav__tab,
+  .viewnav__tune {
+    padding: 0 10px;
+  }
+
+  /* The label stays for assistive technology; the icon carries it visually. */
+  .header__share span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
   }
 
   /* The transport bar was a third of the viewport; the rows sit closer. */

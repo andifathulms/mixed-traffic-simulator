@@ -95,21 +95,38 @@ describe('the app mounts and renders', () => {
     fireEvent.keyDown(road, { key: 'ArrowRight' });
   });
 
-  it('renders every instrument tab and switches between them', () => {
+  it('switches between the three views, and each shows its instruments', () => {
     render(<App />);
-    const tablist = screen.getByRole('tablist', { name: /instrument/i });
+    const tablist = screen.getByRole('tablist', { name: /^view$/i });
     const tabs = within(tablist).getAllByRole('tab');
-    expect(tabs.length).toBeGreaterThanOrEqual(5);
+    expect(tabs.map((t) => t.textContent)).toEqual(
+      expect.arrayContaining([expect.stringMatching(/watch/i), expect.stringMatching(/measure/i), expect.stringMatching(/compare/i)]),
+    );
 
-    for (const tab of tabs) {
-      fireEvent.click(tab);
-      expect(tab.getAttribute('aria-selected')).toBe('true');
-    }
+    fireEvent.click(within(tablist).getByRole('tab', { name: /measure/i }));
+    expect(screen.getByRole('heading', { name: /fundamental diagram/i })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: /speed heatmap/i })).toBeTruthy();
+
+    fireEvent.click(within(tablist).getByRole('tab', { name: /compare/i }));
+    expect(screen.getByRole('heading', { name: /equivalence bench/i })).toBeTruthy();
+
+    fireEvent.click(within(tablist).getByRole('tab', { name: /watch/i }));
+    expect(screen.queryByRole('heading', { name: /equivalence bench/i })).toBeNull();
+  });
+
+  it('reaches the views and the drawer from the keyboard', () => {
+    render(<App />);
+    fireEvent.keyDown(window, { key: '3' });
+    expect(screen.getByRole('heading', { name: /equivalence bench/i })).toBeTruthy();
+    const tune = screen.getByRole('button', { name: /^t?\s*tune$/i });
+    expect(tune.getAttribute('aria-expanded')).toBe('false');
+    fireEvent.keyDown(window, { key: 't' });
+    expect(tune.getAttribute('aria-expanded')).toBe('true');
   });
 
   it('offers all four aggregation intervals on the bench', () => {
     render(<App />);
-    fireEvent.click(screen.getByRole('tab', { name: /equivalence bench/i }));
+    fireEvent.click(screen.getByRole('tab', { name: /compare/i }));
     for (const label of ['3 min', '5 min', '15 min', '60 min']) {
       expect(screen.getByLabelText(label)).toBeTruthy();
     }
@@ -121,15 +138,17 @@ describe('the app mounts and renders', () => {
     expect(screen.getByLabelText(/lane markings/i)).toBeTruthy();
   });
 
-  it('offers CSV export and a copyable link', () => {
+  it('offers CSV export in the drawer and a share link in the masthead', () => {
     render(<App />);
+    expect(screen.getByRole('button', { name: /share this run/i })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: /^t?\s*tune$/i }));
     expect(screen.getByRole('button', { name: /detector records/i })).toBeTruthy();
-    expect(screen.getByRole('button', { name: /copy link to this run/i })).toBeTruthy();
   });
 
-  it('provides a skip link to the instruments', () => {
+  it('provides a skip link past the masthead', () => {
     render(<App />);
-    expect(screen.getByRole('link', { name: /skip to instruments/i })).toBeTruthy();
+    // Past the masthead to the road in Watch, to the instruments elsewhere.
+    expect(screen.getByRole('link', { name: /skip to (the road|instruments)/i })).toBeTruthy();
   });
 
   it('shows the RHK toggle on the signalised scenario only', () => {

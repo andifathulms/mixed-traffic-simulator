@@ -17,6 +17,7 @@ import { Header } from './Header';
 import { LivePanel } from './LivePanel';
 import { Ruler } from './Ruler';
 import { InstrumentBay } from './InstrumentBay';
+import { Inspector } from '../views/Inspector/Inspector';
 import { Parameters } from './Parameters';
 import { Warnings } from './Warnings';
 import { MakerSignature } from './MakerSignature';
@@ -73,7 +74,28 @@ export function App() {
   // The ring is drawn as a ring, and a ring in a 220 px band is a 79 px circle
   // with twenty-two vehicles on it — too small to read the composition that is
   // the whole point. It gets a taller stage (DESIGN.md §4.2).
-  const roadHeight = narrow ? (scenario.geometry.ring ? 240 : 120) : scenario.geometry.ring ? 340 : 220;
+  /*
+   * Outside Watch the stage docks to a strip: the road stays in view so the
+   * reader never loses the simulation behind the chart they are reading.
+   *
+   * It docks by clipping, not by unmounting. The record is a chart recorder
+   * whose history is never redrawn (DESIGN.md §5.2); unmounting it, or
+   * resizing its canvas, would throw that history away every time the reader
+   * glanced at another view. So the record keeps its size and keeps drawing
+   * below the clip, and only the road's own height changes.
+   */
+  const docked = state.view !== 'watch';
+  const roadHeight = docked
+    ? scenario.geometry.ring
+      ? 160
+      : 96
+    : narrow
+      ? scenario.geometry.ring
+        ? 240
+        : 120
+      : scenario.geometry.ring
+        ? 340
+        : 220;
   const recordHeight = narrow ? 200 : 280;
   const secondsPerRow = scenario.geometry.ring ? 0.4 : 1;
 
@@ -126,6 +148,12 @@ export function App() {
   }, [handleRef]);
 
   const sweep = useSweep();
+
+  /*
+   * Whether the tune drawer is open. Not in the URL: like `running`, it is
+   * where the reader is looking, not what is being simulated (CLAUDE.md §10).
+   */
+  const [tuneOpen, setTuneOpen] = useState(false);
 
   // Every run is linkable (PRD §7.3). replaceState rather than pushState: a
   // slider drag must not fill the back button with a hundred entries.
@@ -202,6 +230,14 @@ export function App() {
         stepOnce();
       } else if (e.key === 'r' || e.key === 'R') {
         reset();
+      } else if (e.key === '1' || e.key === '2' || e.key === '3') {
+        // The keys printed on the view switch (DESIGN.md §4.3).
+        const view = (['watch', 'measure', 'compare'] as const)[Number(e.key) - 1];
+        setState((s) => ({ ...s, view }));
+      } else if (e.key === 't' || e.key === 'T') {
+        setTuneOpen((o) => !o);
+      } else if (e.key === 'Escape') {
+        setTuneOpen(false);
       }
     };
     window.addEventListener('keydown', onKey);
@@ -209,26 +245,32 @@ export function App() {
   }, [reset, stepOnce]);
 
   return (
-    <div className="app">
-      <a className="skip-link" href="#instruments">
-        Skip to instruments
+    <div className={`app app--${state.view}`}>
+      <a className="skip-link" href={state.view === 'watch' ? '#stage' : '#instruments'}>
+        {state.view === 'watch' ? 'Skip to the road' : 'Skip to instruments'}
       </a>
 
-      <Header state={state} onChange={update} />
+      <Header
+        state={state}
+        onChange={update}
+        tuneOpen={tuneOpen}
+        onTune={() => setTuneOpen((o) => !o)}
+      />
 
-      {/*
-        The road and the time-space diagram are locked to one horizontal
-        position axis, pixel for pixel. Both are full-bleed, in the same
-        container, with no padding between them and nothing that could offset
-        one relative to the other. Nothing may break this (DESIGN.md §4.1).
-      */}
       {/*
         The stage: the axis column and the live readings beside it. The panel
         sits beside the whole column rather than beside the road alone, so the
         road, the ruler and the record all narrow together and the shared
         axis survives it.
       */}
-      <div className="stage">
+      <div
+        className={`stage${docked ? ' stage--docked' : ''}`}
+        id="stage"
+        role={state.view === 'watch' ? 'tabpanel' : undefined}
+        aria-labelledby={state.view === 'watch' ? 'view-watch' : undefined}
+        // Tag, road and ruler; the record carries on below the clip.
+        style={docked ? { maxHeight: roadHeight + 58 } : undefined}
+      >
         <div className="app__axis">
           <div className="stage__tag">
             <span className="label">Road</span>
@@ -253,9 +295,7 @@ export function App() {
             alphaRef={alphaRef}
             freeSpeed={scenario.rampSpeed}
             selectedVehicle={state.selectedVehicle}
-            onSelect={(id) =>
-              update({ selectedVehicle: id, tab: id === null ? state.tab : 'inspector' })
-            }
+            onSelect={(id) => update({ selectedVehicle: id })}
             viewFrom={viewFrom}
             viewTo={viewTo}
             generation={generation}
@@ -284,6 +324,22 @@ export function App() {
             height={recordHeight}
             secondsPerRow={secondsPerRow}
           />
+
+          {/*
+            The inspector, beside the road rather than in a tab two panels
+            away. Selecting a vehicle used to switch the instrument strip far
+            below the click; now the arithmetic appears over the road, next to
+            the ring that marks the vehicle it describes.
+          */}
+          {state.selectedVehicle !== null && (
+            <div className="inspector-card">
+              <Inspector
+                worldRef={worldRef}
+                selectedVehicle={state.selectedVehicle}
+                onClose={() => update({ selectedVehicle: null })}
+              />
+            </div>
+          )}
         </div>
         <LivePanel
           worldRef={worldRef}
@@ -292,33 +348,38 @@ export function App() {
           tick={tick}
           generation={generation}
         />
+        {docked && (
+          <button
+            type="button"
+            className="stage__undock"
+            onClick={() => update({ view: 'watch' })}
+          >
+            Back to the full road and record
+          </button>
+        )}
       </div>
 
       <Warnings worldRef={worldRef} count={warningCount} />
 
-      {/*
-        The instruments anchor lives on the instrument bay itself, not here.
-        On <main> it covered the road and the record too, so "Skip to
-        instruments" landed at the top of the page and skipped nothing.
-      */}
       <main className="app__main">
-        <InstrumentBay
-          state={state}
-          scenario={scenario}
-          worldRef={worldRef}
-          logRef={logRef}
-          dischargeRecords={discharge}
-          generation={generation}
-          viewFrom={viewFrom}
-          viewTo={viewTo}
-          sweepPoints={sweep.points}
-          sweepProgress={sweep.progress}
-          onRunSweep={runSweep}
-          onCancelSweep={sweep.cancel}
-          onChange={update}
-          aggregationTick={tick}
-          narrow={narrow}
-        />
+        {state.view !== 'watch' && (
+          <InstrumentBay
+            state={state}
+            scenario={scenario}
+            worldRef={worldRef}
+            logRef={logRef}
+            dischargeRecords={discharge}
+            generation={generation}
+            viewFrom={viewFrom}
+            viewTo={viewTo}
+            sweepPoints={sweep.points}
+            sweepProgress={sweep.progress}
+            onRunSweep={runSweep}
+            onCancelSweep={sweep.cancel}
+            onChange={update}
+            aggregationTick={tick}
+          />
+        )}
 
         <Parameters
           state={state}
@@ -328,6 +389,8 @@ export function App() {
           logRef={logRef}
           dischargeRecords={discharge}
           sweepPoints={sweep.points}
+          open={tuneOpen}
+          onOpenChange={setTuneOpen}
         />
 
         {/*
