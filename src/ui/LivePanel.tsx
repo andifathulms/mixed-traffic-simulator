@@ -131,7 +131,7 @@ export function LivePanel({ worldRef, scenario, state, tick, generation }: LiveP
               {r ? (r.mean * 3.6).toFixed(1) : '—'}
               <span className="live__unit"> km/h</span>
             </span>
-            <Sparkline values={history.current.map((s) => s.v)} free={free} />
+            <Sparkline samples={history.current} free={free} />
           </dd>
         </div>
 
@@ -206,20 +206,29 @@ export function LivePanel({ worldRef, scenario, state, tick, generation }: LiveP
  * marked — so a steady stream sits near the rule and a jam is a fall away
  * from it.
  */
-function Sparkline({ values, free }: { values: number[]; free: number }) {
+function Sparkline({
+  samples,
+  free,
+}: {
+  samples: ReadonlyArray<{ t: number; v: number }>;
+  free: number;
+}) {
   const W = 240;
   const H = 40;
   const y = (v: number) => H - 2 - Math.min(1.1, Math.max(0, v / (free || 1))) / 1.1 * (H - 4);
-  if (values.length < 2 || free <= 0) {
+  if (samples.length < 2 || free <= 0) {
     return (
       <svg className="live__spark" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" aria-hidden="true">
         <line className="live__spark-free" x1={0} x2={W} y1={y(free)} y2={y(free)} />
       </svg>
     );
   }
-  const step = W / (HISTORY - 1);
-  const n = values.length;
-  const pts = values.map((v, i) => [W - (n - 1 - i) * step, y(v)] as const);
+  // Placed by simulated time, not by index: samples arrive once per tick of
+  // the panel, which is one simulated second at 1× and four at 16×, and
+  // spacing them by index squeezed two minutes into a quarter of the width.
+  const n = samples.length;
+  const now = samples[n - 1].t;
+  const pts = samples.map((s) => [W - ((now - s.t) / HISTORY) * W, y(s.v)] as const);
   const line = pts.map(([px, py], i) => `${i ? 'L' : 'M'}${px.toFixed(1)} ${py.toFixed(1)}`).join(' ');
   const [sx] = pts[0];
   const [ex, ey] = pts[n - 1];

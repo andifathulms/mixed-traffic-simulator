@@ -6,8 +6,15 @@ import { CANVAS } from '../render/palette';
 /**
  * The time-space recorder.
  *
- * Position on x, time on y increasing downward, one mark per vehicle drawn in
- * the speed ramp so a line's brightness varies along its own length. Free
+ * Position on x, time on y increasing downward, each vehicle drawn in the speed
+ * ramp so a line's brightness varies along its own length.
+ *
+ * Each row joins a vehicle's position on this row to where it was on the one
+ * before. It used to stamp one pixel per vehicle per row, and a free-flowing
+ * vehicle travels tens of pixels between rows — so moving traffic came out as
+ * scattered dust and only stopped vehicles, which stay on one pixel and stack
+ * into vertical ticks, made anything like a line. The jam bands were there,
+ * built from those ticks, but the trajectories they interrupt were not. Free
  * flowing traffic makes near-parallel bright diagonals; a jam makes a dark band
  * leaning backward against the flow, and the slope of that band is the backward
  * wave speed.
@@ -25,6 +32,10 @@ export class TimeSpaceRecorder {
   private written = 0;
   /** Simulation time of the most recently written row. */
   private lastRowTime = -Infinity;
+  /** Each vehicle's pixel on the previous row, so this row can join to it. */
+  private previous = new Map<number, number>();
+  /** The paper, as the row buffer's clear colour. */
+  private readonly paper = hexToRgb(CANVAS.paper);
 
   readonly width: number;
   readonly height: number;
@@ -56,6 +67,7 @@ export class TimeSpaceRecorder {
     this.ctx.fillRect(0, 0, this.width, this.height);
     this.written = 0;
     this.lastRowTime = -Infinity;
+    this.previous.clear();
   }
 
   /** The time at the top edge of the visible record. */
@@ -82,26 +94,61 @@ export class TimeSpaceRecorder {
     const data = this.row.data;
     // Paper, with every pixel opaque — an unwritten pixel must read as blank
     // paper rather than as transparency over whatever was there before.
+    const [pr, pg, pb] = this.paper;
     for (let i = 0; i < data.length; i += 4) {
-      data[i] = 0xee;
-      data[i + 1] = 0xef;
-      data[i + 2] = 0xeb;
+      data[i] = pr;
+      data[i + 1] = pg;
+      data[i + 2] = pb;
       data[i + 3] = 255;
     }
 
-    if (viewTo > viewFrom) {
-      for (const v of world.vehicles) {
-        // The same mapping the road uses, so the two axes cannot drift apart.
-        const px = Math.round(positionToPixel(v.x, viewFrom, viewTo, this.width));
-        if (px < 0 || px >= this.width) continue;
-        const [r, g, b] = speedRgbOnPaper(v.v, freeSpeed);
-        const i = px * 4;
+    const W = this.width;
+    /*
+     * Darker wins. On a multi-lane road a motorcycle filtering past a stopped
+     * car crosses its pixel in the same row, and a pale free-flow span laid
+     * over the dark stopped mark would thin the jam band out of the record.
+     * The paper is the lightest value, so it always gives way.
+     */
+    const paint = (from: number, to: number, r: number, g: number, b: number) => {
+      const lo = Math.max(0, Math.min(from, to));
+      const hi = Math.min(W - 1, Math.max(from, to));
+      const weight = r + g + b;
+      for (let x = lo; x <= hi; x++) {
+        const i = x * 4;
+        if (weight >= data[i] + data[i + 1] + data[i + 2]) continue;
         data[i] = r;
         data[i + 1] = g;
         data[i + 2] = b;
-        data[i + 3] = 255;
+      }
+    };
+
+    const seen = new Map<number, number>();
+    if (viewTo > viewFrom) {
+      const ring = world.geometry.ring;
+      for (const v of world.vehicles) {
+        // The same mapping the road uses, so the two axes cannot drift apart.
+        const px = Math.round(positionToPixel(v.x, viewFrom, viewTo, W));
+        seen.set(v.id, px);
+        if (px < 0 || px >= W) continue;
+        const [r, g, b] = speedRgbOnPaper(v.v, freeSpeed);
+        const before = this.previous.get(v.id);
+
+        const wrapped = ring && before !== undefined && before - px > W / 2;
+        const jumped = before !== undefined && Math.abs(px - before) > W / 2;
+
+        if (wrapped) {
+          // Round the loop: out of the right edge and back in at the left.
+          paint(before, W - 1, r, g, b);
+          paint(0, px, r, g, b);
+        } else if (before === undefined || jumped) {
+          // New to the record, or a jump no vehicle makes in one row: a dot.
+          paint(px, px, r, g, b);
+        } else {
+          paint(before, px, r, g, b);
+        }
       }
     }
+    this.previous = seen;
 
     if (this.written < this.height) {
       this.ctx.putImageData(this.row, 0, this.written);
@@ -134,4 +181,9 @@ export class TimeSpaceRecorder {
   get rowsWritten(): number {
     return this.written;
   }
+}
+
+function hexToRgb(hex: string): [number, number, number] {
+  const h = hex.replace('#', '');
+  return [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16)) as [number, number, number];
 }
