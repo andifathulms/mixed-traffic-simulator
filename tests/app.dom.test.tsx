@@ -132,6 +132,16 @@ describe('the app mounts and renders', () => {
     }
   });
 
+  it('chooses the lateral rule from its picture in the drawer, and names it on the bar', () => {
+    render(<App />);
+    fireEvent.click(screen.getByRole('button', { name: /^t?\s*tune$/i }));
+    const picker = screen.getByRole('radiogroup', { name: /where to sit across the road/i });
+    fireEvent.click(within(picker).getByRole('radio', { name: /social force/i }));
+    expect((screen.getByLabelText(/lateral rule/i) as HTMLSelectElement).value).toBe('social');
+    // Put it back, so later tests in this file start on the scenario's rule.
+    fireEvent.click(within(picker).getByRole('radio', { name: /gap-seeking/i }));
+  });
+
   it('exposes road width as a continuous control, not a lane count', () => {
     render(<App />);
     expect(screen.getByLabelText(/road width/i)).toBeTruthy();

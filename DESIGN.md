@@ -508,6 +508,25 @@ with `t`, closes with its own button or `Escape`, and is `inert` while closed so
 controls leave the tab order with it. Whether it is open is not in the URL: like
 `running`, it is where the reader is looking, not what is being simulated.
 
+Each group opens with a drawing of the thing it controls, drawn to scale from the same
+values the sliders set (`ui/TunePictures.tsx`), so moving a slider changes a picture as
+well as a number:
+
+- **Geometry** — the carriageway seen from behind: how many light vehicles fit across
+  it, how many motorcycles fit in what is left, the parking strip hatched, and the lane
+  markings when they are on. That remainder is the space the app is about.
+- **Demand** — the four types top-down, to scale, each with the share of the stream the
+  sliders produce.
+- **Arrival process** — a minute of arrivals under each process at the same mean rate,
+  the chosen one in accent ink. Seeded, so the picture never changes between readers.
+- **Lateral model** — the three rules as the distribution each produces across the road:
+  spikes, a smear, a looser cloud. Choosing one here is the same choice as the transport
+  bar's, which still names the rule at all times; social force says "no traffic
+  citation" on its card before it is chosen.
+
+The drawings are on paper and speak the paper's encodings: vehicle type as value (§5.5),
+never an estimator hue. A link ending `#tune` opens on the drawer.
+
 The header states how many settings differ from the scenario's own and offers one button
 to put them back. Every field is one shape — label, current value with units, control,
 and where the value needs defending, a sentence saying why it exists — in `ui/Field.tsx`.

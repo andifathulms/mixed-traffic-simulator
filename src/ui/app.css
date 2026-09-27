@@ -876,6 +876,153 @@
   overscroll-behavior: contain;
 }
 
+/*
+ * The drawings at the head of each tune group (ui/TunePictures.tsx). Paper
+ * furniture only: the road is sunken paper, marks are the type values, and
+ * the one live choice in a picture carries the accent ink.
+ */
+.tpic {
+  margin: 0 0 var(--s-2);
+}
+
+.tpic svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.tpic__road {
+  fill: var(--paper-sunken);
+  stroke: var(--rule-strong);
+}
+
+.tpic__parking {
+  fill: var(--rule);
+  opacity: 0.7;
+}
+
+.tpic__marking {
+  stroke: var(--ink-line);
+  stroke-dasharray: 4 4;
+}
+
+.tpic__tick,
+.tpic__axis {
+  stroke: var(--rule-strong);
+}
+
+.tpic__cab {
+  stroke: var(--paper);
+}
+
+.tpic__pu {
+  stroke: var(--ink-line);
+  stroke-width: 0.8;
+}
+
+.tpic__label {
+  fill: var(--ink-faint);
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+
+.tpic__name {
+  fill: var(--ink);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.tpic__arrival {
+  stroke: var(--ink-mid);
+  stroke-width: 1.4;
+}
+
+.tpic__arrivals:not(.tpic__arrivals--on) .tpic__name {
+  fill: var(--ink-faint);
+  font-weight: 400;
+}
+
+.tpic__arrivals--on .tpic__arrival {
+  stroke: var(--accent-ink);
+  stroke-width: 2;
+}
+
+.tpic__caption {
+  margin-top: 4px;
+  color: var(--ink-mid);
+  font-size: var(--t-micro-size);
+  line-height: 1.5;
+}
+
+.pradios .tpic {
+  margin: var(--s-1) 0 0;
+}
+
+/* The lateral rules, chosen by the distribution each one produces. */
+.trules {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--s-1);
+  margin: 0 0 var(--s-2);
+}
+
+.trule {
+  display: grid;
+  gap: 2px;
+  padding: 6px;
+  background: var(--paper-raised);
+  border: 1px solid var(--rule);
+  border-radius: var(--r-panel);
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color var(--d-control) var(--ease-standard);
+}
+
+.trule:hover {
+  border-color: var(--rule-strong);
+}
+
+.trule[aria-checked='true'] {
+  border-color: var(--accent-ink);
+  box-shadow: 0 0 0 1px var(--accent-ink);
+}
+
+.trule svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.trule__ground {
+  fill: var(--paper-sunken);
+}
+
+.trule__mass {
+  fill: var(--type-mc);
+}
+
+.trule__mass--soft {
+  opacity: 0.8;
+}
+
+.trule__name {
+  margin-top: 4px;
+  font-size: var(--t-micro-size);
+  font-weight: 600;
+}
+
+.trule__note {
+  color: var(--ink-faint);
+  font-family: var(--font-mono);
+  font-size: var(--t-nano-size);
+}
+
+.trule__note--warn {
+  color: var(--warn-ink);
+}
+
 .pcard {
   padding: var(--s-2);
   background: var(--paper);

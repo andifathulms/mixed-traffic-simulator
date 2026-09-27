@@ -153,7 +153,10 @@ export function App() {
    * Whether the tune drawer is open. Not in the URL: like `running`, it is
    * where the reader is looking, not what is being simulated (CLAUDE.md §10).
    */
-  const [tuneOpen, setTuneOpen] = useState(false);
+  const [tuneOpen, setTuneOpen] = useState(
+    // A link ending #tune opens on the drawer, for pointing someone at a setting.
+    () => typeof window !== 'undefined' && window.location.hash === '#tune',
+  );
 
   // Every run is linkable (PRD §7.3). replaceState rather than pushState: a
   // slider drag must not fill the back button with a hundred entries.

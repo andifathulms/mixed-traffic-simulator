@@ -10,6 +10,7 @@ import { CITATIONS } from '../sim/defaults';
 import { Citation } from './Citation';
 import { Card, Slider, Toggle } from './Field';
 import { TYPE_LABELS } from '../views/render/vehicle-shape';
+import { ArrivalStrip, CrossSection, FleetStrip, LateralRulePicker } from './TunePictures';
 import { detectorCsv, dischargeCsv, sweepCsv, download } from './csv';
 
 export interface ParametersProps {
@@ -125,6 +126,13 @@ export function Parameters({
 
       <div className="params__grid">
         <Card title="Geometry">
+          <CrossSection
+            width={geometry.width}
+            params={p}
+            markings={geometry.markings}
+            laneCount={geometry.laneCount}
+          />
+
           <Slider
             label="Road width"
             value={`${geometry.width.toFixed(1)} m`}
@@ -204,6 +212,8 @@ export function Parameters({
         )}
 
         <Card title="Demand">
+          <FleetStrip params={p} />
+
           <Slider
             label="Inflow"
             value={`${Math.round(p.inflow)} veh/h`}
@@ -247,6 +257,7 @@ export function Parameters({
                 </label>
               ))}
             </div>
+            <ArrivalStrip process={p.arrival} />
           </fieldset>
         </Card>
 
@@ -265,6 +276,13 @@ export function Parameters({
             </>
           }
         >
+          <LateralRulePicker
+            value={state.lateralRule}
+            onChange={(rule) =>
+              onChange({ lateralRule: rule, params: { ...p, lateralRule: rule } })
+            }
+          />
+
           <Slider
             label="Overlap threshold"
             value={p.overlapThreshold.toFixed(2)}
