@@ -622,6 +622,28 @@ estimate from the same detector record — no re-simulation — and the series v
 while ground truth and the MKJI line stay put. That contrast is the whole argument, and it
 happens in under a second.
 
+**Filled on arrival.** The bench used to open on "No sweep yet", so the app's argument
+needed a click and a minute's wait before one number disagreed with another. It now opens
+on a sweep precomputed by `scripts/bake-sweep.ts` with the real engine — the bench
+scenario, its own seed, the gap-seeking rule, one sweep per aggregation interval — through
+the same request builder and sweep core the Run button uses. The file carries its seed
+and full parameter set, a "Precomputed" tag says so above the chart, and
+`tests/baked-sweep.test.ts` re-runs one point and fails if the file no longer matches the
+engine. Running a sweep replaces it; changing the swept variable or comparison hides it,
+because a chart of motorcycle share under the heading "road width" would be the wrong
+chart with the right colours.
+
+**The verdict.** Above the chart, on a raised plate, the answer before the working: the
+spread between the methods at 60% motorcycles, set at `--t-figure-xl`, a strip marking
+each method's value against ground truth (heavier, taller) and the MKJI constant
+(dashed), and one sentence naming the method furthest from the truth. A negative
+estimate adds the specific warning. It follows the interval, so switching it moves the
+figure while the truth tick stays put.
+
+**Each method can be set aside.** The legend names are toggles. Hiding a method removes
+it from the chart and the verdict and leaves the table untouched — a reading aid, not a
+filter on data.
+
 ### 5.7 Discharge plot
 
 Headway against queue position at the stop line, for the signal scenario. Points for each

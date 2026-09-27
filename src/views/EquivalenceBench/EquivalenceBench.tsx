@@ -45,6 +45,11 @@ export interface EquivalenceBenchProps {
   progress: number | null;
   onRun: () => void;
   onCancel: () => void;
+  /**
+   * Where the points came from. A precomputed sweep says so, with the seed
+   * that reproduces it, so a reader never mistakes it for their own run.
+   */
+  provenance?: { kind: 'baked'; seed: number; inflow: number; rule: string } | { kind: 'run' } | null;
   width?: number;
   height?: number;
 }
@@ -234,9 +239,26 @@ export function EquivalenceBench({
   progress,
   onRun,
   onCancel,
+  provenance = null,
   width = 780,
   height = 400,
 }: EquivalenceBenchProps) {
+  /*
+   * Methods the reader has set aside. Four coloured lines is the argument,
+   * but it is easier to read one method against the truth than four at once,
+   * so each can be hidden from the chart and the verdict. The table keeps
+   * every value regardless: hiding is a reading aid, not a filter on data.
+   */
+  const [hidden, setHidden] = useState<ReadonlySet<string>>(() => new Set());
+  const shown = SERIES.filter((s) => !hidden.has(s.key));
+  const toggle = (key: string) =>
+    setHidden((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+
   /*
    * A robust axis.
    *
@@ -553,7 +575,11 @@ export function EquivalenceBench({
                 onRun();
               }}
             >
-              {points.length > 0 ? 'Run sweep again' : 'Run sweep'}
+              {provenance?.kind === 'baked'
+                ? 'Run with my settings'
+                : points.length > 0
+                  ? 'Run sweep again'
+                  : 'Run sweep'}
             </button>
             {/*
               The size of what is about to start, in runs.
@@ -585,58 +611,24 @@ export function EquivalenceBench({
         )}
       </div>
 
-      {/*
-        The controlled experiment, shown rather than asserted.
+      {provenance?.kind === 'baked' && points.length > 0 && (
+        <p className="bench__provenance">
+          <span className="bench__provenance-tag">Precomputed</span>
+          The bench scenario at {provenance.inflow} veh/h, seed{' '}
+          <span className="mono">{provenance.seed}</span>, {provenance.rule.toLowerCase()} rule,
+          run with this engine when the app was built — one sweep per interval, so
+          switching the interval above re-reads it without simulating. Running a
+          sweep replaces it with your own settings.
+        </p>
+      )}
 
-        This is the one measurement in the app that no field study can make
-        (PRD §2), and it used to arrive as a single number in a legend with no
-        way to see where it came from. The two throughputs it compares are
-        real figures from the reader's own sweep, and the identity underneath
-        is the one the code solves.
-      */}
-      {worked && (
-        <div className="bench__worked">
-          <h4 className="bench__worked-title">
-            How the controlled experiment got {worked.emp.toFixed(2)}
-          </h4>
-          <p className="bench__worked-lead">
-            At {Math.round(worked.mcFraction * 100)}% motorcycles the road was run
-            twice, from the same seed, with everything else held identical.
-          </p>
-          <dl className="bench__worked-steps">
-            <div>
-              <dt>The mixed stream carried</dt>
-              <dd className="mono">{Math.round(worked.mixed)} veh/h</dd>
-            </div>
-            <div>
-              <dt>The same road, motorcycles replaced by cars, carried</dt>
-              <dd className="mono">{Math.round(worked.reference)} veh/h</dd>
-            </div>
-          </dl>
-          <p className="bench__worked-why">
-            Capacity in car units is fixed by the road, so the cars in the mixed
-            stream plus its motorcycles counted at{' '}
-            <span className="mono">emp</span> must equal what the all-car road
-            carried:
-          </p>
-          <p className="bench__worked-identity mono">
-            {Math.round(worked.mixed)} × {(1 - worked.mcFraction).toFixed(2)} +{' '}
-            {Math.round(worked.mixed)} × {worked.mcFraction.toFixed(2)} × emp ={' '}
-            {Math.round(worked.reference)}
-          </p>
-          <p className="bench__worked-why">
-            Solving for emp gives <span className="mono">{worked.emp.toFixed(2)}</span>:
-            one motorcycle took the road space of{' '}
-            <span className="mono">{worked.emp.toFixed(2)}</span> cars in this run.
-            MKJI assigns a fixed {MKJI_MC_EMP}.
-          </p>
-          <p className="bench__worked-caveat">
-            Both runs are driven past capacity on purpose, because equivalence is
-            a statement about a full road: at free flow every type looks alike and
-            the answer drifts meaninglessly toward one. This is one seed and one
-            geometry, not a measurement of any real road.
-          </p>
-        </div>
+      {points.length > 0 && (
+        <Verdict
+          points={points}
+          series={shown}
+          interval={interval}
+          variable={variable}
+        />
       )}
 
       <p className="visually-hidden" role="status">
@@ -714,6 +706,7 @@ export function EquivalenceBench({
           */}
           {comparing &&
             bands.map(({ series, spans }) => {
+              if (hidden.has(series.key)) return null;
               const present = spans.filter(
                 (v): v is NonNullable<typeof v> => v !== null,
               );
@@ -789,6 +782,7 @@ export function EquivalenceBench({
             that value, so this is the same line as before.
           */}
           {bands.map(({ series: s, spans }) => {
+            if (hidden.has(s.key)) return null;
             const segment: string[] = [];
             let open = false;
             for (const span of spans) {
@@ -844,7 +838,7 @@ export function EquivalenceBench({
 
           {/* Every off-scale value, laid out against every other. */}
           {layOutOffScale(
-            SERIES.flatMap((s) =>
+            shown.flatMap((s) =>
               points.flatMap((p) => {
                 const v = valueOf(p, s.key);
                 if (v === null) return [];
@@ -871,9 +865,19 @@ export function EquivalenceBench({
 
       <ul className="bench__legend">
         {SERIES.map((s) => (
-          <li key={s.key}>
-            <span className="bench__swatch" style={{ background: s.colour }} />
-            <span className="bench__legend-name">{s.label}</span>
+          <li key={s.key} className={hidden.has(s.key) ? 'bench__legend-item--off' : undefined}>
+            <button
+              type="button"
+              className="bench__toggle"
+              aria-pressed={!hidden.has(s.key)}
+              onClick={() => toggle(s.key)}
+            >
+              <span className="bench__swatch" style={{ background: s.colour }} />
+              <span className="bench__legend-name">{s.label}</span>
+              <span className="visually-hidden">
+                {hidden.has(s.key) ? ', hidden. Show on the chart.' : ', shown. Hide from the chart.'}
+              </span>
+            </button>
             <span className="bench__legend-how">{s.how}</span>
           </li>
         ))}
@@ -888,6 +892,65 @@ export function EquivalenceBench({
           </span>
         </li>
       </ul>
+
+      {/*
+        The controlled experiment, shown rather than asserted.
+
+        After the chart and its legend, not before: the verdict states the
+        answer and the chart shows it, and this is the working for one point,
+        which a reader goes looking for rather than wades through to reach
+        the chart.
+
+        This is the one measurement in the app that no field study can make
+        (PRD §2), and it used to arrive as a single number in a legend with no
+        way to see where it came from. The two throughputs it compares are
+        real figures from the reader's own sweep, and the identity underneath
+        is the one the code solves.
+      */}
+      {worked && (
+        <div className="bench__worked">
+          <h4 className="bench__worked-title">
+            How the controlled experiment got {worked.emp.toFixed(2)}
+          </h4>
+          <p className="bench__worked-lead">
+            At {Math.round(worked.mcFraction * 100)}% motorcycles the road was run
+            twice, from the same seed, with everything else held identical.
+          </p>
+          <dl className="bench__worked-steps">
+            <div>
+              <dt>The mixed stream carried</dt>
+              <dd className="mono">{Math.round(worked.mixed)} veh/h</dd>
+            </div>
+            <div>
+              <dt>The same road, motorcycles replaced by cars, carried</dt>
+              <dd className="mono">{Math.round(worked.reference)} veh/h</dd>
+            </div>
+          </dl>
+          <p className="bench__worked-why">
+            Capacity in car units is fixed by the road, so the cars in the mixed
+            stream plus its motorcycles counted at{' '}
+            <span className="mono">emp</span> must equal what the all-car road
+            carried:
+          </p>
+          <p className="bench__worked-identity mono">
+            {Math.round(worked.mixed)} × {(1 - worked.mcFraction).toFixed(2)} +{' '}
+            {Math.round(worked.mixed)} × {worked.mcFraction.toFixed(2)} × emp ={' '}
+            {Math.round(worked.reference)}
+          </p>
+          <p className="bench__worked-why">
+            Solving for emp gives <span className="mono">{worked.emp.toFixed(2)}</span>:
+            one motorcycle took the road space of{' '}
+            <span className="mono">{worked.emp.toFixed(2)}</span> cars in this run.
+            MKJI assigns a fixed {MKJI_MC_EMP}.
+          </p>
+          <p className="bench__worked-caveat">
+            Both runs are driven past capacity on purpose, because equivalence is
+            a statement about a full road: at free flow every type looks alike and
+            the answer drifts meaninglessly toward one. This is one seed and one
+            geometry, not a measurement of any real road.
+          </p>
+        </div>
+      )}
 
       {/*
         The spread, stated rather than left to be eyeballed off the bands.
@@ -983,6 +1046,130 @@ export function EquivalenceBench({
         </table>
       </details>
     </figure>
+  );
+}
+
+/**
+ * The answer before the working: how far apart the methods land.
+ *
+ * The chart shows five lines and asks the reader to measure the gap between
+ * them by eye. The verdict states it at one representative point — 60%
+ * motorcycles, near the middle of what Indonesian urban counts report, or the
+ * middle of the sweep for any other variable — as one figure, the spread, with
+ * each method's value marked on a strip beside ground truth and the MKJI
+ * constant. It follows the interval: switch it and the figure moves while the
+ * truth tick stays put, which is the argument in one glance.
+ */
+function Verdict({
+  points,
+  series,
+  interval,
+  variable,
+}: {
+  points: BenchPoint[];
+  series: ReadonlyArray<(typeof SERIES)[number]>;
+  interval: AggregationInterval;
+  variable: SweepVariable;
+}) {
+  const at = useMemo(() => {
+    const byValue = [...new Map(points.map((p) => [p.value, p])).values()].sort(
+      (a, b) => a.value - b.value,
+    );
+    if (byValue.length === 0) return null;
+    if (variable === 'mcFraction') {
+      return byValue.reduce((best, p) =>
+        Math.abs(p.value - 0.6) < Math.abs(best.value - 0.6) ? p : best,
+      );
+    }
+    return byValue[Math.floor(byValue.length / 2)];
+  }, [points, variable]);
+
+  if (!at) return null;
+
+  const estimates: Array<{ s: (typeof SERIES)[number]; v: number }> = [];
+  for (const s of series) {
+    if (s.key === 'truth') continue;
+    const v = valueOf(at, s.key);
+    if (v !== null) estimates.push({ s, v });
+  }
+  const truth = at.truth;
+  const values = estimates.map((e) => e.v);
+  const spread = values.length > 1 ? Math.max(...values) - Math.min(...values) : null;
+
+  // The strip spans what it has to show, always including zero and one.
+  const all = [...values, MKJI_MC_EMP, 0, 1, ...(truth === null ? [] : [truth])];
+  const lo = Math.min(...all);
+  const hi = Math.max(...all);
+  const pos = (v: number) => `${((v - lo) / (hi - lo || 1)) * 100}%`;
+
+  const furthest =
+    truth === null || estimates.length === 0
+      ? null
+      : estimates.reduce((a, b) => (Math.abs(b.v - truth) > Math.abs(a.v - truth) ? b : a));
+  const negative = estimates.filter((e) => e.v < 0);
+  const where = formatSweepValue(variable, at.value);
+  const minutes = interval / 60;
+
+  return (
+    <section className="bench__verdict" aria-label="Verdict at one point">
+      <div className="bench__verdict-figure">
+        <span className="label">
+          Spread between methods at {where}
+          {variable === 'mcFraction' ? ' motorcycles' : ''}
+        </span>
+        <span className="bench__verdict-value mono">
+          {spread === null ? '—' : spread.toFixed(2)}
+          <span className="bench__verdict-unit"> emp</span>
+        </span>
+      </div>
+
+      <div className="bench__strip" aria-hidden="true">
+        <span className="bench__strip-axis" />
+        {values.length > 1 && (
+          <span
+            className="bench__strip-span"
+            style={{ left: pos(Math.min(...values)), width: `calc(${pos(Math.max(...values))} - ${pos(Math.min(...values))})` }}
+          />
+        )}
+        <span className="bench__strip-zero" style={{ left: pos(0) }} />
+        <span className="bench__strip-tick bench__strip-tick--mkji" style={{ left: pos(MKJI_MC_EMP) }} />
+        {estimates.map((e) => (
+          <span
+            key={e.s.key}
+            className="bench__strip-tick"
+            style={{ left: pos(e.v), background: e.s.colour }}
+          />
+        ))}
+        {truth !== null && series.some((s) => s.key === 'truth') && (
+          <span className="bench__strip-tick bench__strip-tick--truth" style={{ left: pos(truth) }} />
+        )}
+      </div>
+
+      <p className="bench__verdict-text">
+        {truth !== null ? (
+          <>
+            Ground truth is <span className="mono">{truth.toFixed(2)}</span>. MKJI assumes{' '}
+            <span className="mono">{MKJI_MC_EMP}</span>.
+          </>
+        ) : (
+          <>MKJI assumes <span className="mono">{MKJI_MC_EMP}</span>.</>
+        )}
+        {furthest && truth !== null && (
+          <>
+            {' '}Furthest from the truth at {minutes}-minute aggregation:{' '}
+            {furthest.s.label.toLowerCase()}, <span className="mono">{furthest.v.toFixed(2)}</span>.
+          </>
+        )}
+      </p>
+
+      {negative.length > 0 && (
+        <p className="bench__verdict-warn" role="note">
+          Negative equivalence at {minutes}-minute aggregation — the{' '}
+          {negative.map((e) => e.s.label.toLowerCase()).join(' and ')}{' '}
+          {negative.length === 1 ? 'method is' : 'methods are'} not applicable at this interval.
+        </p>
+      )}
+    </section>
   );
 }
 

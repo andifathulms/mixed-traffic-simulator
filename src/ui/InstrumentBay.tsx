@@ -13,6 +13,7 @@ import { Inspector } from '../views/Inspector/Inspector';
 import { FundamentalDiagram } from '../views/FundamentalDiagram/FundamentalDiagram';
 import { getLateralRule } from '../sim/lateral';
 import type { SweepPointResult } from '../batch/protocol';
+import { BAKED_COMPARISON, BAKED_VARIABLE, bakedPoints, useBakedSweep } from '../batch/baked';
 
 export interface InstrumentBayProps {
   state: AppState;
@@ -74,9 +75,36 @@ export function InstrumentBay({
     return aggregate(log.records, state.aggregationInterval, world.t);
   }, [logRef, worldRef, state.aggregationInterval, aggregationTick]);
 
+  /*
+   * The bench opens on the precomputed sweep until the reader runs their own.
+   *
+   * Only while the reader's sweep settings match what was baked: a chart of
+   * motorcycle share under the heading "road width" would be the wrong chart
+   * with the right colours. Change the variable or the comparison and the
+   * bench shows its empty state and the Run button, as before.
+   */
+  const baked = useBakedSweep();
+  const showBaked =
+    sweepPoints.length === 0 &&
+    sweepProgress === null &&
+    state.sweepVariable === BAKED_VARIABLE &&
+    state.sweepComparison === BAKED_COMPARISON;
+  const sourcePoints = showBaked ? bakedPoints(baked, state.aggregationInterval) : sweepPoints;
+  const provenance =
+    showBaked && baked && sourcePoints.length > 0
+      ? {
+          kind: 'baked' as const,
+          seed: baked.seed,
+          inflow: baked.params.inflow,
+          rule: getLateralRule(baked.params.lateralRule).name,
+        }
+      : sweepPoints.length > 0
+        ? { kind: 'run' as const }
+        : null;
+
   const benchPoints: BenchPoint[] = useMemo(
     () =>
-      sweepPoints.map((p) => ({
+      sourcePoints.map((p) => ({
         value: p.value,
         truthWorking: p.truthWorking,
         seriesKey: p.seriesKey,
@@ -88,7 +116,7 @@ export function InstrumentBay({
         speed: p.speed,
         occupancy: p.occupancy,
       })),
-    [sweepPoints],
+    [sourcePoints],
   );
 
   const fd = (
@@ -180,6 +208,7 @@ export function InstrumentBay({
               progress={sweepProgress}
               onRun={onRunSweep}
               onCancel={onCancelSweep}
+              provenance={provenance}
             />
           )}
 

@@ -20,12 +20,7 @@ import { InstrumentBay } from './InstrumentBay';
 import { Parameters } from './Parameters';
 import { Warnings } from './Warnings';
 import { MakerSignature } from './MakerSignature';
-import {
-  useSweep,
-  measureSecondsFor,
-  sweepValues,
-  DEFAULT_REPLICATES,
-} from '../batch/useSweep';
+import { useSweep, benchRequest } from '../batch/useSweep';
 import './app.css';
 
 function useNarrow(): boolean {
@@ -176,30 +171,15 @@ export function App() {
   }, []);
 
   const runSweep = useCallback(() => {
-    const benchScenario = SCENARIOS.bench;
-    const measure = measureSecondsFor(
-      state.aggregationInterval,
-      benchScenario.detectors.length,
+    sweep.run(
+      benchRequest({
+        params: state.params,
+        seed: state.seed,
+        interval: state.aggregationInterval,
+        variable: state.sweepVariable,
+        comparison: state.sweepComparison,
+      }),
     );
-    sweep.run({
-      scenario: 'bench',
-      params: { ...state.params, inflow: 4000 },
-      seed: state.seed,
-      variable: state.sweepVariable,
-      comparison: state.sweepComparison,
-      replicates: DEFAULT_REPLICATES,
-      // Zero to ninety per cent, the app's principal independent variable.
-      // Coarser when a comparison is on, so turning one on costs about what
-      // one sweep costs rather than three (see sweepValues).
-      values: sweepValues(state.sweepVariable, state.sweepComparison, DEFAULT_REPLICATES),
-      interval: state.aggregationInterval,
-      warmup: 90,
-      measure,
-      // Ground truth costs two further runs per point. It is on, because a
-      // bench without the controlled experiment is just four estimates
-      // disagreeing with nothing to be wrong about.
-      includeTruth: true,
-    });
   }, [
     sweep,
     state.params,

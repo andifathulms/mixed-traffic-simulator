@@ -28,7 +28,7 @@
 .bench__progress progress {
   width: 8rem;
   height: 5px;
-  accent-color: var(--ink);
+  accent-color: var(--accent-ink);
 }
 
 /* Zero is a real value here, not a floor. §5.6: the axis extends below it. */
@@ -208,18 +208,53 @@
 
 .bench__legend li {
   display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 0 var(--s-1);
+  grid-template-columns: 1fr;
+  gap: 2px;
   align-items: baseline;
+  transition: opacity var(--d-control) var(--ease-standard);
+}
+
+.bench__legend-item--off {
+  opacity: 0.5;
+}
+
+/*
+ * Each method's name is a toggle. Pressed means shown, which is the default,
+ * so the control reads as a legend until it is used.
+ */
+.bench__toggle {
+  display: inline-flex;
+  gap: var(--s-1);
+  align-items: center;
+  justify-self: start;
+  min-height: var(--target-min);
+  margin-left: -6px;
+  padding: 0 6px;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--r-control);
+  cursor: pointer;
+  transition: background var(--d-control) var(--ease-standard),
+    border-color var(--d-control) var(--ease-standard);
+}
+
+.bench__toggle:hover {
+  background: var(--paper-raised);
+  border-color: var(--rule);
+}
+
+.bench__toggle[aria-pressed='false'] .bench__swatch {
+  background: transparent !important;
+  box-shadow: inset 0 0 0 1px var(--ink-line);
 }
 
 .bench__legend-name {
   color: var(--ink);
 }
 
-/* The clause sits under the name, in the column the swatch does not occupy. */
+/* The clause sits under the name, indented past the swatch. */
 .bench__legend-how {
-  grid-column: 2;
+  padding-left: 24px;
   max-width: 34ch;
   color: var(--ink-mid);
   font-size: var(--t-small-size);
@@ -233,4 +268,152 @@
   color: var(--ink-faint);
   font-size: var(--t-nano-size);
   font-weight: 400;
+}
+
+/* Points move with the series when the interval changes (§6.3). */
+.plot circle {
+  transition: cx var(--d-bench) var(--ease-out), cy var(--d-bench) var(--ease-out);
+}
+
+/*
+ * Where the points came from, stated before the chart. A precomputed sweep
+ * must never be mistaken for the reader's own run.
+ */
+.bench__provenance {
+  margin: var(--s-2) 0 0;
+  max-width: 76ch;
+  color: var(--ink-mid);
+  font-size: var(--t-small-size);
+  line-height: 1.55;
+}
+
+.bench__provenance-tag {
+  display: inline-block;
+  margin-right: var(--s-1);
+  padding: 1px 8px;
+  border: 1px solid var(--accent-ink);
+  border-radius: var(--r-pill);
+  color: var(--accent-ink);
+  font-size: var(--t-micro-size);
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+/*
+ * The verdict: the answer before the working. One figure at the extra-large
+ * step, a strip with every method's value against the truth and MKJI, and a
+ * sentence. It sits on a raised plate because it summarises the chart below
+ * rather than being part of it.
+ */
+.bench__verdict {
+  display: grid;
+  grid-template-columns: auto minmax(12rem, 1fr);
+  gap: var(--s-1) var(--s-3);
+  align-items: center;
+  margin: var(--s-2) 0 0;
+  padding: var(--s-2);
+  background: var(--paper-raised);
+  border: 1px solid var(--rule);
+  border-radius: var(--r-panel);
+}
+
+.bench__verdict-figure {
+  display: grid;
+  gap: 2px;
+}
+
+.bench__verdict-value {
+  font-size: var(--t-figure-xl-size);
+  line-height: var(--t-figure-xl-line);
+  letter-spacing: var(--t-figure-xl-track);
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.bench__verdict-unit {
+  color: var(--ink-faint);
+  font-size: var(--t-small-size);
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.bench__strip {
+  position: relative;
+  height: 34px;
+  margin: 0 8px;
+}
+
+.bench__strip-axis {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 16px;
+  height: 2px;
+  background: var(--rule);
+}
+
+.bench__strip-span {
+  position: absolute;
+  top: 12px;
+  height: 10px;
+  background: var(--ink);
+  opacity: 0.1;
+  border-radius: var(--r-pill);
+  transition: left var(--d-bench) var(--ease-out), width var(--d-bench) var(--ease-out);
+}
+
+.bench__strip-zero {
+  position: absolute;
+  top: 10px;
+  width: 1px;
+  height: 14px;
+  background: var(--ink-line);
+}
+
+.bench__strip-tick {
+  position: absolute;
+  top: 8px;
+  width: 4px;
+  height: 18px;
+  margin-left: -2px;
+  border-radius: 2px;
+  transition: left var(--d-bench) var(--ease-out);
+}
+
+.bench__strip-tick--mkji {
+  width: 2px;
+  margin-left: -1px;
+  background: repeating-linear-gradient(to bottom, var(--method-mkji) 0 3px, transparent 3px 5px);
+}
+
+/* Ground truth is heavier and taller, as on the chart. */
+.bench__strip-tick--truth {
+  top: 4px;
+  width: 5px;
+  height: 26px;
+  margin-left: -2.5px;
+  background: var(--method-truth);
+}
+
+.bench__verdict-text,
+.bench__verdict-warn {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: var(--t-small-size);
+  line-height: 1.55;
+  color: var(--ink-mid);
+}
+
+.bench__verdict-warn {
+  padding: 6px 10px;
+  background: var(--warn-tint);
+  border-left: 2px solid var(--warn);
+  border-radius: 0 var(--r-control) var(--r-control) 0;
+  color: var(--warn-ink);
+}
+
+@media (max-width: 560px) {
+  .bench__verdict {
+    grid-template-columns: 1fr;
+  }
 }
